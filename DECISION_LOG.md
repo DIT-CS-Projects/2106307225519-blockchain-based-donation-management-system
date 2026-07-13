@@ -246,7 +246,7 @@ Approved
 
 ### Supporting Libraries
 
-* pg (PostgreSQL driver, raw parameterized SQL, no ORM) — see Decision 015
+* Drizzle ORM over the pg driver — type-safe queries and migrations (refined in Decision 019)
 * zod (validation, shared approach client and server)
 * react-hot-toast (notifications)
 * Recharts (dashboard charts)
@@ -333,6 +333,48 @@ The following remain future scope (genuine additional cost, not cheap wins):
 * Multi-currency
 * Multi-NGO support
 * AI fraud detection
+
+Status
+
+Approved
+
+---
+
+## Decision 018
+
+### TypeScript Across the Entire Stack
+
+The client, server and Hardhat tooling are written in TypeScript.
+
+Reason
+
+* The platform moves real money (donations and disbursements) across many typed data shapes
+* Types catch field, shape and status errors at edit-time, before runtime
+* The frontend/backend contract becomes self-documenting via shared types
+* Chosen at the cheapest possible moment (immediately after scaffolding)
+
+This supersedes the JavaScript references in the earlier frontend and backend documentation. Strict mode is enabled.
+
+Status
+
+Approved
+
+---
+
+## Decision 019
+
+### Drizzle ORM for the Data Layer
+
+The backend accesses PostgreSQL through Drizzle ORM over the node-postgres (pg) driver.
+
+Reason
+
+* Extends TypeScript type safety all the way to the database (Decision 018)
+* Type-safe, SQL-shaped queries — transparent, with a minimal runtime
+* Built-in migrations via drizzle-kit
+* Still allows raw SQL when a query needs it
+
+Schemas live in server/src/database/schema. Migrations are generated into server/src/database/migrations. This refines the data-access note in Decision 014.
 
 Status
 

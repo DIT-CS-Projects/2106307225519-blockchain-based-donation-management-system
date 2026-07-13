@@ -12,7 +12,7 @@ Frontend & Backend Development
 
 Project Setup
 
-Status: In Progress
+Status: Completed
 
 Tasks
 
@@ -20,17 +20,17 @@ Tasks
 
 ✓ Project Architecture
 
-○ React Setup
+✓ React + TypeScript Setup
 
-○ Express Setup
+✓ Express + TypeScript Setup
 
-○ PostgreSQL Setup
+✓ PostgreSQL + Drizzle Setup
 
-○ Hardhat Setup
+✓ Hardhat Setup
 
-○ Tailwind Setup
+✓ Tailwind v4 Setup
 
-○ shadcn/ui Setup
+✓ shadcn/ui Setup
 
 ---
 

@@ -56,23 +56,31 @@ Repository
 
 ---
 
+# Completed — Stage 1 Foundation
+
+✓ React + Vite + TypeScript client (builds and lints clean)
+
+✓ Tailwind v4 + Design System tokens (light/dark)
+
+✓ shadcn/ui configured (Button primitive, cn util)
+
+✓ Client structure: services (Axios), context (theme), hooks, router, constants, utils
+
+✓ Express + TypeScript server, layered (routes → controllers → services → repositories)
+
+✓ Server middleware: Helmet, CORS, rate limiting, central error handler; health endpoint live
+
+✓ PostgreSQL + Drizzle ORM wired (boots without DB until Neon is connected)
+
+✓ Hardhat + Ethers + TransparencyRegistry.sol (compiles, 4 tests passing)
+
+✓ ESLint across client and server; .env.example for server and contracts
+
+---
+
 # In Progress
 
-Stage 1 — Foundation
-
-○ React + Vite Setup
-
-○ Tailwind CSS + shadcn/ui Setup
-
-○ Express Setup
-
-○ PostgreSQL Setup
-
-○ Hardhat Setup
-
-○ ESLint Setup
-
-○ Theme Configuration (Design System tokens)
+Stage 2 — Public Website (starting next)
 
 ---
 

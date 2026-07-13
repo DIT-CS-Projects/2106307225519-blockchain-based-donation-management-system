@@ -100,6 +100,8 @@ Frontend
 
 React
 
+TypeScript
+
 Vite
 
 React Router
@@ -120,9 +122,13 @@ Backend
 
 Node.js
 
+TypeScript
+
 Express
 
 PostgreSQL
+
+Drizzle ORM
 
 JWT
 

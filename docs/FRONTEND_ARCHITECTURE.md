@@ -12,9 +12,9 @@ The interface follows a component-based architecture built using React.
 
 React
 
-Vite
+TypeScript
 
-JavaScript
+Vite
 
 Tailwind CSS
 

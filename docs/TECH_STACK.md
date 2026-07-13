@@ -23,6 +23,20 @@ Whenever multiple technologies can solve the same problem, choose the simplest s
 
 ---
 
+# Language
+
+TypeScript
+
+The entire stack (client, server, Hardhat tooling) is written in TypeScript with strict mode enabled (Decision 018).
+
+Reason
+
+* Type safety across money and blockchain data shapes
+* Self-documenting frontend/backend contract
+* Fewer runtime errors
+
+---
+
 # Frontend
 
 ## Framework
@@ -224,6 +238,18 @@ PostgreSQL is the **single source of truth** for all operational data.
 Local development uses a local PostgreSQL instance or Docker.
 
 Supersedes Decision 001 — see Decision 015.
+
+---
+
+## Data Access
+
+Drizzle ORM (Decision 019)
+
+Reason
+
+* Type-safe queries over the pg driver
+* Built-in migrations via drizzle-kit
+* SQL-shaped with a minimal runtime
 
 ---
 

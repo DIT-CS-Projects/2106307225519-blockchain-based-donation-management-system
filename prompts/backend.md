@@ -76,6 +76,8 @@ Return proper HTTP status codes.
 
 ## Database
 
+Access through Drizzle ORM.
+
 Parameterized queries only.
 
 Prevent SQL Injection.

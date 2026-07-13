@@ -36,9 +36,11 @@ Frontend
 
 React
 
+TypeScript
+
 Vite
 
-Tailwind CSS
+Tailwind CSS v4
 
 shadcn/ui
 
@@ -48,7 +50,11 @@ Backend
 
 Express
 
+TypeScript
+
 PostgreSQL
+
+Drizzle ORM
 
 JWT
 
@@ -57,6 +63,8 @@ Blockchain
 Solidity
 
 Hardhat
+
+Ethers.js
 
 Ethereum Sepolia
 
@@ -86,15 +94,37 @@ prompts/
 
 ## Development
 
-Install dependencies
+Prerequisites: Node.js LTS and a PostgreSQL database (a free Neon instance works).
 
-Run frontend
+Client (frontend)
 
-Run backend
+```
+cd client
+npm install
+npm run dev      # http://localhost:5173
+```
 
-Run smart contracts
+Server (backend)
 
-Configure environment variables
+```
+cd server
+npm install
+cp .env.example .env   # then set DATABASE_URL and secrets
+npm run dev      # http://localhost:4000
+```
+
+Contracts (blockchain)
+
+```
+cd contracts
+npm install
+npm run compile
+npm test
+npm run node             # local chain
+npm run deploy:local     # deploy to local chain
+```
+
+Each package has its own .env.example. Never commit .env files.
 
 ---
 

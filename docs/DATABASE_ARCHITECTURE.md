@@ -204,6 +204,18 @@ Many Notifications
 
 ---
 
+# Data Access
+
+The backend accesses PostgreSQL through Drizzle ORM (Decision 019).
+
+Schemas are defined in server/src/database/schema.
+
+Migrations are generated and applied with drizzle-kit.
+
+All queries are parameterized and type-safe.
+
+---
+
 # Design Principles
 
 The database should:

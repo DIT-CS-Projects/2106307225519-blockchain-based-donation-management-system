@@ -14,9 +14,13 @@ All business logic resides within the backend.
 
 Node.js
 
+TypeScript
+
 Express.js
 
 PostgreSQL
+
+Drizzle ORM
 
 JWT
 
