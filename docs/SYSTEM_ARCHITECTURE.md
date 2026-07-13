@@ -20,7 +20,7 @@ Express Backend
 
 ↓
 
-SQLite Database
+PostgreSQL Database
 
 ↓
 
@@ -90,7 +90,7 @@ Responsibilities
 
 Technology
 
-SQLite
+PostgreSQL
 
 ---
 
@@ -120,15 +120,19 @@ Responsibilities
 - Confirm successful transactions
 - Notify backend
 
+Payment Gateway
+
+AzamPay
+
 Supported payment methods
 
 - M-Pesa
 - Airtel Money
-- Mixx
+- Mixx (formerly Tigo Pesa)
 - HaloPesa
 - Bank Transfer
-- Visa
-- Mastercard
+
+Card payments (Visa, Mastercard) are a future enhancement.
 
 ---
 
@@ -146,7 +150,7 @@ Express API
 
 ↓
 
-SQLite
+PostgreSQL
 
 ↓
 

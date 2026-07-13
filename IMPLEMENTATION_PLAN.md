@@ -12,25 +12,25 @@ Foundation
 
 Status
 
-Completed
+In Progress
 
 Tasks
 
 ✓ Repository
 
-✓ React
-
-✓ Express
-
-✓ SQLite
-
-✓ Hardhat
-
-✓ Tailwind
-
-✓ shadcn/ui
-
 ✓ Documentation
+
+○ React
+
+○ Express
+
+○ PostgreSQL
+
+○ Hardhat
+
+○ Tailwind
+
+○ shadcn/ui
 
 ---
 

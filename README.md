@@ -48,7 +48,7 @@ Backend
 
 Express
 
-SQLite
+PostgreSQL
 
 JWT
 

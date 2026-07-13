@@ -32,8 +32,10 @@ Requirements:
 - Password hashing using bcrypt
 - Secure login
 - Secure logout
-- Access Token
-- Refresh Token (future enhancement)
+- Short-lived access token
+- Refresh token with rotation (httpOnly cookie)
+- Logout from all devices
+- Account lockout after repeated failed logins
 
 Passwords must NEVER be stored in plain text.
 
@@ -79,6 +81,8 @@ Every API endpoint should:
 - Authenticate requests
 - Return proper HTTP status codes
 
+Authentication and payment endpoints must apply rate limiting.
+
 Never trust frontend validation.
 
 ---
@@ -107,6 +111,19 @@ The system must:
 - Prevent duplicate payment processing
 
 Secret API keys must never appear in frontend code.
+
+---
+
+# Disbursement Security
+
+The system must:
+
+- Restrict disbursement to administrators
+- Enforce dual approval for large disbursements
+- Prevent an administrator from approving their own disbursement
+- Validate available balance before payout
+- Verify payout callbacks
+- Record every disbursement and approval decision in the audit log
 
 ---
 
@@ -175,6 +192,4 @@ Future versions may include:
 
 - Multi-factor authentication
 - Device verification
-- Rate limiting
-- Account lockout
 - AI fraud detection

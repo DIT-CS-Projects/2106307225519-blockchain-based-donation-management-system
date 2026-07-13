@@ -10,15 +10,25 @@ Blockchain operates silently after payment confirmation.
 
 ---
 
+# Payment Gateway
+
+AzamPay is the selected payment gateway (Decision 009).
+
+The backend integrates AzamPay through the Payment Service abstraction described below.
+
+Sandbox credentials are used during development. Production credentials require NGO merchant onboarding with AzamPay.
+
+---
+
 # Supported Payment Methods
 
-The platform should support:
+The platform supports through AzamPay:
 
 Mobile Money
 
 - M-Pesa
 - Airtel Money
-- Mixx
+- Mixx (formerly Tigo Pesa)
 - HaloPesa
 
 Banking
@@ -27,8 +37,8 @@ Banking
 - NMB
 - NBC
 - Standard Chartered
-- Visa
-- Mastercard
+
+Card payments (Visa, Mastercard) are a future enhancement.
 
 Additional providers can be added later.
 

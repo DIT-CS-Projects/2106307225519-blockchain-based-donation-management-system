@@ -56,33 +56,25 @@ Deactivate
 
 # Beneficiaries
 
-POST /beneficiaries
+Managed at /api/beneficiaries (see api/beneficiaries.md).
 
-PUT /beneficiaries/:id
+Write operations are Administrator only.
 
-DELETE /beneficiaries/:id
+---
 
-GET /beneficiaries
+# Disbursements
+
+Managed at /api/disbursements (see api/disbursements.md).
+
+Administrator only. Large disbursements require dual approval.
 
 ---
 
 # Reports
 
-GET /reports/donations
+Managed at /api/reports (see api/reports.md).
 
-GET /reports/campaigns
-
-GET /reports/payments
-
-GET /reports/audit
-
-Exports
-
-CSV
-
-Excel
-
-PDF
+Administrator only.
 
 ---
 
@@ -118,9 +110,9 @@ Remove notification.
 
 # Blockchain
 
-GET /blockchain/status
+Managed at /api/blockchain (see api/blockchain.md).
 
-GET /blockchain/events
+/api/blockchain/status and /api/blockchain/events are Administrator only.
 
 ---
 

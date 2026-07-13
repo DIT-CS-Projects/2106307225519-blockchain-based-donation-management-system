@@ -2,7 +2,7 @@
 
 ## Overview
 
-SQLite is the primary database of the application.
+PostgreSQL is the primary database of the application.
 
 Every entity in the application is represented as a relational table.
 
@@ -56,9 +56,23 @@ Stores payment provider responses.
 
 ---
 
+## disbursements
+
+Stores fund disbursements from campaigns to verified beneficiaries.
+
+---
+
+## disbursement_approvals
+
+Stores approval decisions for disbursements requiring dual approval.
+
+---
+
 ## blockchain_records
 
 Stores blockchain proof references.
+
+This table is the authoritative source for blockchain proof data.
 
 ---
 
@@ -70,7 +84,9 @@ Stores password reset tokens.
 
 ## sessions
 
-Stores active login sessions.
+Stores active refresh-token sessions.
+
+Enables token revocation and logout from all devices.
 
 ---
 
@@ -112,23 +128,33 @@ donations
 
 payment_transactions
 
+campaigns
+
+↓
+
+disbursements
+
+beneficiaries
+
+↓
+
+disbursements
+
 ---
 
 # Primary Keys
 
 Every table uses
 
-INTEGER PRIMARY KEY AUTOINCREMENT
+BIGINT GENERATED ALWAYS AS IDENTITY
 
-except blockchain hashes.
+Monetary amounts are stored as BIGINT in whole Tanzanian Shillings.
 
 ---
 
 # Foreign Keys
 
-All relationships enforce foreign key constraints.
-
-SQLite foreign_keys pragma must always be enabled.
+All relationships enforce foreign key constraints, natively enforced by PostgreSQL.
 
 ---
 
@@ -143,5 +169,7 @@ Beneficiaries
 should support soft deletion whenever possible.
 
 Donation records must never be deleted.
+
+Disbursement records must never be deleted.
 
 Blockchain records must never be deleted.

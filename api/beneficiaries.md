@@ -47,7 +47,10 @@ Request
 * Name
 * Description
 * Category
+* Location
 * Contact Information
+* Image
+* Campaign ID
 * Verification Status
 
 ---
@@ -99,8 +102,10 @@ Donor
 
 # Relationships
 
-A beneficiary can be associated with one or more campaigns.
+Each beneficiary belongs to exactly one campaign.
 
-Campaign → Beneficiary
+Campaign → Beneficiaries
 
 One-to-many relationship.
+
+If the same real-world beneficiary is assisted by another campaign, a separate beneficiary record is created for that campaign.

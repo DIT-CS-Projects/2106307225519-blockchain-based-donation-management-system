@@ -12,7 +12,7 @@ Backend API
 
 ↓
 
-SQLite + Ethereum
+PostgreSQL + Ethereum
 
 ---
 
@@ -35,11 +35,12 @@ SQLite + Ethereum
 
 # Database
 
-SQLite
+PostgreSQL
 
-* Daily backups
-* Secure storage
-* Restricted file permissions
+* Managed PostgreSQL in production (e.g. Neon)
+* Daily backups (pg_dump)
+* TLS connections
+* Restricted credentials
 
 ---
 
@@ -61,7 +62,7 @@ Ethereum Mainnet or Layer-2
 
 # Environment Variables
 
-* Database Path
+* Database URL
 * JWT Secret
 * Payment Gateway Keys
 * Blockchain RPC URL
@@ -93,7 +94,7 @@ Ethereum Mainnet or Layer-2
 
 # Backup Strategy
 
-* Daily SQLite backup
+* Daily PostgreSQL dump
 * Weekly full backup
 * Monthly archive
 

@@ -26,54 +26,6 @@ Project Planning
 
 ---
 
-Development Environment
-
-✓ Git Repository
-
-✓ React
-
-✓ Vite
-
-✓ Express
-
-✓ SQLite
-
-✓ Hardhat
-
-✓ Tailwind CSS
-
-✓ shadcn/ui
-
-✓ ESLint
-
----
-
-Frontend Foundation
-
-✓ Folder Structure
-
-✓ Theme Configuration
-
-✓ Color Palette
-
-✓ Typography
-
-✓ Component Structure
-
-✓ Routing Structure
-
----
-
-Backend Foundation
-
-✓ Folder Structure
-
-✓ Hardhat Configuration
-
-✓ Express Initialization
-
----
-
 Documentation
 
 ✓ Project Manifesto
@@ -88,27 +40,51 @@ Documentation
 
 ✓ Development Standards
 
+✓ Documentation Reconciliation (all contradictions resolved — see Decisions 009–014)
+
+---
+
+Repository
+
+✓ Git Repository
+
+✓ GitHub Remote
+
+✓ Branch Strategy (main / develop)
+
+✓ .gitignore
+
 ---
 
 # In Progress
 
-Navbar
+Stage 1 — Foundation
 
-Homepage
+○ React + Vite Setup
 
-Design System Components
+○ Tailwind CSS + shadcn/ui Setup
 
-Authentication Planning
+○ Express Setup
+
+○ PostgreSQL Setup
+
+○ Hardhat Setup
+
+○ ESLint Setup
+
+○ Theme Configuration (Design System tokens)
 
 ---
 
 # Pending
 
+Public Website
+
 Authentication
 
 Campaign Management
 
-Payments
+Payments (AzamPay)
 
 Blockchain Integration
 
@@ -120,9 +96,9 @@ Notifications
 
 Audit Logs
 
-Deployment
-
 Testing
+
+Deployment
 
 ---
 
@@ -134,7 +110,7 @@ The following architectural decisions have been finalized.
 
 ✓ Express Backend
 
-✓ SQLite Database
+✓ PostgreSQL Database
 
 ✓ Solidity Smart Contracts
 
@@ -152,11 +128,23 @@ The following architectural decisions have been finalized.
 
 ✓ Blockchain as verification layer only
 
-✓ SQLite as primary database
+✓ PostgreSQL as primary database (Decision 015)
 
 ✓ Backend communicates with blockchain
 
 ✓ Backend communicates with payment gateway
+
+✓ AzamPay as payment gateway (Decision 009)
+
+✓ Minimal on-chain proof payload (Decision 010)
+
+✓ API consolidation (Decision 011)
+
+✓ Repository layer in backend (Decision 012)
+
+✓ Business rule resolutions (Decision 013)
+
+✓ Supporting libraries (Decision 014)
 
 ---
 
@@ -164,20 +152,22 @@ The following architectural decisions have been finalized.
 
 The immediate focus is:
 
-1. Build reusable UI components
+1. Scaffold client, server and contracts (Stage 1)
 
-2. Complete homepage
+2. Encode the design system as theme tokens
 
-3. Implement authentication
+3. Build reusable UI components
 
-4. Develop campaign module
+4. Complete the public website (landing, campaigns, about, contact)
 
-5. Integrate payment gateway
+5. Implement authentication
 
-6. Connect blockchain
+6. Develop campaign module
 
-7. Complete dashboards
+7. Integrate AzamPay payments
 
-8. Testing
+8. Connect blockchain
 
-9. Deployment
+9. Complete dashboards and reports
+
+10. Testing and deployment

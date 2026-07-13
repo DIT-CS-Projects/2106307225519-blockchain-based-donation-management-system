@@ -208,17 +208,22 @@ Reason
 
 ## Database Engine
 
-SQLite
+PostgreSQL
 
 Reason
 
-* Serverless
-* Easy deployment
-* Minimal maintenance
-* Excellent for a Final Year Project
-* Reliable for moderate workloads
+* Industry-standard relational database
+* Strong integrity, constraints and transactions
+* Safe concurrent writes (payment callbacks, approvals)
+* Proper money handling (BIGINT amounts in TZS)
+* Free managed hosting (e.g. Neon) for easy deployment
+* No migration debt later
 
-SQLite is the **single source of truth** for all operational data.
+PostgreSQL is the **single source of truth** for all operational data.
+
+Local development uses a local PostgreSQL instance or Docker.
+
+Supersedes Decision 001 — see Decision 015.
 
 ---
 
@@ -276,15 +281,17 @@ Reason
 
 The application shall support Tanzanian payment methods.
 
+The selected gateway is AzamPay (Decision 009).
+
 Supported methods include:
 
 * M-Pesa
 * Airtel Money
-* Tigo Pesa
+* Mixx (formerly Tigo Pesa)
 * HaloPesa
 * Tanzanian Commercial Banks
 
-The backend communicates with the selected payment gateway API.
+The backend communicates with the AzamPay gateway API.
 
 Users never interact directly with blockchain wallets.
 
@@ -371,7 +378,7 @@ Tailwind CSS
 
 Stable Release
 
-SQLite
+PostgreSQL
 
 Latest Stable Release
 
@@ -389,7 +396,7 @@ Avoid beta, alpha, release candidate (RC), or experimental versions unless expli
 
 # External Services
 
-* Tanzanian Payment Gateway
+* AzamPay Payment Gateway
 * Ethereum Network
 * GitHub
 * SMTP Email Service
@@ -409,7 +416,7 @@ The project follows these engineering principles:
 * Prefer stable technologies over newly released alternatives.
 * Minimize external dependencies.
 * Keep business logic inside the backend.
-* Store operational data in SQLite.
+* Store operational data in PostgreSQL.
 * Store immutable donation proofs on Ethereum.
 * Keep blockchain interactions transparent to end users.
 * Prioritize security and maintainability over premature optimization.

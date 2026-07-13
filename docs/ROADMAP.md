@@ -12,29 +12,53 @@ Frontend & Backend Development
 
 Project Setup
 
-Status: Completed
+Status: In Progress
 
 Tasks
 
 ✓ Repository Created
 
-✓ React Setup
-
-✓ Express Setup
-
-✓ SQLite Setup
-
-✓ Hardhat Setup
-
-✓ Tailwind Setup
-
-✓ shadcn/ui Setup
-
 ✓ Project Architecture
+
+○ React Setup
+
+○ Express Setup
+
+○ PostgreSQL Setup
+
+○ Hardhat Setup
+
+○ Tailwind Setup
+
+○ shadcn/ui Setup
 
 ---
 
 # Phase 2
+
+Public Website
+
+Status: Pending
+
+Features
+
+- Landing Page
+
+- Campaign Listing
+
+- Campaign Details
+
+- Search
+
+- Filtering
+
+- Categories
+
+- About & Contact
+
+---
+
+# Phase 3
 
 Authentication
 
@@ -52,29 +76,7 @@ Features
 
 - Protected Routes
 
----
-
-# Phase 3
-
-Campaign Management
-
-Status: Pending
-
-Features
-
-- Campaign Listing
-
-- Campaign Details
-
-- Search
-
-- Filtering
-
-- Categories
-
-- Campaign Creation
-
-- Campaign Editing
+- Password Reset
 
 ---
 
@@ -124,6 +126,10 @@ Donor Dashboard
 
 Administrator Dashboard
 
+Campaign Management (Create, Edit, Archive)
+
+Beneficiary Management
+
 Statistics
 
 Notifications
@@ -132,15 +138,21 @@ Notifications
 
 # Phase 7
 
-Reports
+Disbursement & Reports
 
 Status: Pending
+
+Fund Disbursement with Dual Approval
+
+Public Verification Page
 
 Donation Reports
 
 Campaign Reports
 
 Beneficiary Reports
+
+Disbursement Reports
 
 Audit Reports
 

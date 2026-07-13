@@ -34,7 +34,7 @@ Transaction Hash Returned
 
 ↓
 
-SQLite Updated
+PostgreSQL Updated
 
 ↓
 
@@ -90,7 +90,9 @@ Suggest Retry
 
 Blockchain stores only proof.
 
-SQLite stores operational data.
+PostgreSQL stores operational data.
+
+Completed disbursements follow the same recording flow with a disbursement proof.
 
 Blockchain is never queried directly by frontend.
 

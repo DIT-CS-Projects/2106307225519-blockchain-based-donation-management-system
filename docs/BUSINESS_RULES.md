@@ -42,6 +42,8 @@ An administrator can:
 - Edit campaigns
 - Archive campaigns
 - Manage beneficiaries
+- Disburse funds to beneficiaries
+- Approve or reject disbursements
 - View reports
 - View audit logs
 - Verify blockchain records
@@ -70,6 +72,14 @@ Campaign status may be:
 - Completed
 - Archived
 
+Campaigns may be marked as Featured to appear on the landing page.
+
+Donations are accepted only while a campaign is Active and within its start and end dates.
+
+Campaigns may exceed their target amount.
+
+A campaign automatically becomes Completed after its end date.
+
 ---
 
 # Donation Rules
@@ -85,6 +95,40 @@ Every completed donation generates:
 - Blockchain Proof
 
 Cancelled payments do not generate blockchain transactions.
+
+The minimum donation amount is 1,000 TZS, defined as a named constant.
+
+---
+
+# Beneficiary Rules
+
+Beneficiaries are managed only by administrators.
+
+Each beneficiary belongs to exactly one campaign.
+
+A beneficiary must be verified before being displayed publicly.
+
+A beneficiary must be verified before receiving a disbursement.
+
+Beneficiaries are soft deleted, never hard deleted.
+
+---
+
+# Disbursement Rules
+
+Only administrators may disburse funds.
+
+Funds are paid out from a campaign to a verified beneficiary of that campaign.
+
+A disbursement can never exceed the campaign's available balance (total raised minus total disbursed).
+
+Disbursements at or above the dual-approval threshold (1,000,000 TZS, a named constant) require approval from a second administrator.
+
+The initiating administrator can never approve their own disbursement.
+
+Every completed disbursement generates exactly one blockchain proof.
+
+Disbursement records are immutable and never deleted.
 
 ---
 

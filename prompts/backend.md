@@ -4,7 +4,7 @@
 
 Express
 
-SQLite
+PostgreSQL
 
 JWT
 
@@ -46,9 +46,9 @@ Controllers must never contain business logic.
 
 JWT
 
-Access Token
+Access Token (short-lived)
 
-Refresh Token (Future)
+Refresh Token (httpOnly cookie, rotated)
 
 Password Hash
 

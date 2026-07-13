@@ -2,36 +2,37 @@
 
 ## Overview
 
-SQLite is the primary operational database for the application.
+PostgreSQL is the primary operational database for the application.
 
-All application data is stored in SQLite except blockchain proof information.
+All application data is stored in PostgreSQL except blockchain proof information.
 
-SQLite was selected because:
+PostgreSQL was selected because (Decision 015):
 
-- Lightweight
-- Fast
-- Easy to maintain
-- Ideal for Final Year Project
-- No separate database server required
+- Industry-standard relational database
+- Strong integrity, constraints and transactions
+- Safe concurrent writes (payment callbacks, disbursement approvals)
+- Proper money handling (BIGINT amounts in TZS)
+- Free managed hosting for easy deployment
 
-The architecture is designed so SQLite can later be replaced by PostgreSQL with minimal code changes.
+Local development uses a local PostgreSQL instance or Docker.
 
 ---
 
 # Database Responsibilities
 
-SQLite stores all application data including:
+PostgreSQL stores all application data including:
 
 - Users
 - Campaigns
 - Donations
 - Beneficiaries
+- Disbursements
 - Notifications
 - Reports
 - Audit Logs
 - Payment Records
 
-SQLite is considered the system of record.
+PostgreSQL is considered the system of record.
 
 ---
 
@@ -67,6 +68,7 @@ Stores:
 - Start Date
 - End Date
 - Status
+- Featured Flag
 - Created By
 
 ---
@@ -95,9 +97,31 @@ Stores:
 - Beneficiary ID
 - Name
 - Description
+- Category
 - Location
+- Contact Information
+- Payout Details
 - Campaign
 - Image
+- Verification Status
+
+---
+
+## Disbursements
+
+Stores:
+
+- Disbursement ID
+- Campaign ID
+- Beneficiary ID
+- Amount
+- Purpose
+- Status
+- Initiated By
+- Approved By
+- Payment Reference
+- Blockchain Hash
+- Date
 
 ---
 
@@ -159,6 +183,18 @@ One Campaign
 ↓
 
 Many Beneficiaries
+
+One Campaign
+
+↓
+
+Many Disbursements
+
+One Beneficiary
+
+↓
+
+Many Disbursements
 
 One User
 

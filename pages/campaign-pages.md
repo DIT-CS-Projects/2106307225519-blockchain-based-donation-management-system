@@ -172,9 +172,9 @@ Transparency Information
 
 API
 
-GET /campaign/:id
+GET /campaigns/:id
 
-POST /donations
+POST /payments/create-session
 
 ---
 

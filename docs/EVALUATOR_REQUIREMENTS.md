@@ -35,7 +35,11 @@ The completed system shall provide:
 
 ✓ Beneficiary Management
 
+✓ Fund Disbursement with Dual Approval
+
 ✓ Blockchain Verification
+
+✓ Public Verification
 
 ✓ Payment Integration
 
@@ -56,7 +60,7 @@ The project demonstrates knowledge of:
 - React
 - Node.js
 - Express
-- SQLite
+- PostgreSQL
 - Solidity
 - Hardhat
 - Blockchain
@@ -67,21 +71,23 @@ The project demonstrates knowledge of:
 
 # Required Diagrams
 
-The documentation includes:
+The final report will include:
 
-✓ Context Diagram
+- Context Diagram
 
-✓ DFD Level 0
+- DFD Level 0
 
-✓ DFD Level 1
+- DFD Level 1
 
-✓ ER Diagram
+- ER Diagram
 
-✓ Use Case Diagram
+- Use Case Diagram
 
-✓ Activity Diagrams
+- Activity Diagrams
 
-✓ System Architecture Diagram
+- System Architecture Diagram
+
+These diagrams are report deliverables produced alongside implementation.
 
 ---
 
@@ -113,6 +119,7 @@ Administrators can:
 
 - Manage Campaigns
 - Manage Beneficiaries
+- Disburse Funds with Dual Approval
 - View Reports
 - View Audit Logs
 - Monitor Donations

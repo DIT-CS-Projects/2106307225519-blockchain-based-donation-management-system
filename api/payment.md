@@ -14,6 +14,8 @@ The backend communicates directly with the payment provider.
 
 The frontend never communicates with payment providers.
 
+The selected payment gateway is AzamPay (Decision 009).
+
 ---
 
 # Create Payment Session
@@ -48,11 +50,9 @@ Response
 
 # Verify Payment
 
-POST /verify
+Internal Service
 
-Authentication
-
-Backend Only
+Not exposed as an HTTP endpoint. Verification runs inside the payment service when the AzamPay callback is received.
 
 Purpose
 

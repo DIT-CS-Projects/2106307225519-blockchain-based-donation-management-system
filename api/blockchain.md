@@ -18,23 +18,21 @@ All blockchain communication occurs through the backend.
 
 # Record Donation
 
-POST /record
+Internal Service
 
-Backend Only
+Not exposed as an HTTP endpoint. The payment service calls the blockchain service directly after successful payment verification.
 
 Purpose
 
 Store donation proof after successful payment.
 
-Request
+Input
 
 Donation ID
 
 Campaign ID
 
-Receipt Number
-
-Amount
+SHA-256 Proof Hash
 
 Timestamp
 

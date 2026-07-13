@@ -6,6 +6,10 @@ This document describes every third-party system connected to the application.
 
 # Payment Gateway
 
+Gateway
+
+AzamPay (Decision 009)
+
 Purpose
 
 Process donations using Tanzanian payment methods.
@@ -14,7 +18,7 @@ Supported
 
 * M-Pesa
 * Airtel Money
-* Tigo Pesa
+* Mixx (formerly Tigo Pesa)
 * HaloPesa
 * Tanzanian Banks
 

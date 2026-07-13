@@ -58,6 +58,8 @@ Beneficiaries
 
 Donations
 
+Disbursements
+
 Reports
 
 Users
@@ -123,6 +125,34 @@ Raised Amount
 Target Amount
 
 Status
+
+---
+
+# Disbursements
+
+Table
+
+Campaign
+
+Beneficiary
+
+Amount
+
+Status
+
+Initiated By
+
+Approved By
+
+Date
+
+Actions
+
+Pending approvals are highlighted.
+
+An administrator cannot approve a disbursement they initiated.
+
+Available balance is shown per campaign before initiating a disbursement.
 
 ---
 

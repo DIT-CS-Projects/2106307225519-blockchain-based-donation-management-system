@@ -10,13 +10,17 @@ Business logic belongs in the backend.
 
 ## Network
 
-Ethereum Sepolia
+Hardhat Local Network
 
 Development
 
-Ethereum Mainnet
+Ethereum Sepolia
 
-Production
+Testing & Demonstration
+
+Ethereum Mainnet or Layer 2
+
+Future Production
 
 Future support for Polygon.
 
@@ -38,7 +42,7 @@ Never expose private keys.
 
 One responsibility
 
-Record donation proof.
+Record donation and disbursement proofs.
 
 Nothing else.
 
@@ -46,15 +50,15 @@ Nothing else.
 
 ## Smart Contract Stores
 
-Donation Hash
-
-Timestamp
+Donation ID
 
 Campaign ID
 
-Amount Hash
+SHA-256 Proof Hash
 
-Receipt Hash
+Timestamp
+
+Disbursement proofs follow the same structure.
 
 Never store
 
@@ -78,7 +82,9 @@ Everything goes through backend.
 
 ## Gas Optimization
 
-Batch operations when possible.
+One transaction per completed donation. Never batch.
+
+Store hashes only.
 
 Avoid unnecessary writes.
 

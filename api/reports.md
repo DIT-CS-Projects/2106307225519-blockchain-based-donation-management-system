@@ -10,13 +10,26 @@ Generate operational and financial reports for administrators.
 
 ## Dashboard Summary
 
+Dashboard statistics are served at GET /api/admin/dashboard (see api/admin.md).
+
+---
+
+## Public Platform Statistics
+
 GET
 
 ```http
-/api/reports/dashboard
+/api/stats
 ```
 
-Returns dashboard statistics.
+Public. No authentication required.
+
+Returns landing page statistics:
+
+* Total Donations
+* Total Campaigns
+* Verified Donations
+* Beneficiaries Helped
 
 ---
 
@@ -56,6 +69,18 @@ Returns beneficiary statistics.
 
 ---
 
+## Disbursement Report
+
+GET
+
+```http
+/api/reports/disbursements
+```
+
+Returns disbursement analytics: total disbursed, per-campaign disbursed, pending approvals, and blockchain-verified disbursements.
+
+---
+
 ## Blockchain Report
 
 GET
@@ -81,14 +106,16 @@ Returns blockchain verification statistics.
 * Total Donations
 * Active Campaigns
 * Successful Payments
-* Pending Campaigns
+* Draft Campaigns
 * Total Beneficiaries
 * Registered Donors
 * Blockchain Transactions
+* Total Disbursed
+* Available Balance
 * Donation Growth
 
 ---
 
 # Permissions
 
-Administrator only.
+Administrator only, except GET /api/stats which is public.

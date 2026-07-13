@@ -53,6 +53,7 @@ System managers responsible for overseeing the platform.
 * Manage campaigns
 * Verify beneficiaries
 * Review donations
+* Disburse funds to beneficiaries
 * Approve campaign publication
 * Generate reports
 * Monitor blockchain transactions
@@ -66,6 +67,7 @@ System managers responsible for overseeing the platform.
 * Campaign management
 * Beneficiary management
 * Donation processing
+* Fund disbursement with dual approval
 * Mobile payment integration
 * Blockchain verification
 * Notifications
@@ -91,7 +93,7 @@ Backend
 
 Database
 
-* SQLite
+* PostgreSQL
 
 Blockchain
 

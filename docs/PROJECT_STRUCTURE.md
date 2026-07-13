@@ -47,13 +47,14 @@ Contains Express backend.
 
 Major folders
 
+* config
 * controllers
+* database
 * middleware
+* repositories
 * routes
 * services
-* repositories
-* models
-* config
+* utils
 
 ---
 
@@ -61,7 +62,7 @@ Major folders
 
 Contains Solidity smart contracts.
 
-* Donation.sol
+* TransparencyRegistry.sol
 * deployment scripts
 * Hardhat configuration
 

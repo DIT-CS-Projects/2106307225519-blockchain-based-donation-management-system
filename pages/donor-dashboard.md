@@ -184,7 +184,7 @@ GET /notifications
 
 GET /campaigns/recommended
 
-GET /statistics
+GET /donations/summary
 
 ---
 

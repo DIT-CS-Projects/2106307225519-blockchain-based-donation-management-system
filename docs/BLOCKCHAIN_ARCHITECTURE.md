@@ -6,9 +6,9 @@ Blockchain is used exclusively as a transparency and verification layer.
 
 It is NOT used as the primary database.
 
-Sensitive application information remains inside SQLite.
+Sensitive application information remains inside PostgreSQL.
 
-Blockchain provides immutable proof that a donation occurred.
+Blockchain provides immutable proof that a donation or disbursement occurred.
 
 ---
 
@@ -49,10 +49,14 @@ Each completed donation records:
 
 - Donation ID
 - Campaign ID
-- Transaction Hash
-- Wallet Address
+- SHA-256 Proof Hash
 - Timestamp
-- Verification Hash
+
+The proof hash is computed by the backend over the donation ID, campaign ID, amount, receipt number, payment reference and timestamp.
+
+Raw amounts, payment references and wallet addresses are never stored on-chain.
+
+Disbursement proofs follow the same structure with a disbursement ID.
 
 ---
 
@@ -76,8 +80,10 @@ The following information must NEVER be written to blockchain:
 The smart contract:
 
 - Record donation proof
+- Record disbursement proof
 - Verify donation existence
-- Return donation proof
+- Verify disbursement existence
+- Return stored proofs
 - Reject duplicate proof entries
 
 The smart contract does NOT:
@@ -112,7 +118,7 @@ Transaction Hash returned
 
 ↓
 
-SQLite stores transaction hash
+PostgreSQL stores transaction hash
 
 ↓
 
@@ -132,11 +138,18 @@ Smart contracts should:
 
 ---
 
+# Public Verification
+
+A public verification page allows anyone to verify a donation or disbursement by receipt number, without an account.
+
+Verification returns proof status only — never personal data.
+
+---
+
 # Future Expansion
 
 The blockchain layer should support:
 
 - Multiple smart contracts
 - Multi-chain deployment
-- Public verification page
 - NFT donor certificates (optional future feature)

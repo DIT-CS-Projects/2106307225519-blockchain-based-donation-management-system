@@ -18,6 +18,8 @@ Search
 
 Category
 
+Featured Filter
+
 Pagination
 
 Sorting
@@ -47,6 +49,18 @@ Beneficiaries
 Donation Progress
 
 Related Campaigns
+
+---
+
+# Recommended Campaigns
+
+GET /recommended
+
+Authentication Required
+
+Returns
+
+Newest active campaigns (v1 logic — donation-history based recommendations are a future enhancement).
 
 ---
 

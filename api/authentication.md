@@ -141,7 +141,22 @@ Confirm Password
 
 POST /forgot-password
 
-Future Implementation
+Authentication
+
+Not Required
+
+Request
+
+{
+  "email": ""
+}
+
+Behaviour
+
+- Always returns 200 (never reveals whether the email exists)
+- Generates a single-use reset token stored in password_resets
+- Token expires after 1 hour
+- Sends a reset link by email
 
 ---
 
@@ -149,4 +164,24 @@ Future Implementation
 
 POST /reset-password
 
-Future Implementation
+Authentication
+
+Not Required
+
+Request
+
+{
+  "token": "",
+  "newPassword": ""
+}
+
+Validation
+
+- Valid unexpired token
+- Strong password
+
+Behaviour
+
+- Updates password hash
+- Invalidates the reset token
+- Notifies the user

@@ -6,9 +6,9 @@ Login
 
 Register
 
-Forgot Password (Future)
+Forgot Password
 
-Reset Password (Future)
+Reset Password
 
 ---
 
@@ -76,7 +76,7 @@ Success
 
 Redirect
 
-Donor → Dashboard
+Donor → Campaign Listing Page
 
 Admin → Admin Dashboard
 
@@ -150,7 +150,7 @@ Account Created
 
 Auto Login
 
-Redirect Dashboard
+Redirect Campaign Listing Page
 
 ---
 

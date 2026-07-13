@@ -6,47 +6,21 @@ Base URL
 
 ---
 
-# Create Donation
+# Creating Donations
 
-POST /
+Donations are never created directly through this API.
 
-Authentication Required
+A donation record is created by the backend only after a payment has been verified.
 
-Request
+To start a donation, the frontend calls:
 
-Campaign ID
+POST /api/payments/create-session
 
-Amount
+The payment provider callback is handled at:
 
-Payment Method
+POST /api/payments/callback
 
-Response
-
-Donation Session
-
-Payment URL
-
-Reference
-
----
-
-# Payment Callback
-
-POST /callback
-
-Payment Provider Only
-
-Responsibilities
-
-Validate Payment
-
-Store Donation
-
-Generate Receipt
-
-Create Blockchain Record
-
-Send Notification
+See api/payment.md.
 
 ---
 
@@ -59,6 +33,24 @@ Authentication Required
 Returns
 
 All donations made by current donor.
+
+---
+
+# Donor Summary
+
+GET /summary
+
+Authentication Required
+
+Returns
+
+Total Amount Donated
+
+Campaigns Supported
+
+Verified Donations
+
+Monthly Donation Chart Data
 
 ---
 

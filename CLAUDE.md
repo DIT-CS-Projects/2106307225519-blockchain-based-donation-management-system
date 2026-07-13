@@ -122,7 +122,7 @@ Node.js
 
 Express
 
-SQLite
+PostgreSQL
 
 JWT
 
@@ -204,7 +204,7 @@ Business logic belongs in services.
 
 Blockchain stores proof only.
 
-SQLite stores operational data.
+PostgreSQL stores operational data.
 
 Backend communicates with blockchain.
 
@@ -231,6 +231,12 @@ Receipt
 Payment Reference
 
 Blockchain Proof
+
+Disbursements to beneficiaries are admin-initiated fiat payouts.
+
+Large disbursements require dual admin approval.
+
+Every completed disbursement has a blockchain proof.
 
 ---
 

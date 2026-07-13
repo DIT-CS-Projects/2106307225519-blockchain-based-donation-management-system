@@ -156,7 +156,7 @@ Avoid technical language.
 
 Cards showing donor feedback.
 
-Future enhancement.
+Static content in version 1.
 
 ---
 
@@ -180,7 +180,7 @@ Contact
 
 GET /campaigns
 
-GET /statistics
+GET /stats
 
 ---
 

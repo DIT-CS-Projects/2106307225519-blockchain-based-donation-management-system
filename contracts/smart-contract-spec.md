@@ -33,7 +33,9 @@ Production
 
 # Contract Name
 
-DonationRegistry.sol
+TransparencyRegistry.sol
+
+The contract records donation proofs and disbursement proofs.
 
 ---
 
@@ -42,7 +44,8 @@ DonationRegistry.sol
 The contract shall:
 
 * Register donation proofs.
-* Store donation hashes.
+* Register disbursement proofs.
+* Store proof hashes.
 * Store campaign identifiers.
 * Store timestamps.
 * Generate blockchain transaction records.
@@ -54,23 +57,29 @@ The contract shall:
 
 * Donation ID
 * Campaign ID
-* Payment Reference
-* SHA-256 Donation Hash
+* SHA-256 Donation Proof Hash
 * Timestamp
-* Blockchain Transaction Hash
 
-No personal information is stored on-chain.
+The proof hash is computed by the backend over the donation ID, campaign ID, amount, receipt number, payment reference and timestamp.
+
+No personal information, raw amount or raw payment reference is stored on-chain.
+
+Each completed donation produces exactly one blockchain transaction.
+
+Disbursement proofs follow the same structure with a disbursement ID, and each completed disbursement also produces exactly one blockchain transaction.
 
 ---
 
 # Data Stored Off-Chain
 
-SQLite stores:
+PostgreSQL stores:
 
 * Donor profile
 * Campaign details
 * Beneficiary details
+* Beneficiary payout details
 * Payment information
+* Disbursement records
 * Reports
 * Notifications
 * Analytics
@@ -94,6 +103,18 @@ Returns blockchain verification status.
 getDonation()
 
 Returns immutable donation information.
+
+---
+
+registerDisbursement()
+
+Creates a blockchain proof after a completed disbursement.
+
+---
+
+verifyDisbursement()
+
+Returns disbursement verification status.
 
 ---
 

@@ -56,13 +56,30 @@ The system shall allow donors to:
 
 ---
 
+## Fund Disbursement
+
+Administrators shall be able to:
+
+- Disburse funds to verified beneficiaries
+- View a campaign's available balance
+- Approve or reject disbursements requiring dual approval
+
+The system shall:
+
+- Require a second administrator's approval for large disbursements
+- Prevent an administrator from approving their own disbursement
+- Generate a blockchain proof for every completed disbursement
+
+---
+
 ## Blockchain
 
 The system shall:
 
-- Generate blockchain proof
+- Generate blockchain proof for donations and disbursements
 - Store transaction hash
 - Allow verification
+- Allow public verification without an account
 - Display verification status
 
 ---
