@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import { PublicLayout } from '@/layouts/PublicLayout'
 import { LandingPage } from '@/pages/LandingPage'
 import { CampaignsPage } from '@/pages/CampaignsPage'
+import { CampaignDetailsPage } from '@/pages/CampaignDetailsPage'
 import { AboutPage } from '@/pages/AboutPage'
 import { ContactPage } from '@/pages/ContactPage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -18,6 +19,7 @@ export function AppRoutes() {
       <Route element={<PublicLayout />}>
         <Route path={ROUTES.home} element={<LandingPage />} />
         <Route path={ROUTES.campaigns} element={<CampaignsPage />} />
+        <Route path={`${ROUTES.campaigns}/:id`} element={<CampaignDetailsPage />} />
         <Route path={ROUTES.about} element={<AboutPage />} />
         <Route path={ROUTES.contact} element={<ContactPage />} />
         <Route path={ROUTES.login} element={<LoginPage />} />

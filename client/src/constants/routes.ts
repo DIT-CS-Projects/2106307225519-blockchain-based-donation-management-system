@@ -13,8 +13,8 @@ export const ROUTES = {
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES]
 
-/** Detail route for a single campaign (route itself ships with the campaigns slice). */
-export function campaignDetailsPath(id: string) {
+/** Detail route for a single campaign. */
+export function campaignDetailsPath(id: number | string) {
   return `${ROUTES.campaigns}/${id}`
 }
 
