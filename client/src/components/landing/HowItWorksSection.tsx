@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Reveal } from '@/components/shared/Reveal'
 import { ROUTES, SECTION_IDS } from '@/constants/routes'
+import { APP_NAME } from '@/constants/config'
 
-// A real 4-step sequence — the numbers carry meaning, they are not decoration.
+// A real 4-step sequence. The numbers carry meaning; they are not decoration.
 const STEPS = [
   {
     title: 'Browse',
@@ -18,7 +19,7 @@ const STEPS = [
   },
   {
     title: 'Verify it yourself',
-    description: 'A permanent public record lets you confirm your money arrived — anytime.',
+    description: 'A permanent public record lets you confirm your money arrived, anytime.',
   },
 ] as const
 
@@ -57,7 +58,7 @@ export function HowItWorksSection() {
       <p className="mt-12 text-muted-foreground">
         Want the full picture?{' '}
         <Link to={ROUTES.about} className="font-medium text-primary hover:underline">
-          Read how Tuma keeps every record honest
+          Read how {APP_NAME} keeps every record honest
         </Link>
         .
       </p>

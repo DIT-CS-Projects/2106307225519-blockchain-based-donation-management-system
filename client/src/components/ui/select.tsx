@@ -2,7 +2,7 @@ import type * as React from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-/** Shared native select — accessible, light, styled to match Input. */
+/** Shared native select: accessible, light, styled to match Input. */
 function Select({ className, children, ...props }: React.ComponentProps<'select'>) {
   return (
     <span className={cn('relative inline-flex', className)}>

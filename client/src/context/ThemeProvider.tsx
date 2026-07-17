@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { safeStorage } from '@/utils/safeStorage'
 import { ThemeContext, type Theme } from './theme-context'
 
-const STORAGE_KEY = 'tuma_theme'
+const STORAGE_KEY = 'changia_theme'
 
 function getInitialTheme(): Theme {
   const stored = safeStorage.get(STORAGE_KEY)

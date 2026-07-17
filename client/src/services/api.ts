@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios'
 import { API_BASE_URL } from '@/constants/config'
 import { safeStorage } from '@/utils/safeStorage'
 
-export const TOKEN_STORAGE_KEY = 'tuma_token'
+export const TOKEN_STORAGE_KEY = 'changia_token'
 
 /** Shared Axios instance. All backend calls go through this service layer. */
 export const api = axios.create({

@@ -38,7 +38,7 @@ const SEED_CAMPAIGNS: NewCampaignRow[] = [
   {
     title: 'Clean Water for Kigamboni',
     description:
-      'Three boreholes and solar pumps will bring piped water within 400 metres of every household in two Kigamboni wards — replacing a two-hour daily walk. Drilling contracts, pump invoices, and water-committee handover documents are all published as they happen.',
+      'Three boreholes and solar pumps will bring piped water within 400 metres of every household in two Kigamboni wards, replacing a two-hour daily walk. Drilling contracts, pump invoices, and water-committee handover documents are all published as they happen.',
     category: 'Community',
     imageUrl: img('1534641614095-6222aed9bdd6'),
     targetAmount: 12_000_000,
@@ -51,7 +51,7 @@ const SEED_CAMPAIGNS: NewCampaignRow[] = [
   {
     title: 'Mangrove Restoration at Msasani Bay',
     description:
-      'Mangroves are the coast’s quiet infrastructure: fish nurseries, storm buffers, carbon stores. With local fishing cooperatives we are replanting 30 hectares at Msasani Bay — 75,000 seedlings raised, planted, and monitored by the people who depend on the bay.',
+      'Mangroves are the coast’s quiet infrastructure: fish nurseries, storm buffers, carbon stores. With local fishing cooperatives we are replanting 30 hectares at Msasani Bay. That is 75,000 seedlings raised, planted, and monitored by the people who depend on the bay.',
     category: 'Environment',
     imageUrl: img('1651838677683-f642527059c6'),
     targetAmount: 8_000_000,
@@ -77,7 +77,7 @@ const SEED_CAMPAIGNS: NewCampaignRow[] = [
   {
     title: 'Flood-Ready Homes in Jangwani',
     description:
-      'When the Msimbazi river rises, Jangwani floods first. We are raising door thresholds, clearing drainage, and pre-positioning sandbags for 400 riverside households before the next long rains — practical work, done early, fully documented.',
+      'When the Msimbazi river rises, Jangwani floods first. We are raising door thresholds, clearing drainage, and pre-positioning sandbags for 400 riverside households before the next long rains. Practical work, done early, fully documented.',
     category: 'Disaster Relief',
     imageUrl: img('1674334264912-704cb2a24b37'),
     targetAmount: 18_000_000,
@@ -90,7 +90,7 @@ const SEED_CAMPAIGNS: NewCampaignRow[] = [
   {
     title: 'Microgrants for Kariakoo Vendors',
     description:
-      'Fifty market vendors, most of them women, receive TZS 200,000 microgrants to restock after last season’s market fire. Grants are disbursed directly to each vendor and every payout carries its own verification record. The community exceeded the target — surplus funds a second round.',
+      'Fifty market vendors, most of them women, receive TZS 200,000 microgrants to restock after last season’s market fire. Grants are disbursed directly to each vendor and every payout carries its own verification record. The community exceeded the target, so the surplus funds a second round.',
     category: 'Community',
     imageUrl: img('1734255026082-82fdc81991f0'),
     targetAmount: 10_000_000,
@@ -108,7 +108,7 @@ async function seed() {
     throw new Error('Refusing to seed a production database.')
   }
   if (!db || !pool) {
-    throw new Error('DATABASE_URL is not set — configure server/.env first.')
+    throw new Error('DATABASE_URL is not set. Configure server/.env first.')
   }
 
   await pool.query('TRUNCATE TABLE campaigns RESTART IDENTITY CASCADE')

@@ -1,7 +1,8 @@
 import { Reveal } from '@/components/shared/Reveal'
+import { APP_NAME } from '@/constants/config'
 
 // Verified 2026-07-17: resolves to a daylight panorama of the Dar es Salaam
-// harbor (Nichika Sakurai, Unsplash License) — the water Harbor Teal is named for.
+// harbor (Nichika Sakurai, Unsplash License). The water Harbor Teal is named for.
 const HARBOR_PHOTO = 'https://images.unsplash.com/photo-1674334264912-704cb2a24b37'
 
 const POINTS = [
@@ -13,7 +14,7 @@ const POINTS = [
   {
     title: 'Nothing rewritten',
     description:
-      'Once an entry is recorded it cannot be edited or deleted — not by an NGO, not by us.',
+      'Once an entry is recorded it cannot be edited or deleted, not by an NGO and not by us.',
   },
   {
     title: 'Nothing taken on faith',
@@ -36,12 +37,12 @@ export function WhyVerificationSection() {
             src={`${HARBOR_PHOTO}?auto=format&fit=crop&w=800&q=75`}
             srcSet={`${HARBOR_PHOTO}?auto=format&fit=crop&w=800&q=75 800w, ${HARBOR_PHOTO}?auto=format&fit=crop&w=1400&q=75 1400w`}
             sizes="(min-width: 1024px) 50vw, 100vw"
-            alt="The Dar es Salaam harbor in daylight — teal water beside the city skyline"
+            alt="The Dar es Salaam harbor in daylight, teal water beside the city skyline"
             loading="lazy"
             className="aspect-4/3 w-full rounded-lg border border-border object-cover"
           />
           <figcaption className="mt-3 text-sm text-muted-foreground">
-            Dar es Salaam — the harbor Tuma's teal is named for. Photo: Nichika
+            Dar es Salaam. The harbor {APP_NAME}'s teal is named for. Photo: Nichika
             Sakurai, Unsplash.
           </figcaption>
         </figure>
@@ -51,8 +52,8 @@ export function WhyVerificationSection() {
             A record no one can quietly change
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-            Tuma anchors every donation to a tamper-proof public ledger. In plain
-            terms, here is what that buys you:
+            {APP_NAME} anchors every donation to a tamper-proof public ledger. In
+            plain terms, here is what that buys you:
           </p>
 
           <dl className="mt-8 divide-y divide-border border-y border-border">

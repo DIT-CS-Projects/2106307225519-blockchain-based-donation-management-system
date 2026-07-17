@@ -22,7 +22,7 @@ export const db: NodePgDatabase<typeof schema> | null = pool
   : null
 
 if (!pool) {
-  logger.warn('DATABASE_URL not set — database features are disabled until configured.')
+  logger.warn('DATABASE_URL not set. Database features are disabled until configured.')
 }
 
 /** Lightweight connectivity check used by the health endpoint. */

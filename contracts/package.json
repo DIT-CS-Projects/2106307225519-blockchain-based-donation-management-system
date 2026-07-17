@@ -1,8 +1,8 @@
 {
-  "name": "tuma-contracts",
+  "name": "changia-contracts",
   "version": "0.1.0",
   "private": true,
-  "description": "Tuma smart contracts — immutable donation and disbursement proofs",
+  "description": "Changia smart contracts: immutable donation and disbursement proofs",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",

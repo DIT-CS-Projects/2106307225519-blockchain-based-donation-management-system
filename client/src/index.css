@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  Design system tokens — source of truth: docs/DESIGN_SYSTEM.md
+  Design system tokens. Source of truth: docs/DESIGN_SYSTEM.md
   Light theme values below; dark theme overrides in .dark
 */
 :root {
@@ -148,7 +148,7 @@
 /*
   Scroll reveal (see components/shared/Reveal.tsx).
   Progressive enhancement only: without animation-timeline support or with
-  reduced motion, content simply renders visible — never gated on JS.
+  reduced motion, content simply renders visible, never gated on JS.
 */
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {

@@ -39,7 +39,7 @@ export function FeaturedCampaignsSection() {
             <div role="status" className="rounded-lg border border-border bg-background px-6 py-12 text-center">
               <p className="font-medium">Campaigns couldn't be loaded.</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Check your connection and try again — nothing is lost.
+                Check your connection and try again. Nothing is lost.
               </p>
               <Button variant="secondary" onClick={retry} className="mt-6">
                 Try again

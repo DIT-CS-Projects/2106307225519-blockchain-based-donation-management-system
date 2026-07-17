@@ -43,7 +43,7 @@ export function CampaignsPage() {
       <div className="max-w-2xl">
         <h1 className="font-display text-4xl font-bold sm:text-5xl">Campaigns</h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-          Every campaign is verified before it can raise a shilling — and every
+          Every campaign is verified before it can raise a shilling, and every
           shilling is traceable after.
         </p>
       </div>
@@ -81,7 +81,7 @@ export function CampaignsPage() {
           <div role="status" className="rounded-lg border border-border bg-card px-6 py-16 text-center">
             <p className="font-medium">Campaigns couldn't be loaded.</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Check your connection and try again — nothing is lost.
+              Check your connection and try again. Nothing is lost.
             </p>
             <Button variant="secondary" onClick={retry} className="mt-6">
               Try again

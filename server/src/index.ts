@@ -5,6 +5,6 @@ import { logger } from './utils/logger'
 const app = createApp()
 
 app.listen(env.PORT, () => {
-  logger.info(`Tuma server listening on http://localhost:${env.PORT}`)
+  logger.info(`Changia server listening on http://localhost:${env.PORT}`)
   logger.info(`Environment: ${env.NODE_ENV}`)
 })

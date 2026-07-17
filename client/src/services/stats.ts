@@ -1,6 +1,6 @@
 import { api } from '@/services/api'
 
-// Contract: pages/landing-page.md — GET /api/stats (public platform totals).
+// Contract: pages/landing-page.md, GET /api/stats (public platform totals).
 export interface PlatformStats {
   totalDonationsTZS: number
   totalCampaigns: number

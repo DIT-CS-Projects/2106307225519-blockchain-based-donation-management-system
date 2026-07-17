@@ -55,7 +55,7 @@ export function HeroReceipt() {
         </ul>
       </div>
       <figcaption className="mt-3 text-center text-sm text-muted-foreground">
-        Example — every completed donation gets one.
+        Example. Every completed donation gets one.
       </figcaption>
     </figure>
   )

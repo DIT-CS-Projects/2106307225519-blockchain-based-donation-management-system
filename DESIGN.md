@@ -1,5 +1,5 @@
 ---
-name: Tuma
+name: Changia
 description: Transparent giving, verified forever.
 colors:
   harbor-teal: "#0f766e"
@@ -84,13 +84,13 @@ components:
     padding: "6px 16px"
 ---
 
-# Design System: Tuma
+# Design System: Changia
 
 ## 1. Overview
 
 **Creative North Star: "The Glass Ledger"**
 
-Tuma is a financial record you can see straight through: everything visible, permanent, precise. The interface carries the quiet assurance of a serious banking app — confident, precise, calm — while its single promise (every shilling provable) shapes every visual decision. Light, airy slate surfaces read like a clean page of accounts; Harbor Teal marks the institution's voice; proof elements (receipts, verification links, on-chain records) are always one click away and visually privileged when they appear.
+Changia is a financial record you can see straight through: everything visible, permanent, precise. The interface carries the quiet assurance of a serious banking app — confident, precise, calm — while its single promise (every shilling provable) shapes every visual decision. Light, airy slate surfaces read like a clean page of accounts; Harbor Teal marks the institution's voice; proof elements (receipts, verification links, on-chain records) are always one click away and visually privileged when they appear.
 
 This system explicitly rejects the charity-website cliché (guilt imagery, hand-heart icons, template NGO layouts), crypto/web3 aesthetics (dark neon gradients, coin imagery — blockchain stays invisible, verification stays visible), corporate bank stiffness, and anything with a university-project look. It is closer to Revolut and Stripe than to any donation site.
 

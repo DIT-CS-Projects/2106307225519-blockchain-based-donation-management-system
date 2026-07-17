@@ -9,7 +9,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 
-// Business rules: docs/BUSINESS_RULES.md — Campaign Rules.
+// Business rules: docs/BUSINESS_RULES.md (Campaign Rules).
 export const campaignStatus = pgEnum('campaign_status', [
   'draft',
   'active',
@@ -43,7 +43,7 @@ export const campaigns = pgTable(
     featured: boolean('featured').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-    // Soft delete — campaigns are never hard-deleted.
+    // Soft delete: campaigns are never hard-deleted.
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (table) => [

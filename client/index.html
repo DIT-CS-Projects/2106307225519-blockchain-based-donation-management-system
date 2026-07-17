@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Tuma — transparent, blockchain-verified NGO donations for Tanzania."
+      content="Changia: transparent, blockchain-verified NGO donations for Tanzania."
     />
-    <title>Tuma — Transparent NGO Donations</title>
+    <title>Changia · Transparent NGO Donations</title>
     <script>
       // Apply the saved theme before first paint to prevent a dark-mode flash.
       // Kept inline and dependency-free; the app-side source of truth is ThemeProvider.
       ;(function () {
         try {
-          var theme = localStorage.getItem('tuma_theme')
+          var theme = localStorage.getItem('changia_theme')
           if (theme !== 'light' && theme !== 'dark') {
             theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
           }

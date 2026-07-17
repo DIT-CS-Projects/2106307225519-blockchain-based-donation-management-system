@@ -1,4 +1,4 @@
-// Central route table — never hardcode paths in components.
+// Central route table. Never hardcode paths in components.
 
 export const ROUTES = {
   home: '/',

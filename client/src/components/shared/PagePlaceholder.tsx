@@ -6,7 +6,7 @@ interface PagePlaceholderProps {
 
 /**
  * Temporary stand-in for pages that ship in a later Stage 2 slice.
- * Static content only — no data, so no loading/error states apply.
+ * Static content only, so no loading or error states apply.
  */
 export function PagePlaceholder({ eyebrow, title, description }: PagePlaceholderProps) {
   return (

@@ -16,7 +16,7 @@ Secondary: NGO administrators who create and manage campaigns, verify beneficiar
 
 ## Product Purpose
 
-Tuma is a donation platform that makes charitable giving in Tanzania verifiable. Donors contribute to verified NGO campaigns with familiar local payment methods; every completed donation and disbursement is anchored to an immutable blockchain proof that anyone can check. Success looks like a skeptical first-time visitor completing a donation and later verifying, on their own, that it reached the campaign — then coming back to give again.
+Changia is a donation platform that makes charitable giving in Tanzania verifiable. Donors contribute to verified NGO campaigns with familiar local payment methods; every completed donation and disbursement is anchored to an immutable blockchain proof that anyone can check. Success looks like a skeptical first-time visitor completing a donation and later verifying, on their own, that it reached the campaign — then coming back to give again.
 
 ## Positioning
 

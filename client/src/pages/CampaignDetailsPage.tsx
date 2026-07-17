@@ -29,7 +29,7 @@ export function CampaignDetailsPage() {
         <p className="mt-3 text-muted-foreground">
           {notFound
             ? 'It may have been archived or the link is incorrect.'
-            : 'Check your connection and try again — nothing is lost.'}
+            : 'Check your connection and try again. Nothing is lost.'}
         </p>
         <div className="mt-8 flex justify-center gap-3">
           {!notFound && (

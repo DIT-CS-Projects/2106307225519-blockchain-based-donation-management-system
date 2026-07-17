@@ -1,7 +1,7 @@
 /**
  * localStorage wrapper that never throws.
  * Storage access can fail in private browsing, blocked-storage contexts,
- * or when the quota is exhausted — callers get null / silent no-op instead.
+ * or when the quota is exhausted. Callers get null or a silent no-op instead.
  */
 export const safeStorage = {
   get(key: string): string | null {
@@ -16,7 +16,7 @@ export const safeStorage = {
     try {
       localStorage.setItem(key, value)
     } catch {
-      // storage unavailable — value simply isn't persisted
+      // storage unavailable: value simply isn't persisted
     }
   },
 
@@ -24,7 +24,7 @@ export const safeStorage = {
     try {
       localStorage.removeItem(key)
     } catch {
-      // storage unavailable — nothing to remove
+      // storage unavailable: nothing to remove
     }
   },
 }

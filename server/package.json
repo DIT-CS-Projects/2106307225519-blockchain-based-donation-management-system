@@ -1,8 +1,8 @@
 {
-  "name": "tuma-server",
+  "name": "changia-server",
   "version": "0.1.0",
   "private": true,
-  "description": "Tuma backend — Express + TypeScript API for the NGO donation platform",
+  "description": "Changia backend: Express + TypeScript API for the NGO donation platform",
   "type": "commonjs",
   "main": "dist/index.js",
   "scripts": {

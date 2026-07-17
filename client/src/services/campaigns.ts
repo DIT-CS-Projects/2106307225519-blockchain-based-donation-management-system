@@ -1,7 +1,7 @@
 import { api } from '@/services/api'
 import type { CampaignCategory } from '@/constants/config'
 
-// Contract: api/campaigns.md — GET /api/campaigns, GET /api/campaigns/:id (public).
+// Contract: api/campaigns.md (GET /api/campaigns, GET /api/campaigns/:id, public).
 export interface Campaign {
   id: number
   title: string

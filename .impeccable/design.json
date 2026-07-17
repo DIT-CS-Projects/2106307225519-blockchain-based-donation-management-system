@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-07-17T04:55:00Z",
-  "title": "Design System: Tuma",
+  "title": "Design System: Changia",
   "extensions": {
     "colorMeta": {
       "harbor-teal": { "role": "primary", "displayName": "Harbor Teal", "canonical": "#0f766e", "tonalRamp": ["#042f2e", "#134e4a", "#115e59", "#0f766e", "#0d9488", "#14b8a6", "#5eead4", "#ccfbf1"] },
@@ -80,7 +80,7 @@
   ],
   "narrative": {
     "northStar": "The Glass Ledger",
-    "overview": "Tuma is a financial record you can see straight through: everything visible, permanent, precise. The interface carries the quiet assurance of a serious banking app — confident, precise, calm — while its single promise (every shilling provable) shapes every visual decision. Light, airy slate surfaces read like a clean page of accounts; Harbor Teal marks the institution's voice; proof elements are always one click away and visually privileged when they appear.",
+    "overview": "Changia is a financial record you can see straight through: everything visible, permanent, precise. The interface carries the quiet assurance of a serious banking app — confident, precise, calm — while its single promise (every shilling provable) shapes every visual decision. Light, airy slate surfaces read like a clean page of accounts; Harbor Teal marks the institution's voice; proof elements are always one click away and visually privileged when they appear.",
     "keyCharacteristics": [
       "Light, spacious, ledger-clean surfaces with generous whitespace",
       "One institutional color (Harbor Teal) used with restraint",

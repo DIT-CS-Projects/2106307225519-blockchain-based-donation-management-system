@@ -39,7 +39,7 @@ export function HeroSection() {
 
         <m.p {...enter(0.16)} className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
           Give to verified campaigns with M-Pesa, Tigo Pesa, Airtel Money, or bank
-          transfer — then confirm for yourself that every shilling reached its
+          transfer, then confirm for yourself that every shilling reached its
           campaign. Nothing taken on faith.
         </m.p>
 

@@ -9,7 +9,7 @@ import { ApiError } from '../utils/ApiError'
 
 const RELATED_LIMIT = 3
 
-/** Public shape of a campaign — what the client receives. */
+/** Public shape of a campaign: what the client receives. */
 export interface CampaignDto {
   id: number
   title: string

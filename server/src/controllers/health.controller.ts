@@ -8,7 +8,7 @@ export async function getHealth(_req: Request, res: Response): Promise<void> {
 
   res.json({
     status: 'ok',
-    service: 'tuma-server',
+    service: 'changia-server',
     version: '0.1.0',
     environment: env.NODE_ENV,
     uptimeSeconds: Math.round(process.uptime()),

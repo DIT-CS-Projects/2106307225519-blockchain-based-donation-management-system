@@ -1,7 +1,7 @@
 import type * as React from 'react'
 import { cn } from '@/lib/utils'
 
-/** Shared text input — Clean White fill, hairline border, teal focus ring. */
+/** Shared text input: Clean White fill, hairline border, teal focus ring. */
 function Input({ className, type = 'text', ...props }: React.ComponentProps<'input'>) {
   return (
     <input

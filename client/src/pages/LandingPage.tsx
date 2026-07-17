@@ -6,7 +6,7 @@ import { WhyVerificationSection } from '@/components/landing/WhyVerificationSect
 import { ClosingCtaSection } from '@/components/landing/ClosingCtaSection'
 
 /**
- * Public landing page — spec: pages/landing-page.md.
+ * Public landing page. Spec: pages/landing-page.md.
  * Testimonials are deliberately absent pre-launch (PRODUCT.md: never
  * fabricate testimonials); the section returns with real donor feedback.
  */

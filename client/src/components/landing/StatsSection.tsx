@@ -42,7 +42,7 @@ function statItems(stats: PlatformStats) {
 
 /**
  * Real platform totals from GET /stats. Pre-launch (or on failure) the
- * section renders nothing — Tuma never shows fabricated numbers.
+ * section renders nothing. Changia never shows fabricated numbers.
  */
 export function StatsSection() {
   const { data } = useFetch(getPlatformStats)
