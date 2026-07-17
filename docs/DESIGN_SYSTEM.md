@@ -64,7 +64,7 @@ Secondary Text
 
 Heading Font
 
-Playfair Display
+Source Serif 4
 
 Body Font
 

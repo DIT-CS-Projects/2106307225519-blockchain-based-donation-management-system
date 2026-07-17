@@ -17,19 +17,19 @@ colors:
   destructive-red: "#dc2626"
 typography:
   display:
-    fontFamily: "Playfair Display, Georgia, 'Times New Roman', serif"
+    fontFamily: "Source Serif 4, Georgia, 'Times New Roman', serif"
     fontSize: "clamp(3rem, 6vw, 3.75rem)"
     fontWeight: 700
     lineHeight: 1.1
     letterSpacing: "-0.02em"
   headline:
-    fontFamily: "Playfair Display, Georgia, serif"
+    fontFamily: "Source Serif 4, Georgia, serif"
     fontSize: "2.25rem"
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "-0.02em"
   title:
-    fontFamily: "Playfair Display, Georgia, serif"
+    fontFamily: "Source Serif 4, Georgia, serif"
     fontSize: "1.5rem"
     fontWeight: 600
     lineHeight: 1.3
@@ -129,10 +129,10 @@ A restrained palette: cool slate neutrals carry the page, Harbor Teal speaks for
 
 ## 3. Typography
 
-**Display Font:** Playfair Display (with Georgia fallback)
+**Display Font:** Source Serif 4 (with Georgia fallback)
 **Body Font:** Inter (with system-ui fallback)
 
-**Character:** A high-contrast serif voice delivering confident statements over a neutral, hard-working sans. The pairing contrasts on a true axis (serif display + humanist sans) — the serif brings gravity and institutional memory; Inter stays invisible and legible.
+**Character:** A grounded, moderate-contrast serif delivering confident statements over a neutral, hard-working sans. The pairing contrasts on a true axis (serif display + humanist sans) — Source Serif 4 brings the gravity and institutional memory of a printed ledger without the runway-fashion elegance of a Didone like Playfair; Inter stays invisible and legible.
 
 ### Hierarchy
 - **Display** (700, clamp(3rem, 6vw, 3.75rem), 1.1, -0.02em): Hero statements only — one per page.
@@ -142,7 +142,7 @@ A restrained palette: cool slate neutrals carry the page, Harbor Teal speaks for
 - **Label** (500, 0.875rem, 1.4): Buttons, form labels, metadata.
 
 ### Named Rules
-**The Two Voices Rule.** Playfair Display speaks only in headings (h1–h4). Everything that works — body, labels, buttons, data — is Inter. A serif below 1.5rem is a mistake.
+**The Two Voices Rule.** Source Serif 4 speaks only in headings (h1–h4). Everything that works — body, labels, buttons, data — is Inter. A serif below 1.5rem is a mistake.
 
 ## 4. Elevation
 

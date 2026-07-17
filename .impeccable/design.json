@@ -10,7 +10,7 @@
       "cloud-slate": { "role": "neutral", "displayName": "Cloud Slate", "canonical": "#f8fafc", "tonalRamp": ["#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9", "#f8fafc"] }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Hero statements only — one per page. Playfair Display carries the institutional voice." },
+      "display": { "displayName": "Display", "purpose": "Hero statements only — one per page. Source Serif 4 carries the institutional voice." },
       "body": { "displayName": "Body", "purpose": "All running text in Inter; 65–75ch max line length." }
     },
     "shadows": [
@@ -67,7 +67,7 @@
       "refersTo": "",
       "description": "Flat-at-rest container; hairline border, lift shadow only when interactive.",
       "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Clean Water for Mwanza</h3><p class=\"ds-card-body\">Bring safe drinking water to 1,200 households through 8 new borehole wells.</p></div>",
-      "css": ".ds-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 12px; padding: 24px; transition: box-shadow 0.2s cubic-bezier(0.22,1,0.36,1); } .ds-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); } .ds-card-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; color: var(--card-foreground, #0f172a); margin: 0 0 8px; } .ds-card-body { font-family: Inter, system-ui, sans-serif; font-size: 1rem; line-height: 1.6; color: var(--muted-foreground, #64748b); margin: 0; }"
+      "css": ".ds-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 12px; padding: 24px; transition: box-shadow 0.2s cubic-bezier(0.22,1,0.36,1); } .ds-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); } .ds-card-title { font-family: 'Source Serif 4', Georgia, serif; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; color: var(--card-foreground, #0f172a); margin: 0 0 8px; } .ds-card-body { font-family: Inter, system-ui, sans-serif; font-size: 1rem; line-height: 1.6; color: var(--muted-foreground, #64748b); margin: 0; }"
     },
     {
       "name": "Text Input",
@@ -91,7 +91,7 @@
     "rules": [
       { "name": "The One Coral Rule", "body": "Signal Coral touches at most ~5% of any screen. Its rarity is what makes it warm instead of alarming. If coral appears twice in one viewport, one of them is wrong.", "section": "colors" },
       { "name": "The Cool Page Rule", "body": "Backgrounds stay in the cool slate family. Warm/cream/beige page backgrounds are prohibited — warmth comes from coral, imagery, and copy, never from the canvas.", "section": "colors" },
-      { "name": "The Two Voices Rule", "body": "Playfair Display speaks only in headings (h1–h4). Everything that works — body, labels, buttons, data — is Inter. A serif below 1.5rem is a mistake.", "section": "typography" },
+      { "name": "The Two Voices Rule", "body": "Source Serif 4 speaks only in headings (h1–h4). Everything that works — body, labels, buttons, data — is Inter. A serif below 1.5rem is a mistake.", "section": "typography" },
       { "name": "The Flat-At-Rest Rule", "body": "No surface carries a shadow while idle. If a card is not interactive, it never gets one at all.", "section": "elevation" }
     ],
     "dos": [
