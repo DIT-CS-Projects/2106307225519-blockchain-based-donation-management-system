@@ -18,6 +18,13 @@ export function formatDate(iso: string): string {
   }).format(new Date(iso))
 }
 
+/** Whole days from now until an ISO end date, floored at zero. */
+export function daysRemaining(endIso: string): number {
+  const MS_PER_DAY = 86_400_000
+  const diff = new Date(endIso).getTime() - Date.now()
+  return Math.max(0, Math.ceil(diff / MS_PER_DAY))
+}
+
 /** Clamp a funding progress ratio to a 0–100 percentage. */
 export function fundingPercent(raised: number, target: number): number {
   if (target <= 0) return 0

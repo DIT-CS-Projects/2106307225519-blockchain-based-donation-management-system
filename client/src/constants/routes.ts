@@ -13,6 +13,16 @@ export const ROUTES = {
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES]
 
+/** Detail route for a single campaign (route itself ships with the campaigns slice). */
+export function campaignDetailsPath(id: string) {
+  return `${ROUTES.campaigns}/${id}`
+}
+
+/** In-page anchor ids used by cross-section links. */
+export const SECTION_IDS = {
+  howItWorks: 'how-it-works',
+} as const
+
 /** Primary navigation links shared by Navbar and MobileNav. */
 export const NAV_LINKS = [
   { label: 'Home', to: ROUTES.home },

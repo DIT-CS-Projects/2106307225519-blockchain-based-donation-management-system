@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { API_BASE_URL } from '@/constants/config'
+import { safeStorage } from '@/utils/safeStorage'
 
 export const TOKEN_STORAGE_KEY = 'tuma_token'
 
@@ -11,7 +12,7 @@ export const api = axios.create({
 
 // Attach the access token to every request when present.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_STORAGE_KEY)
+  const token = safeStorage.get(TOKEN_STORAGE_KEY)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

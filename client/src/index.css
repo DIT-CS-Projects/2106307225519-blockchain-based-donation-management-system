@@ -144,3 +144,25 @@
     letter-spacing: -0.02em;
   }
 }
+
+/*
+  Scroll reveal (see components/shared/Reveal.tsx).
+  Progressive enhancement only: without animation-timeline support or with
+  reduced motion, content simply renders visible — never gated on JS.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 45%;
+    }
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
