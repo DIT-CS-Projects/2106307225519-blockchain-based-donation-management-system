@@ -2,6 +2,7 @@ import { Pool } from 'pg'
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { env } from './env'
 import { logger } from '../utils/logger'
+import { ApiError } from '../utils/ApiError'
 import * as schema from '../database/schema'
 
 /**
@@ -23,6 +24,18 @@ export const db: NodePgDatabase<typeof schema> | null = pool
 
 if (!pool) {
   logger.warn('DATABASE_URL not set. Database features are disabled until configured.')
+}
+
+/**
+ * Return the Drizzle client or fail with a 503. Repositories call this so a
+ * missing DATABASE_URL degrades to a clean "try again shortly" instead of a
+ * null dereference.
+ */
+export function requireDb(): NodePgDatabase<typeof schema> {
+  if (!db) {
+    throw new ApiError(503, 'Database is not available. Please try again shortly.')
+  }
+  return db
 }
 
 /** Lightweight connectivity check used by the health endpoint. */

@@ -1,7 +1,6 @@
 import { SQL, and, asc, count, desc, eq, ilike, isNull, ne, or } from 'drizzle-orm'
-import { db } from '../config/database'
+import { requireDb } from '../config/database'
 import { campaigns, type CampaignRow } from '../database/schema'
-import { ApiError } from '../utils/ApiError'
 
 export type CampaignSort = 'newest' | 'endingSoon' | 'mostFunded' | 'alphabetical'
 
@@ -19,13 +18,6 @@ const PUBLIC_STATUSES: SQL = or(
   eq(campaigns.status, 'active'),
   eq(campaigns.status, 'completed'),
 )!
-
-function requireDb() {
-  if (!db) {
-    throw new ApiError(503, 'Database is not available. Please try again shortly.')
-  }
-  return db
-}
 
 const SORT_ORDER = {
   newest: desc(campaigns.createdAt),
