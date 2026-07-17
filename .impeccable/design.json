@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-17T04:55:00Z",
+  "title": "Design System: Tuma",
+  "extensions": {
+    "colorMeta": {
+      "harbor-teal": { "role": "primary", "displayName": "Harbor Teal", "canonical": "#0f766e", "tonalRamp": ["#042f2e", "#134e4a", "#115e59", "#0f766e", "#0d9488", "#14b8a6", "#5eead4", "#ccfbf1"] },
+      "signal-coral": { "role": "secondary", "displayName": "Signal Coral", "canonical": "#ff6b6b", "tonalRamp": ["#7a2626", "#9e3232", "#c24343", "#e35555", "#ff6b6b", "#ff9494", "#ffbdbd", "#ffe3e3"] },
+      "ink-slate": { "role": "neutral", "displayName": "Ink Slate", "canonical": "#0f172a", "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9"] },
+      "cloud-slate": { "role": "neutral", "displayName": "Cloud Slate", "canonical": "#f8fafc", "tonalRamp": ["#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9", "#f8fafc"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero statements only — one per page. Playfair Display carries the institutional voice." },
+      "body": { "displayName": "Body", "purpose": "All running text in Inter; 65–75ch max line length." }
+    },
+    "shadows": [
+      { "name": "card-lift", "value": "0 8px 30px rgba(0,0,0,0.08)", "purpose": "Hover state of interactive cards; never at rest (The Flat-At-Rest Rule)." },
+      { "name": "hover-raise", "value": "0 16px 40px rgba(0,0,0,0.12)", "purpose": "Stronger lift for featured interactive elements." },
+      { "name": "modal", "value": "0 24px 60px rgba(0,0,0,0.18)", "purpose": "Dialogs and overlays only." }
+    ],
+    "motion": [
+      { "name": "ease-out-standard", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default exponential ease-out for state transitions; no bounce, no elastic." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action. Harbor Teal fill, deepens on hover; color transitions only.",
+      "html": "<button class=\"ds-btn-primary\">Browse campaigns</button>",
+      "css": ".ds-btn-primary { background: var(--primary, #0f766e); color: var(--primary-foreground, #ffffff); height: 40px; padding: 0 20px; border: none; border-radius: 12px; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s cubic-bezier(0.22,1,0.36,1); } .ds-btn-primary:hover { background: var(--primary-dark, #115e59); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--background, #f8fafc), 0 0 0 4px var(--ring, #0f766e); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Bordered neutral action beside a primary.",
+      "html": "<button class=\"ds-btn-secondary\">How it works</button>",
+      "css": ".ds-btn-secondary { background: var(--surface, #ffffff); color: var(--foreground, #0f172a); height: 40px; padding: 0 20px; border: 1px solid var(--border, #e2e8f0); border-radius: 12px; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s cubic-bezier(0.22,1,0.36,1); } .ds-btn-secondary:hover { background: var(--muted, #f1f5f9); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--background, #f8fafc), 0 0 0 4px var(--ring, #0f766e); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet tertiary action; fills Whisper Slate on hover.",
+      "html": "<button class=\"ds-btn-ghost\">View history</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: var(--foreground, #0f172a); height: 40px; padding: 0 20px; border: none; border-radius: 12px; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s cubic-bezier(0.22,1,0.36,1); } .ds-btn-ghost:hover { background: var(--muted, #f1f5f9); } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--background, #f8fafc), 0 0 0 4px var(--ring, #0f766e); }"
+    },
+    {
+      "name": "Verified Badge",
+      "kind": "chip",
+      "refersTo": "badge-verified",
+      "description": "The signature quiet credential — Harbor Teal Tint pill with a shield mark.",
+      "html": "<span class=\"ds-badge-verified\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/></svg>Blockchain-verified</span>",
+      "css": ".ds-badge-verified { display: inline-flex; align-items: center; gap: 8px; background: var(--primary-light, #ccfbf1); color: var(--primary-dark, #115e59); padding: 6px 16px; border-radius: 9999px; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "",
+      "description": "Flat-at-rest container; hairline border, lift shadow only when interactive.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Clean Water for Mwanza</h3><p class=\"ds-card-body\">Bring safe drinking water to 1,200 households through 8 new borehole wells.</p></div>",
+      "css": ".ds-card { background: var(--card, #ffffff); border: 1px solid var(--border, #e2e8f0); border-radius: 12px; padding: 24px; transition: box-shadow 0.2s cubic-bezier(0.22,1,0.36,1); } .ds-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); } .ds-card-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; color: var(--card-foreground, #0f172a); margin: 0 0 8px; } .ds-card-body { font-family: Inter, system-ui, sans-serif; font-size: 1rem; line-height: 1.6; color: var(--muted-foreground, #64748b); margin: 0; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "",
+      "description": "Clean White field, Border Slate stroke; focus shifts the border to Harbor Teal with a ring — no glow.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search campaigns\" />",
+      "css": ".ds-input { background: var(--surface, #ffffff); color: var(--foreground, #0f172a); height: 40px; padding: 0 14px; border: 1px solid var(--input, #e2e8f0); border-radius: 10px; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; transition: border-color 0.2s, box-shadow 0.2s; } .ds-input::placeholder { color: var(--muted-foreground, #64748b); } .ds-input:focus-visible { outline: none; border-color: var(--ring, #0f766e); box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.25); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Glass Ledger",
+    "overview": "Tuma is a financial record you can see straight through: everything visible, permanent, precise. The interface carries the quiet assurance of a serious banking app — confident, precise, calm — while its single promise (every shilling provable) shapes every visual decision. Light, airy slate surfaces read like a clean page of accounts; Harbor Teal marks the institution's voice; proof elements are always one click away and visually privileged when they appear.",
+    "keyCharacteristics": [
+      "Light, spacious, ledger-clean surfaces with generous whitespace",
+      "One institutional color (Harbor Teal) used with restraint",
+      "Serif display voice over a working sans body",
+      "Flat at rest; depth appears only as a response to state",
+      "Proof and verification elements treated as first-class UI citizens"
+    ],
+    "rules": [
+      { "name": "The One Coral Rule", "body": "Signal Coral touches at most ~5% of any screen. Its rarity is what makes it warm instead of alarming. If coral appears twice in one viewport, one of them is wrong.", "section": "colors" },
+      { "name": "The Cool Page Rule", "body": "Backgrounds stay in the cool slate family. Warm/cream/beige page backgrounds are prohibited — warmth comes from coral, imagery, and copy, never from the canvas.", "section": "colors" },
+      { "name": "The Two Voices Rule", "body": "Playfair Display speaks only in headings (h1–h4). Everything that works — body, labels, buttons, data — is Inter. A serif below 1.5rem is a mistake.", "section": "typography" },
+      { "name": "The Flat-At-Rest Rule", "body": "No surface carries a shadow while idle. If a card is not interactive, it never gets one at all.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use theme tokens for every color; hard-coded hex in components is prohibited.",
+      "Do hold body text at ≥4.5:1 contrast; Slate Mist (#64748b) is the lightest allowed text color on light surfaces.",
+      "Do provide a reduced-motion alternative for every animation (prefers-reduced-motion).",
+      "Do build every button, form, and table from the shared components — one source of truth per primitive.",
+      "Do treat loading (skeletons), empty, and error states as designed states, not afterthoughts."
+    ],
+    "donts": [
+      "Don't ship the charity-website cliché: no sad-imagery guilt appeals, no hand-heart icons, no template NGO layouts.",
+      "Don't ship crypto/web3 aesthetics: no dark neon gradients, no coin imagery, no wallet-speak — blockchain stays invisible, verification stays visible.",
+      "Don't ship corporate bank stiffness or the university-project look (default template spacing, stock layouts, inconsistent components).",
+      "Don't use gradient text, glassmorphism, side-stripe borders (border-left accents), or nested cards. Ever.",
+      "Don't put Signal Coral on primary actions or use it twice in one viewport (The One Coral Rule).",
+      "Don't warm the canvas: no cream, sand, or beige backgrounds (The Cool Page Rule).",
+      "Don't apply urgency mechanics — countdowns, guilt pressure, artificial scarcity. Calm confidence, not charity urgency."
+    ]
+  }
+}
