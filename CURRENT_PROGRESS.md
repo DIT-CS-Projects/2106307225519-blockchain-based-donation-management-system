@@ -96,11 +96,19 @@ Repository
 
 ✓ Campaigns slice (first full-stack piece): campaigns table in Postgres (Drizzle, Neon), GET /api/campaigns (search/category/sort/pagination) and GET /api/campaigns/:id, GET /api/stats now backed by real data; client campaigns list (search, category chips, sort, pagination) and campaign details page (funding progress, donation widget disabled until Stage 4 payments, verification panel, related campaigns); landing page's featured campaigns and stats sections now render live data instead of the error state; verified end-to-end against a seeded Neon database (7 campaigns)
 
+✓ About page: the verification story (mission, the trust problem, four-step "how a donation works" ladder, trust commitments, plain-language "where the proof lives" explainer)
+
+✓ Contact page: validated message form (react-hook-form + zod, full states) backed by a real POST /api/contact endpoint; email delivery deferred to Stage 3 (message logged and acknowledged)
+
+✓ Platform renamed Tuma → Changia across app, docs, and package metadata; em dashes removed from user-facing copy
+
 ---
 
-# In Progress
+# Completed — Stage 2 Public Website
 
-Stage 2 — Public Website (next: real About/Contact pages)
+The public website is complete: landing, campaigns list + details, about, and contact are all built, styled to the Changia (Glass Ledger) identity, responsive, accessible, and verified end-to-end against a live database.
+
+Next up: Stage 3 — Authentication.
 
 ---
 
