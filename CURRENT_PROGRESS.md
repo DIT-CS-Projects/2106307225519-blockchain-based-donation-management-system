@@ -94,9 +94,13 @@ Repository
 
 ---
 
+✓ Campaigns slice (first full-stack piece): campaigns table in Postgres (Drizzle, Neon), GET /api/campaigns (search/category/sort/pagination) and GET /api/campaigns/:id, GET /api/stats now backed by real data; client campaigns list (search, category chips, sort, pagination) and campaign details page (funding progress, donation widget disabled until Stage 4 payments, verification panel, related campaigns); landing page's featured campaigns and stats sections now render live data instead of the error state; verified end-to-end against a seeded Neon database (7 campaigns)
+
+---
+
 # In Progress
 
-Stage 2 — Public Website (next: campaign list + campaign details as the first full-stack slice, then real About/Contact pages)
+Stage 2 — Public Website (next: real About/Contact pages)
 
 ---
 
