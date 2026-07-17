@@ -78,9 +78,25 @@ Repository
 
 ---
 
+# Completed — Stage 2 Public Website (in progress)
+
+✓ Foundation fixes from impeccable audit (self-hosted @fontsource variable fonts, pre-paint theme script kills dark-mode FOUC, safeStorage guard on all localStorage access, reduced-motion guard on smooth scroll, Button transition scoped to colors)
+
+✓ Public layout shell: Navbar (transparent → solid on scroll, active links in Harbor Teal, theme toggle), full-screen mobile nav sheet (Radix Dialog), Footer, PublicLayout with skip-to-content
+
+✓ Routes wired: / /campaigns /about /contact (+ /login /register /privacy /terms placeholders, 404 catch-all)
+
+✓ Landing page (impeccable craft): hero with example verification receipt, featured campaigns (loading/empty/error states against GET /campaigns), how-verification-works sequence, stats section (real data only — hidden pre-launch), why-verification with verified Dar es Salaam harbor photo, closing CTA
+
+✓ Shared primitives: ProgressBar, Skeleton, Reveal (CSS scroll-driven), CampaignCard, useFetch; campaigns + stats services on the Axios layer
+
+✓ Impeccable audit after landing page: 18/20 (baseline 16/20 on 2026-07-17)
+
+---
+
 # In Progress
 
-Stage 2 — Public Website (starting next)
+Stage 2 — Public Website (next: campaign list + campaign details as the first full-stack slice, then real About/Contact pages)
 
 ---
 
