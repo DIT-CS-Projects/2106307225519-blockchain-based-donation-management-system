@@ -9,6 +9,21 @@
       content="Tuma — transparent, blockchain-verified NGO donations for Tanzania."
     />
     <title>Tuma — Transparent NGO Donations</title>
+    <script>
+      // Apply the saved theme before first paint to prevent a dark-mode flash.
+      // Kept inline and dependency-free; the app-side source of truth is ThemeProvider.
+      ;(function () {
+        try {
+          var theme = localStorage.getItem('tuma_theme')
+          if (theme !== 'light' && theme !== 'dark') {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          }
+          document.documentElement.classList.toggle('dark', theme === 'dark')
+        } catch (_) {
+          /* storage blocked — default to light */
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

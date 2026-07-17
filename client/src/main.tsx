@@ -4,6 +4,8 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/context/ThemeProvider'
 import App from '@/App'
+import '@fontsource-variable/inter/index.css'
+import '@fontsource-variable/source-serif-4/opsz.css'
 import '@/index.css'
 
 createRoot(document.getElementById('root')!).render(

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { safeStorage } from '@/utils/safeStorage'
 import { ThemeContext, type Theme } from './theme-context'
 
 const STORAGE_KEY = 'tuma_theme'
 
 function getInitialTheme(): Theme {
-  const stored = localStorage.getItem(STORAGE_KEY)
+  const stored = safeStorage.get(STORAGE_KEY)
   if (stored === 'light' || stored === 'dark') return stored
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
@@ -15,7 +16,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement
     root.classList.toggle('dark', theme === 'dark')
-    localStorage.setItem(STORAGE_KEY, theme)
+    safeStorage.set(STORAGE_KEY, theme)
   }, [theme])
 
   const setTheme = useCallback((next: Theme) => setThemeState(next), [])
