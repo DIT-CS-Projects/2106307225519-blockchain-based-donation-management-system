@@ -20,7 +20,7 @@ function homeForRole(role: UserRole): string {
 }
 
 interface LocationState {
-  from?: { pathname: string }
+  from?: { pathname: string; search?: string }
   notice?: string
 }
 
@@ -45,8 +45,9 @@ export function LoginPage() {
         password: values.password,
         rememberMe: values.rememberMe,
       })
-      const from = (location.state as LocationState | null)?.from?.pathname
-      navigate(from ?? homeForRole(user.role), { replace: true })
+      const from = (location.state as LocationState | null)?.from
+      const destination = from ? `${from.pathname}${from.search ?? ''}` : homeForRole(user.role)
+      navigate(destination, { replace: true })
     } catch (error) {
       setFormError(toApiError(error).message)
     }

@@ -11,6 +11,9 @@ import { RegisterPage } from '@/pages/RegisterPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { AccountPage } from '@/pages/AccountPage'
+import { DonationsPage } from '@/pages/DonationsPage'
+import { DonationDetailPage } from '@/pages/DonationDetailPage'
+import { CheckoutPage } from '@/pages/CheckoutPage'
 import { AdminDashboardPage } from '@/pages/AdminDashboardPage'
 import { PrivacyPage } from '@/pages/PrivacyPage'
 import { TermsPage } from '@/pages/TermsPage'
@@ -37,6 +40,9 @@ export function AppRoutes() {
         {/* Authenticated (any role) */}
         <Route element={<ProtectedRoute />}>
           <Route path={ROUTES.account} element={<AccountPage />} />
+          <Route path={ROUTES.donations} element={<DonationsPage />} />
+          <Route path={`${ROUTES.donations}/:id`} element={<DonationDetailPage />} />
+          <Route path="/pay/:reference" element={<CheckoutPage />} />
         </Route>
 
         {/* Administrator only (RBAC) */}

@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CalendarClock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProgressBar } from '@/components/ui/progress'
@@ -14,6 +14,9 @@ import { daysRemaining, formatTZS, fundingPercent } from '@/utils/format'
 
 export function CampaignDetailsPage() {
   const { id = '' } = useParams()
+  const [searchParams] = useSearchParams()
+  const donateParam = Number(searchParams.get('donate'))
+  const initialAmount = Number.isFinite(donateParam) && donateParam > 0 ? donateParam : undefined
   const fetcher = useCallback(() => getCampaignDetails(id), [id])
   const { data, error, loading, retry } = useFetch(fetcher)
 
@@ -105,7 +108,11 @@ export function CampaignDetailsPage() {
           </div>
 
           <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-            <DonationWidget disabled />
+            <DonationWidget
+              campaignId={campaign.id}
+              canDonate={campaign.status === 'active'}
+              initialAmount={initialAmount}
+            />
             <VerificationPanel />
           </aside>
         </div>

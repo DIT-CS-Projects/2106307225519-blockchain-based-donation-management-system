@@ -24,3 +24,30 @@ export const CAMPAIGN_CATEGORIES = [
 ] as const
 
 export type CampaignCategory = (typeof CAMPAIGN_CATEGORIES)[number]
+
+// Payment rails offered at checkout. Mirrors the server's PAYMENT_PROVIDERS
+// (docs/PAYMENT_ARCHITECTURE.md: Supported Payment Methods).
+export const PAYMENT_METHODS = [
+  {
+    key: 'mobile_money',
+    label: 'Mobile money',
+    providers: [
+      { key: 'mpesa', label: 'M-Pesa' },
+      { key: 'airtel', label: 'Airtel Money' },
+      { key: 'mixx', label: 'Mixx by Yas' },
+      { key: 'halopesa', label: 'HaloPesa' },
+    ],
+  },
+  {
+    key: 'bank',
+    label: 'Bank transfer',
+    providers: [
+      { key: 'crdb', label: 'CRDB Bank' },
+      { key: 'nmb', label: 'NMB Bank' },
+      { key: 'nbc', label: 'NBC Bank' },
+      { key: 'stanchart', label: 'Standard Chartered' },
+    ],
+  },
+] as const
+
+export type PaymentMethodKey = (typeof PAYMENT_METHODS)[number]['key']
