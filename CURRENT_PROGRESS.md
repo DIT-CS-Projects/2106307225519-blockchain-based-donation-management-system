@@ -108,15 +108,23 @@ Repository
 
 The public website is complete: landing, campaigns list + details, about, and contact are all built, styled to the Changia (Glass Ledger) identity, responsive, accessible, and verified end-to-end against a live database.
 
-Next up: Stage 3 — Authentication.
+---
+
+# Completed — Stage 3 Authentication
+
+Database: users (role enum, soft delete, lockout columns), sessions (revocable refresh tokens, remember-me persistence), password_resets (single-use hashed tokens) — three Drizzle migrations, applied to Neon.
+
+Backend: full auth surface per api/authentication.md, layered routes → controllers → services → repositories — register, login (with account lockout after 5 failed attempts and remember-me), logout, logout-all-devices, refresh (rotating), GET /me, PUT /profile, PUT /change-password, POST /forgot-password (always 200, never leaks account existence), POST /reset-password (single-use, 1-hour expiry). bcrypt hashing, short-lived JWT access token, httpOnly rotating refresh cookie, requireAuth/requireRole RBAC middleware, rate limiting on auth endpoints. Public registration creates donors only; the initial administrator is provisioned via an env-based seed script (`db:seed:admin`).
+
+Frontend: AuthContext/useAuth (mirrors the ThemeProvider pattern, single-flight session bootstrap on load), Axios 401→refresh→retry interceptor, real Login/Register/Forgot-Password/Reset-Password pages per pages/authentication-pages.md, AccountPage (profile, change password, per-session and all-devices logout), role-gated AdminDashboardPage placeholder, ProtectedRoute wrapper, Navbar/MobileNav wired to real auth state.
+
+Verified end-to-end in a real browser against the live Neon database: register → protected route → reload persistence → logout → RBAC block → login error states → admin login, 18/18 automated browser checks passing plus manual coverage of forgot/reset password states.
+
+Next up: Stage 4 — Donations (payment flow, AzamPay, receipts, donation history).
 
 ---
 
 # Pending
-
-Public Website
-
-Authentication
 
 Campaign Management
 
