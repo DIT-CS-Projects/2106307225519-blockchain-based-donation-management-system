@@ -13,6 +13,11 @@ const envSchema = z.object({
   ADMIN_EMAIL: z.string().email().optional(),
   ADMIN_PHONE: z.string().min(7).optional(),
   ADMIN_PASSWORD: z.string().min(1).optional(),
+  // Payment gateway (Decision 009). 'mock' drives a self-contained local
+  // checkout; 'azampay' selects the real adapter once credentials exist.
+  PAYMENT_PROVIDER: z.enum(['mock', 'azampay']).default('mock'),
+  // How long a checkout session stays payable before it expires.
+  PAYMENT_SESSION_TTL_MINUTES: z.coerce.number().int().positive().default(30),
 })
 
 const parsed = envSchema.safeParse(process.env)
