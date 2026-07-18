@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/useAuth'
 import { NAV_LINKS, ROUTES } from '@/constants/routes'
 import { APP_NAME } from '@/constants/config'
 import { cn } from '@/lib/utils'
@@ -14,6 +15,14 @@ import { cn } from '@/lib/utils'
 export function MobileNav() {
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
+  const { status, user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    close()
+    await logout()
+    navigate(ROUTES.home, { replace: true })
+  }
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -61,16 +70,38 @@ export function MobileNav() {
           </nav>
 
           <div className="flex flex-col gap-3 px-6 pb-10">
-            <Button asChild variant="secondary" size="lg">
-              <Link to={ROUTES.login} onClick={close}>
-                Log in
-              </Link>
-            </Button>
-            <Button asChild size="lg">
-              <Link to={ROUTES.register} onClick={close}>
-                Create account
-              </Link>
-            </Button>
+            {status === 'authenticated' && user ? (
+              <>
+                {user.role === 'admin' && (
+                  <Button asChild variant="secondary" size="lg">
+                    <Link to={ROUTES.adminDashboard} onClick={close}>
+                      Dashboard
+                    </Link>
+                  </Button>
+                )}
+                <Button asChild variant="secondary" size="lg">
+                  <Link to={ROUTES.account} onClick={close}>
+                    Account
+                  </Link>
+                </Button>
+                <Button size="lg" onClick={handleLogout}>
+                  Log out
+                </Button>
+              </>
+            ) : status === 'unauthenticated' ? (
+              <>
+                <Button asChild variant="secondary" size="lg">
+                  <Link to={ROUTES.login} onClick={close}>
+                    Log in
+                  </Link>
+                </Button>
+                <Button asChild size="lg">
+                  <Link to={ROUTES.register} onClick={close}>
+                    Create account
+                  </Link>
+                </Button>
+              </>
+            ) : null}
           </div>
         </Dialog.Content>
       </Dialog.Portal>

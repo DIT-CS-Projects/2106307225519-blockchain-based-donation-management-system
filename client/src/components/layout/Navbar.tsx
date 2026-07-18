@@ -1,8 +1,10 @@
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { MobileNav } from '@/components/layout/MobileNav'
+import { UserMenu } from '@/components/layout/UserMenu'
 import { useScrolled } from '@/hooks/useScrolled'
+import { useAuth } from '@/hooks/useAuth'
 import { NAV_LINKS, ROUTES } from '@/constants/routes'
 import { APP_NAME } from '@/constants/config'
 import { cn } from '@/lib/utils'
@@ -13,6 +15,13 @@ import { cn } from '@/lib/utils'
  */
 export function Navbar() {
   const scrolled = useScrolled()
+  const { status, user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate(ROUTES.home, { replace: true })
+  }
 
   return (
     <header
@@ -46,12 +55,18 @@ export function Navbar() {
 
         <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle />
-          <Button asChild variant="ghost">
-            <Link to={ROUTES.login}>Log in</Link>
-          </Button>
-          <Button asChild>
-            <Link to={ROUTES.register}>Create account</Link>
-          </Button>
+          {status === 'authenticated' && user ? (
+            <UserMenu user={user} onLogout={handleLogout} />
+          ) : status === 'unauthenticated' ? (
+            <>
+              <Button asChild variant="ghost">
+                <Link to={ROUTES.login}>Log in</Link>
+              </Button>
+              <Button asChild>
+                <Link to={ROUTES.register}>Create account</Link>
+              </Button>
+            </>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-1 md:hidden">
