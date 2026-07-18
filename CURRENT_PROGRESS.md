@@ -120,15 +120,27 @@ Frontend: AuthContext/useAuth (mirrors the ThemeProvider pattern, single-flight 
 
 Verified end-to-end in a real browser against the live Neon database: register → protected route → reload persistence → logout → RBAC block → login error states → admin login, 18/18 automated browser checks passing plus manual coverage of forgot/reset password states.
 
-Next up: Stage 4 — Donations (payment flow, AzamPay, receipts, donation history).
+---
+
+# Completed — Stage 4 Donations
+
+Database: donations (immutable, never deleted), payment_transactions (one row per checkout attempt, unique reference, capability token, raw provider payloads), blockchain_records (authoritative proof table, one row per donation, opens 'pending' for Stage 5). One Drizzle migration, applied to Neon.
+
+Payments: a PaymentProvider abstraction (docs/PAYMENT_ARCHITECTURE.md) with a self-contained mock provider selected by PAYMENT_PROVIDER, so the full donate flow runs locally with no external credentials or public webhook. Real AzamPay drops in as another adapter behind the same interface (Decision 009). POST /payments/create-session (auth, validates a donatable campaign + minimum amount), POST /payments/callback (public, provider-verified, idempotent), GET /payments/status/:reference (owner-scoped). Finalizing a verified payment is one atomic transaction: create donation, open pending blockchain proof, link and close the payment, and credit the campaign. Duplicate callbacks resolve to the same donation with no double credit.
+
+Donations: GET /donations/history, /summary (totals + monthly chart data), /:id, /:id/verify, and /:id/receipt (real PDF via pdfkit) all owner-scoped; /statistics is admin-only. Login is required to donate (business rule: every donation belongs to one donor).
+
+Frontend: the DonationWidget is live on the campaign details page (amount presets + custom, payment method and provider selectors). Anyone can pick an amount; a logged-out donor is routed to sign in and returned to the campaign with the amount preserved. Authenticated donors get a checkout session and land on the sandbox checkout page, then a donation success + detail view with a downloadable receipt and a pending verification badge. A donations history page (summary stat cards + responsive table) is wired into the navbar for donors. Blockchain proof status shows 'pending' until Stage 5 records it on-chain.
+
+Verified end-to-end against the live Neon database: 19/19 automated API checks covering register → create session → status → provider callback → donation with pending proof → history → summary → real PDF receipt → verify → idempotent duplicate callback → exact campaign crediting → auth gate → amount and provider validation → cancelled-payment (no donation) → admin-only RBAC → cross-account isolation. Client builds and lints clean; both dev servers boot and the client proxies the API. Test data created during verification was reverted, restoring seeded campaign totals.
+
+Next up: Stage 5 — Blockchain (record donation proofs on Sepolia, fill blockchain_records, verification + explorer).
 
 ---
 
 # Pending
 
 Campaign Management
-
-Payments (AzamPay)
 
 Blockchain Integration
 
