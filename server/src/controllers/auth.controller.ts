@@ -12,7 +12,12 @@ function userAgentOf(req: Request): string | null {
 
 /** Set the refresh cookie and shape the JSON body ({ token, user }). */
 function sendAuthResult(res: Response, status: number, result: AuthResult): void {
-  setRefreshCookie(res, result.tokens.refreshToken, result.tokens.refreshExpiresAt)
+  setRefreshCookie(
+    res,
+    result.tokens.refreshToken,
+    result.tokens.refreshExpiresAt,
+    result.tokens.persistent,
+  )
   res.status(status).json({
     token: result.tokens.accessToken,
     user: result.user,
@@ -30,7 +35,12 @@ export async function register(
       throw ApiError.badRequest(parsed.error.issues[0]?.message ?? 'Invalid registration details')
     }
     const result = await authService.register(parsed.data, userAgentOf(req))
-    setRefreshCookie(res, result.tokens.refreshToken, result.tokens.refreshExpiresAt)
+    setRefreshCookie(
+      res,
+      result.tokens.refreshToken,
+      result.tokens.refreshExpiresAt,
+      result.tokens.persistent,
+    )
     res.status(201).json({
       message: 'Registration successful',
       user: result.user,

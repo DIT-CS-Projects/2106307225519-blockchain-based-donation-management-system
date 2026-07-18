@@ -16,6 +16,8 @@ export interface IssuedTokens {
   accessToken: string
   refreshToken: string
   refreshExpiresAt: Date
+  /** Remember-me: whether the refresh cookie should outlive the browser session. */
+  persistent: boolean
 }
 
 const MS_PER_SECOND = 1000
@@ -24,6 +26,7 @@ const MS_PER_SECOND = 1000
 async function createSession(
   user: Pick<UserRow, 'id' | 'role'>,
   userAgent: string | null,
+  persistent: boolean,
 ): Promise<IssuedTokens> {
   const refreshToken = generateToken()
   const refreshExpiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_SECONDS * MS_PER_SECOND)
@@ -32,19 +35,21 @@ async function createSession(
     userId: user.id,
     tokenHash: hashToken(refreshToken),
     userAgent,
+    persistent,
     expiresAt: refreshExpiresAt,
   })
 
   const accessToken = signAccessToken({ sub: user.id, role: user.role })
-  return { accessToken, refreshToken, refreshExpiresAt }
+  return { accessToken, refreshToken, refreshExpiresAt, persistent }
 }
 
 /** Issue a brand-new session (login / register). */
 export function issueSession(
   user: Pick<UserRow, 'id' | 'role'>,
   userAgent: string | null,
+  persistent: boolean,
 ): Promise<IssuedTokens> {
-  return createSession(user, userAgent)
+  return createSession(user, userAgent, persistent)
 }
 
 export interface RotatedSession extends IssuedTokens {
@@ -76,7 +81,8 @@ export async function rotateSession(
   }
 
   await revokeSession(session.id)
-  const tokens = await createSession(user, userAgent)
+  // Preserve the original remember-me preference across rotation.
+  const tokens = await createSession(user, userAgent, session.persistent)
   return { ...tokens, user }
 }
 

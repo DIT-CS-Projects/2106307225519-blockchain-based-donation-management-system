@@ -49,7 +49,7 @@ export async function register(
     role: 'donor',
   })
 
-  const tokens = await issueSession(user, userAgent)
+  const tokens = await issueSession(user, userAgent, true)
   logger.info(`New donor registered: user ${user.id}`)
   return { user: toUserDto(user), tokens }
 }
@@ -81,7 +81,7 @@ export async function login(
     await updateLoginState(user.id, 0, null)
   }
 
-  const tokens = await issueSession(user, userAgent)
+  const tokens = await issueSession(user, userAgent, input.rememberMe ?? true)
   logger.info(`Login successful: user ${user.id}`)
   return { user: toUserDto(user), tokens }
 }

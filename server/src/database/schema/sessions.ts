@@ -1,4 +1,4 @@
-import { bigint, index, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { bigint, boolean, index, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { users } from './users'
 
 /**
@@ -17,6 +17,8 @@ export const sessions = pgTable(
     // SHA-256 hex of the refresh token (64 chars).
     tokenHash: varchar('token_hash', { length: 64 }).notNull(),
     userAgent: text('user_agent'),
+    // Remember-me: persistent cookie vs session cookie. Preserved across rotation.
+    persistent: boolean('persistent').notNull().default(true),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

@@ -25,6 +25,7 @@ export const loginSchema = z.object({
   email,
   // Login never reveals the policy: any non-empty password is accepted for the check.
   password: z.string().min(1, 'Password is required'),
+  rememberMe: z.boolean().optional(),
 })
 
 export const updateProfileSchema = z

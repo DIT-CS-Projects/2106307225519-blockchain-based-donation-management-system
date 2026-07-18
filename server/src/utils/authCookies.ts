@@ -9,9 +9,19 @@ const baseOptions = {
   path: REFRESH_COOKIE_PATH,
 }
 
-/** Store the refresh token in an httpOnly cookie scoped to the auth routes. */
-export function setRefreshCookie(res: Response, token: string, expiresAt: Date): void {
-  res.cookie(REFRESH_COOKIE_NAME, token, { ...baseOptions, expires: expiresAt })
+/**
+ * Store the refresh token in an httpOnly cookie scoped to the auth routes.
+ * When persistent is false (remember-me off) it is a session cookie that the
+ * browser drops on close; otherwise it lasts until the token expires.
+ */
+export function setRefreshCookie(
+  res: Response,
+  token: string,
+  expiresAt: Date,
+  persistent: boolean,
+): void {
+  const options = persistent ? { ...baseOptions, expires: expiresAt } : baseOptions
+  res.cookie(REFRESH_COOKIE_NAME, token, options)
 }
 
 /** Remove the refresh cookie (logout, all-devices logout, password change). */

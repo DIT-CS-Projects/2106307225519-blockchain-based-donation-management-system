@@ -6,6 +6,7 @@ export interface NewSession {
   userId: number
   tokenHash: string
   userAgent: string | null
+  persistent: boolean
   expiresAt: Date
 }
 
