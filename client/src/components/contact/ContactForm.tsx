@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -6,6 +6,7 @@ import { CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { FormField } from '@/components/shared/FormField'
 import { sendContactMessage } from '@/services/contact'
 import { toApiError } from '@/services/api'
 
@@ -69,11 +70,11 @@ export function ContactForm() {
       className="rounded-lg border border-border bg-card p-6 sm:p-8"
     >
       <div className="grid gap-5">
-        <Field id="name" label="Name" error={errors.name?.message}>
+        <FormField id="name" label="Name" error={errors.name?.message}>
           <Input id="name" autoComplete="name" aria-invalid={!!errors.name} {...register('name')} />
-        </Field>
+        </FormField>
 
-        <Field id="email" label="Email" error={errors.email?.message}>
+        <FormField id="email" label="Email" error={errors.email?.message}>
           <Input
             id="email"
             type="email"
@@ -81,20 +82,20 @@ export function ContactForm() {
             aria-invalid={!!errors.email}
             {...register('email')}
           />
-        </Field>
+        </FormField>
 
-        <Field id="subject" label="Subject" error={errors.subject?.message}>
+        <FormField id="subject" label="Subject" error={errors.subject?.message}>
           <Input id="subject" aria-invalid={!!errors.subject} {...register('subject')} />
-        </Field>
+        </FormField>
 
-        <Field id="message" label="Message" error={errors.message?.message}>
+        <FormField id="message" label="Message" error={errors.message?.message}>
           <Textarea
             id="message"
             rows={5}
             aria-invalid={!!errors.message}
             {...register('message')}
           />
-        </Field>
+        </FormField>
       </div>
 
       {submitError && (
@@ -107,28 +108,5 @@ export function ContactForm() {
         {isSubmitting ? 'Sending…' : 'Send message'}
       </Button>
     </form>
-  )
-}
-
-interface FieldProps {
-  id: string
-  label: string
-  error?: string
-  children: ReactNode
-}
-
-function Field({ id, label, error, children }: FieldProps) {
-  return (
-    <div>
-      <label htmlFor={id} className="text-sm font-medium">
-        {label}
-      </label>
-      <div className="mt-1.5">{children}</div>
-      {error && (
-        <p id={`${id}-error`} className="mt-1.5 text-sm text-destructive">
-          {error}
-        </p>
-      )}
-    </div>
   )
 }
