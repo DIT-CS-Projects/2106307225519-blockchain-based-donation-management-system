@@ -1,4 +1,4 @@
-import { SQL, and, asc, count, desc, eq, ilike, isNull, ne, or } from 'drizzle-orm'
+import { SQL, and, asc, count, desc, eq, gte, ilike, isNull, lte, ne, or } from 'drizzle-orm'
 import { requireDb } from '../config/database'
 import { campaigns, type CampaignRow } from '../database/schema'
 
@@ -61,6 +61,29 @@ export async function findCampaignById(id: number): Promise<CampaignRow | undefi
     .select()
     .from(campaigns)
     .where(and(eq(campaigns.id, id), isNull(campaigns.deletedAt), PUBLIC_STATUSES))
+    .limit(1)
+  return row
+}
+
+/**
+ * A campaign that can currently accept donations: active, not soft-deleted, and
+ * within its start/end window (docs/BUSINESS_RULES.md: Campaign Rules).
+ */
+export async function findDonatableCampaign(id: number): Promise<CampaignRow | undefined> {
+  const client = requireDb()
+  const now = new Date()
+  const [row] = await client
+    .select()
+    .from(campaigns)
+    .where(
+      and(
+        eq(campaigns.id, id),
+        eq(campaigns.status, 'active'),
+        isNull(campaigns.deletedAt),
+        lte(campaigns.startDate, now),
+        gte(campaigns.endDate, now),
+      ),
+    )
     .limit(1)
   return row
 }
