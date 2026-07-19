@@ -37,7 +37,9 @@ export function ReceiptButton({
       document.body.appendChild(link)
       link.click()
       link.remove()
-      URL.revokeObjectURL(url)
+      // Defer revocation: some browsers process the download asynchronously,
+      // and revoking immediately can cancel it before the download starts.
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
     } catch (err) {
       setError(toApiError(err).message)
     } finally {
