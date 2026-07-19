@@ -11,6 +11,7 @@ export const ROUTES = {
   resetPassword: '/reset-password',
   account: '/account',
   donations: '/donations',
+  verify: '/verify',
   adminDashboard: '/admin',
   privacy: '/privacy',
   terms: '/terms',
@@ -31,6 +32,11 @@ export function donationDetailsPath(id: number | string) {
 /** Mock checkout page for a payment reference. */
 export function checkoutPath(reference: string) {
   return `/pay/${reference}`
+}
+
+/** Deep link to the public verification page for a specific receipt. */
+export function verifyReceiptPath(receiptNumber: string) {
+  return `${ROUTES.verify}/${receiptNumber}`
 }
 
 /** In-page anchor ids used by cross-section links. */

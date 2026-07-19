@@ -7,6 +7,7 @@ const FOOTER_GROUPS = [
     heading: 'Platform',
     links: [
       { label: 'Campaigns', to: ROUTES.campaigns },
+      { label: 'Verify a donation', to: ROUTES.verify },
       { label: 'About', to: ROUTES.about },
       { label: 'Contact', to: ROUTES.contact },
     ],

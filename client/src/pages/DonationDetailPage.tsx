@@ -7,8 +7,9 @@ import { VerificationBadge } from '@/components/donations/VerificationBadge'
 import { ReceiptButton } from '@/components/donations/ReceiptButton'
 import { useFetch } from '@/hooks/useFetch'
 import { getDonation, type ProofStatus } from '@/services/donations'
-import { ROUTES, campaignDetailsPath } from '@/constants/routes'
+import { ROUTES, campaignDetailsPath, verifyReceiptPath } from '@/constants/routes'
 import { formatDate, formatTZS } from '@/utils/format'
+import { blockExplorerUrl } from '@/utils/blockchain'
 
 const PROOF_MESSAGE: Record<ProofStatus, string> = {
   pending:
@@ -96,7 +97,20 @@ export function DonationDetailPage() {
 
         <dl className="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-2">
           <Detail term="Date" value={formatDate(donation.createdAt)} />
-          <Detail term="Receipt number" value={donation.receiptNumber} />
+          <div>
+            <dt className="text-sm text-muted-foreground">Receipt number</dt>
+            <dd className="mt-0.5 flex items-center gap-2">
+              <span className="font-medium tabular-nums text-foreground">
+                {donation.receiptNumber}
+              </span>
+              <Link
+                to={verifyReceiptPath(donation.receiptNumber)}
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                Verify publicly
+              </Link>
+            </dd>
+          </div>
           <Detail term="Payment reference" value={donation.paymentReference} />
           <Detail term="Payment status" value="Completed" />
         </dl>
@@ -106,15 +120,28 @@ export function DonationDetailPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {PROOF_MESSAGE[donation.blockchain.status]}
           </p>
-          {donation.blockchain.txHash && (
-            <a
-              href="#"
-              className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            >
-              View transaction
-              <ExternalLink className="size-3.5" aria-hidden="true" />
-            </a>
-          )}
+          {donation.blockchain.txHash &&
+            (() => {
+              const explorerUrl = blockExplorerUrl(
+                donation.blockchain.network,
+                donation.blockchain.txHash,
+              )
+              return explorerUrl ? (
+                <a
+                  href={explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                >
+                  View transaction
+                  <ExternalLink className="size-3.5" aria-hidden="true" />
+                </a>
+              ) : (
+                <p className="mt-2 break-all font-mono text-xs text-muted-foreground">
+                  {donation.blockchain.txHash}
+                </p>
+              )
+            })()}
         </div>
 
         <div className="mt-8">

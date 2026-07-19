@@ -6,6 +6,7 @@ import { CampaignsPage } from '@/pages/CampaignsPage'
 import { CampaignDetailsPage } from '@/pages/CampaignDetailsPage'
 import { AboutPage } from '@/pages/AboutPage'
 import { ContactPage } from '@/pages/ContactPage'
+import { VerifyPage } from '@/pages/VerifyPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
@@ -30,6 +31,8 @@ export function AppRoutes() {
         <Route path={`${ROUTES.campaigns}/:id`} element={<CampaignDetailsPage />} />
         <Route path={ROUTES.about} element={<AboutPage />} />
         <Route path={ROUTES.contact} element={<ContactPage />} />
+        <Route path={ROUTES.verify} element={<VerifyPage />} />
+        <Route path={`${ROUTES.verify}/:receiptNumber`} element={<VerifyPage />} />
 
         {/* Authentication */}
         <Route path={ROUTES.login} element={<LoginPage />} />
