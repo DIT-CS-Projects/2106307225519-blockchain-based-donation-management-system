@@ -138,11 +138,25 @@ Next up: Stage 5 — Blockchain (record donation proofs on Sepolia, fill blockch
 
 ---
 
+# Completed — Stage 5 Blockchain
+
+Contract: TransparencyRegistry.sol from Stage 1 already matched the spec exactly (registerDonation, verifyDonation, getDonation, owner-only writes, duplicate rejection, events) — no changes needed. Deployed to a persistent local Hardhat node for development, matching Decision 010 (Sepolia stays a later, real-network upgrade behind the same env-selected config, same pattern as AzamPay in Stage 4).
+
+Backend: a blockchain service (server/src/services/blockchain.service.ts) wraps ethers.js — a lazily-built provider/wallet/contract client that degrades gracefully when unconfigured, a deterministic SHA-256 proof hash (Decision 010: donation ID, campaign ID, amount, receipt number, payment reference, timestamp), one-transaction-per-donation recording, and a live no-gas contract read for reconciliation. Proof recording fires immediately after a donation is created but is never awaited by the payment callback (flows/payment-flow.md: blockchain failure must never lose donation data); on success it confirms the donation's blockchain_records row with the real tx hash, block number, and network. The donor GET /donations/:id/verify now does a live chain reconciliation when a proof is still pending, self-healing if a background write crashed. A new public GET /api/verify/:receiptNumber (no auth) backs the transparency "Explorer": looks up a donation by receipt number and returns campaign, amount, date, and tx hash — never donor name, email, or payment reference.
+
+Frontend: a public /verify page (plus /verify/:receiptNumber deep link) with a receipt lookup form, pending/verified/not-found states, and a network-aware block explorer link (Sepolia links out; local dev shows the raw hash since there's no public explorer for it), linked from the footer. The donation detail page's transaction link and the donor's own verify flow now reflect real on-chain state instead of a permanent placeholder.
+
+Verified end-to-end against a real local Hardhat chain and live Neon: 14/14 automated API checks (including cross-checking the Hardhat node's own log for the exact transaction hash returned by the API) plus 10/10 real-browser checks on the /verify page (deep link auto-verification, no PII leak, correct not-found state, footer link). Contract's own 4 Hardhat tests still pass. Client and server build and lint clean. Test data created during verification was reverted.
+
+Note: the local Hardhat node holds its chain in memory and resets on restart — redeploy (contracts/: `npm run node`, then `npm run deploy:local`) and update CONTRACT_ADDRESS in server/.env if it's ever restarted.
+
+Next up: Stage 6 — Administrator (dashboard, campaign management, beneficiaries, disbursements with dual approval, reports, audit logs). Disbursement proofs reuse the same contract (registerDisbursement/verifyDisbursement already implemented) once disbursements themselves are built.
+
+---
+
 # Pending
 
 Campaign Management
-
-Blockchain Integration
 
 Beneficiary Module
 
