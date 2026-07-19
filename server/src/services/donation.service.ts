@@ -1,12 +1,22 @@
 import {
+  confirmBlockchainRecord,
   findDonationById,
+  findDonationByReceiptNumber,
   findDonationsByDonor,
   getAdminDonationStats,
   getDonorMonthlyTotals,
   getDonorSummary,
   type DonationDetailRow,
 } from '../repositories/donation.repository'
+import {
+  computeProofHash,
+  isBlockchainConfigured,
+  reconcileProof,
+  recordDonationProof,
+} from './blockchain.service'
 import { ApiError } from '../utils/ApiError'
+import { logger } from '../utils/logger'
+import type { DonationRow } from '../database/schema'
 
 export type ProofStatus = 'pending' | 'confirmed' | 'failed'
 
@@ -43,6 +53,36 @@ function toDto(row: DonationDetailRow): DonationDto {
       txHash: row.txHash,
       network: row.network,
     },
+  }
+}
+
+/**
+ * Write a donation's blockchain proof and confirm it in Postgres. Callers
+ * invoke this without awaiting it (flows/payment-flow.md), so a slow or
+ * unavailable chain never blocks the payment callback response. On failure
+ * the proof simply stays 'pending' and heals on the next verify call.
+ */
+export async function recordBlockchainProof(donation: DonationRow): Promise<void> {
+  if (!isBlockchainConfigured()) return
+
+  try {
+    const proofHash = computeProofHash({
+      donationId: donation.id,
+      campaignId: donation.campaignId,
+      amount: donation.amount,
+      receiptNumber: donation.receiptNumber,
+      paymentReference: donation.paymentReference,
+      createdAt: donation.createdAt,
+    })
+    const result = await recordDonationProof({
+      donationId: donation.id,
+      campaignId: donation.campaignId,
+      proofHash,
+    })
+    await confirmBlockchainRecord({ donationId: donation.id, ...result })
+    logger.info(`Blockchain proof confirmed for donation ${donation.id} (tx ${result.txHash || 'reconciled'})`)
+  } catch (error) {
+    logger.error(`Failed to record blockchain proof for donation ${donation.id}:`, error)
   }
 }
 
@@ -93,9 +133,17 @@ export interface VerificationResult {
   message: string
 }
 
+const VERIFY_MESSAGES: Record<ProofStatus, string> = {
+  pending: 'This donation is queued for its blockchain proof.',
+  confirmed: 'This donation is permanently recorded on the blockchain.',
+  failed: 'The blockchain proof could not be recorded. Support has been notified.',
+}
+
 /**
- * Blockchain verification for a donation. Until Stage 5 writes proofs on-chain,
- * every record is 'pending' and reports that the proof is being prepared.
+ * Blockchain verification for a donation (flows/blockchain-flow.md: "Backend
+ * Queries Blockchain"). A confirmed record is trusted as cached; a pending one
+ * gets a live, no-gas contract read so a proof recorded after a crashed
+ * background job still surfaces without waiting on a retry job.
  */
 export async function verifyDonation(
   donorId: number,
@@ -105,19 +153,74 @@ export async function verifyDonation(
   if (!row) {
     throw ApiError.notFound('Donation not found')
   }
-  const status = (row.proofStatus ?? 'pending') as ProofStatus
-  const messages: Record<ProofStatus, string> = {
-    pending: 'This donation is queued for its blockchain proof.',
-    confirmed: 'This donation is permanently recorded on the blockchain.',
-    failed: 'The blockchain proof could not be recorded. Support has been notified.',
+
+  let status = (row.proofStatus ?? 'pending') as ProofStatus
+  let txHash = row.txHash
+  let network = row.network
+
+  if (status === 'pending' && isBlockchainConfigured()) {
+    const expectedHash = computeProofHash({
+      donationId: row.id,
+      campaignId: row.campaignId,
+      amount: row.amount,
+      receiptNumber: row.receiptNumber,
+      paymentReference: row.paymentReference,
+      createdAt: row.createdAt,
+    })
+    const found = await reconcileProof(row.id, expectedHash).catch(() => null)
+    if (found) {
+      await confirmBlockchainRecord({ donationId: row.id, ...found })
+      status = 'confirmed'
+      txHash = found.txHash
+      network = found.network
+    }
   }
+
   return {
     donationId: row.id,
     status,
-    txHash: row.txHash,
-    network: row.network,
+    txHash,
+    network,
     verified: status === 'confirmed',
-    message: messages[status],
+    message: VERIFY_MESSAGES[status],
+  }
+}
+
+export interface PublicVerificationResult {
+  status: 'pending' | 'verified'
+  type: 'donation'
+  campaignId: number
+  campaignTitle: string
+  amount: number
+  createdAt: string
+  receiptNumber: string
+  txHash: string | null
+  network: string | null
+}
+
+/**
+ * Public transparency lookup by receipt number, no account required
+ * (pages/public-verification.md). Never returns donor name, email, or payment
+ * reference. Reads the cached proof status rather than live-querying the
+ * chain: the donor's own /verify call (or the background recording job)
+ * already reconciles it, so this stays a fast, no-RPC read.
+ */
+export async function getPublicVerification(receiptNumber: string): Promise<PublicVerificationResult> {
+  const row = await findDonationByReceiptNumber(receiptNumber)
+  if (!row) {
+    throw ApiError.notFound('No verified record found for this receipt')
+  }
+  const confirmed = row.proofStatus === 'confirmed'
+  return {
+    status: confirmed ? 'verified' : 'pending',
+    type: 'donation',
+    campaignId: row.campaignId,
+    campaignTitle: row.campaignTitle,
+    amount: row.amount,
+    createdAt: row.createdAt.toISOString(),
+    receiptNumber: row.receiptNumber,
+    txHash: confirmed ? row.txHash : null,
+    network: confirmed ? row.network : null,
   }
 }
 

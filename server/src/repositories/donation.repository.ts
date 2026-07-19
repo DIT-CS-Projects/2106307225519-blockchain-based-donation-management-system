@@ -84,6 +84,28 @@ export async function recordDonation(input: RecordDonationInput): Promise<Donati
   })
 }
 
+export interface ConfirmBlockchainRecordInput {
+  donationId: number
+  txHash: string
+  network: string
+  blockNumber: number
+}
+
+/** Mark a donation's blockchain proof confirmed once the chain write lands. */
+export async function confirmBlockchainRecord(input: ConfirmBlockchainRecordInput): Promise<void> {
+  const client = requireDb()
+  await client
+    .update(blockchainRecords)
+    .set({
+      status: 'confirmed',
+      txHash: input.txHash,
+      network: input.network,
+      blockNumber: input.blockNumber,
+      recordedAt: new Date(),
+    })
+    .where(eq(blockchainRecords.donationId, input.donationId))
+}
+
 /** A donation joined with the context needed for detail views and receipts. */
 export interface DonationDetailRow {
   id: number
@@ -133,6 +155,48 @@ export async function findDonationById(
     .leftJoin(blockchainRecords, eq(blockchainRecords.donationId, donations.id))
     .leftJoin(paymentTransactions, eq(paymentTransactions.reference, donations.paymentReference))
     .where(and(eq(donations.id, id), eq(donations.donorId, donorId)))
+    .limit(1)
+  return row
+}
+
+/** Public-safe projection for the receipt-number lookup: no donor PII, no payment reference. */
+export interface PublicDonationRow {
+  id: number
+  amount: number
+  createdAt: Date
+  receiptNumber: string
+  campaignId: number
+  campaignTitle: string
+  proofStatus: (typeof blockchainRecords.status.enumValues)[number] | null
+  txHash: string | null
+  network: string | null
+}
+
+/**
+ * Look up a donation by its receipt number for the public verification page
+ * (pages/public-verification.md). No auth, no donor-scoping: this is the
+ * lookup key by design, and the projection carries no personal data.
+ */
+export async function findDonationByReceiptNumber(
+  receiptNumber: string,
+): Promise<PublicDonationRow | undefined> {
+  const client = requireDb()
+  const [row] = await client
+    .select({
+      id: donations.id,
+      amount: donations.amount,
+      createdAt: donations.createdAt,
+      receiptNumber: donations.receiptNumber,
+      campaignId: donations.campaignId,
+      campaignTitle: campaigns.title,
+      proofStatus: blockchainRecords.status,
+      txHash: blockchainRecords.txHash,
+      network: blockchainRecords.network,
+    })
+    .from(donations)
+    .innerJoin(campaigns, eq(campaigns.id, donations.campaignId))
+    .leftJoin(blockchainRecords, eq(blockchainRecords.donationId, donations.id))
+    .where(eq(donations.receiptNumber, receiptNumber))
     .limit(1)
   return row
 }

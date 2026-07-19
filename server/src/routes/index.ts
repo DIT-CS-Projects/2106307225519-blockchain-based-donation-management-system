@@ -6,6 +6,7 @@ import statsRoutes from './stats.routes'
 import contactRoutes from './contact.routes'
 import paymentRoutes from './payment.routes'
 import donationRoutes from './donation.routes'
+import verifyRoutes from './verify.routes'
 
 const router = Router()
 
@@ -16,9 +17,9 @@ router.use('/stats', statsRoutes)
 router.use('/contact', contactRoutes)
 router.use('/payments', paymentRoutes)
 router.use('/donations', donationRoutes)
+router.use('/verify', verifyRoutes)
 
 // Feature routers are mounted here per stage:
 // router.use('/disbursements', disbursementRoutes)
-// router.use('/blockchain', blockchainRoutes)
 
 export default router

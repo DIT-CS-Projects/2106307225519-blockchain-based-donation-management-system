@@ -6,6 +6,7 @@ import {
   updateTransactionStatus,
 } from '../repositories/payment.repository'
 import { recordDonation } from '../repositories/donation.repository'
+import { recordBlockchainProof } from './donation.service'
 import { getPaymentProvider } from './payment'
 import {
   PAYMENT_REFERENCE_PREFIX,
@@ -142,6 +143,10 @@ export async function handleCallback(payload: unknown): Promise<CallbackResult> 
 
   // Notifications are generated on donation success (Stage 6). Seam left here.
   logger.info(`Donation ${donation.id} recorded for payment ${reference}`)
+
+  // Fire-and-forget: never block the payment response on a chain write
+  // (flows/payment-flow.md). Failures are logged inside and heal on verify.
+  void recordBlockchainProof(donation)
 
   return { status: 'success', reference, donationId: donation.id }
 }

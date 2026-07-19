@@ -18,6 +18,13 @@ const envSchema = z.object({
   PAYMENT_PROVIDER: z.enum(['mock', 'azampay']).default('mock'),
   // How long a checkout session stays payable before it expires.
   PAYMENT_SESSION_TTL_MINUTES: z.coerce.number().int().positive().default(30),
+  // Blockchain (Decision 010). 'local' targets a Hardhat node for development;
+  // 'sepolia' is the flip-the-switch upgrade for demonstration.
+  BLOCKCHAIN_NETWORK: z.enum(['local', 'sepolia']).default('local'),
+  BLOCKCHAIN_RPC_URL: z.string().url().default('http://127.0.0.1:8545'),
+  // Backend wallet that signs proof-recording transactions (never exposed to donors).
+  BACKEND_WALLET_PRIVATE_KEY: z.string().min(1).optional(),
+  CONTRACT_ADDRESS: z.string().min(1).optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)
