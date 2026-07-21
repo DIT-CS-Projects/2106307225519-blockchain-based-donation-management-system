@@ -25,6 +25,17 @@ const envSchema = z.object({
   // Backend wallet that signs proof-recording transactions (never exposed to donors).
   BACKEND_WALLET_PRIVATE_KEY: z.string().min(1).optional(),
   CONTRACT_ADDRESS: z.string().min(1).optional(),
+  // Email (Decision 017). 'console' logs instead of sending, no credentials
+  // needed; 'smtp' selects the real Nodemailer adapter.
+  EMAIL_PROVIDER: z.enum(['console', 'smtp']).default('console'),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().default('Changia <no-reply@changia.org>'),
+  // Disbursement payout gateway. 'mock' completes instantly, no credentials
+  // needed; 'azampay' selects the real adapter once onboarded.
+  DISBURSEMENT_PROVIDER: z.enum(['mock', 'azampay']).default('mock'),
 })
 
 const parsed = envSchema.safeParse(process.env)

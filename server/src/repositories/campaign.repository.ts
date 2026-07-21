@@ -1,6 +1,6 @@
 import { SQL, and, asc, count, desc, eq, gte, ilike, isNull, lte, ne, or } from 'drizzle-orm'
 import { requireDb } from '../config/database'
-import { campaigns, type CampaignRow } from '../database/schema'
+import { campaigns, type CampaignRow, type NewCampaignRow } from '../database/schema'
 
 export type CampaignSort = 'newest' | 'endingSoon' | 'mostFunded' | 'alphabetical'
 
@@ -86,6 +86,89 @@ export async function findDonatableCampaign(id: number): Promise<CampaignRow | u
     )
     .limit(1)
   return row
+}
+
+// --- Admin: full visibility, no public-status filter ---
+
+export interface AdminCampaignListFilters {
+  status?: CampaignRow['status']
+  page: number
+  limit: number
+}
+
+export async function findCampaignsAdmin(
+  filters: AdminCampaignListFilters,
+): Promise<{ rows: CampaignRow[]; total: number }> {
+  const client = requireDb()
+  const conditions: SQL[] = [isNull(campaigns.deletedAt)]
+  if (filters.status) conditions.push(eq(campaigns.status, filters.status))
+  const where = and(...conditions)
+
+  const [rows, [{ total }]] = await Promise.all([
+    client
+      .select()
+      .from(campaigns)
+      .where(where)
+      .orderBy(desc(campaigns.createdAt))
+      .limit(filters.limit)
+      .offset((filters.page - 1) * filters.limit),
+    client.select({ total: count() }).from(campaigns).where(where),
+  ])
+  return { rows, total }
+}
+
+export async function findCampaignByIdAdmin(id: number): Promise<CampaignRow | undefined> {
+  const client = requireDb()
+  const [row] = await client
+    .select()
+    .from(campaigns)
+    .where(and(eq(campaigns.id, id), isNull(campaigns.deletedAt)))
+    .limit(1)
+  return row
+}
+
+export async function insertCampaign(data: NewCampaignRow): Promise<CampaignRow> {
+  const client = requireDb()
+  const [row] = await client.insert(campaigns).values(data).returning()
+  return row
+}
+
+export type CampaignUpdate = Partial<
+  Pick<
+    NewCampaignRow,
+    'title' | 'description' | 'category' | 'imageUrl' | 'targetAmount' | 'startDate' | 'endDate' | 'status' | 'featured'
+  >
+>
+
+export async function updateCampaignRow(
+  id: number,
+  data: CampaignUpdate,
+): Promise<CampaignRow | undefined> {
+  const client = requireDb()
+  const [row] = await client
+    .update(campaigns)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(campaigns.id, id))
+    .returning()
+  return row
+}
+
+export async function softDeleteCampaign(id: number): Promise<void> {
+  const client = requireDb()
+  await client
+    .update(campaigns)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(eq(campaigns.id, id))
+}
+
+/** Count of campaigns in a given status (admin dashboard stat). */
+export async function countCampaignsByStatus(status: CampaignRow['status']): Promise<number> {
+  const client = requireDb()
+  const [row] = await client
+    .select({ total: count() })
+    .from(campaigns)
+    .where(and(eq(campaigns.status, status), isNull(campaigns.deletedAt)))
+  return row?.total ?? 0
 }
 
 export async function findRelatedCampaigns(

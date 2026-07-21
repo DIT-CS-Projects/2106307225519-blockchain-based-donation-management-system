@@ -25,6 +25,8 @@ import type {
 } from '../validation/auth'
 import { revokeAllSessions } from './session.service'
 import { toUserDto, type UserDto } from './user.dto'
+import { notify } from './notification.service'
+import { getEmailProvider } from './email'
 
 const MS_PER_SECOND = 1000
 
@@ -80,6 +82,12 @@ export async function changePassword(
   await updateUserPassword(userId, await hashPassword(input.newPassword))
   await revokeAllSessions(userId)
   logger.info(`Password changed: user ${userId}`)
+  void notify({
+    userIds: [userId],
+    type: 'password_changed',
+    title: 'Your password was changed',
+    message: 'If this was not you, contact support immediately.',
+  })
 }
 
 /**
@@ -105,9 +113,12 @@ export async function forgotPassword(input: ForgotPasswordInput): Promise<void> 
   })
 
   const resetLink = `${env.CLIENT_ORIGIN}/reset-password?token=${rawToken}`
-  // Email delivery (SMTP) is wired in a later slice; log the link meanwhile so
-  // the flow is exercisable end-to-end without leaking to the client response.
-  logger.info(`Password reset requested for user ${user.id}. Reset link: ${resetLink}`)
+  logger.info(`Password reset requested for user ${user.id}.`)
+  await getEmailProvider().send({
+    to: user.email,
+    subject: 'Reset your Changia password',
+    text: `Use this link to reset your password (valid for a limited time): ${resetLink}`,
+  })
 }
 
 /**

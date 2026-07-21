@@ -20,6 +20,7 @@ import {
   type IssuedTokens,
 } from './session.service'
 import { toUserDto, type UserDto } from './user.dto'
+import { AUDIT_ACTIONS, recordAudit } from './auditLog.service'
 
 const MS_PER_SECOND = 1000
 
@@ -70,10 +71,20 @@ export async function login(
     throw new ApiError(423, 'Account locked due to too many attempts. Try again later.')
   }
 
+  if (user.status !== 'active') {
+    logger.warn(`Login blocked for ${user.status} account: user ${user.id}`)
+    throw ApiError.forbidden(
+      user.status === 'suspended'
+        ? 'This account has been suspended. Contact support for help.'
+        : 'This account has been deactivated.',
+    )
+  }
+
   const passwordOk = await verifyPassword(input.password, user.passwordHash)
   if (!passwordOk) {
     await registerFailedAttempt(user.id, user.failedLoginAttempts)
     logger.warn(`Failed login attempt: user ${user.id}`)
+    void recordAudit({ userId: user.id, action: AUDIT_ACTIONS.loginFailed })
     throw ApiError.unauthorized('Incorrect email or password')
   }
 
@@ -83,6 +94,7 @@ export async function login(
 
   const tokens = await issueSession(user, userAgent, input.rememberMe ?? true)
   logger.info(`Login successful: user ${user.id}`)
+  void recordAudit({ userId: user.id, action: AUDIT_ACTIONS.loginSuccess })
   return { user: toUserDto(user), tokens }
 }
 

@@ -267,6 +267,93 @@ export async function getDonorMonthlyTotals(
   return rows.map((r) => ({ month: r.month, total: Number(r.total) }))
 }
 
+/** Distinct donors who have supported a campaign (for campaign event fan-out). */
+export async function findDistinctDonorIdsByCampaign(campaignId: number): Promise<number[]> {
+  const client = requireDb()
+  const rows = await client
+    .selectDistinct({ donorId: donations.donorId })
+    .from(donations)
+    .where(eq(donations.campaignId, campaignId))
+  return rows.map((r) => r.donorId)
+}
+
+/** Platform-wide monthly donation totals since a cutoff date (dashboard chart). */
+export async function getPlatformMonthlyTotals(since: Date): Promise<MonthlyTotalRow[]> {
+  const client = requireDb()
+  const rows = await client
+    .select({
+      month: sql<string>`to_char(date_trunc('month', ${donations.createdAt}), 'YYYY-MM')`,
+      total: sql<string>`sum(${donations.amount})`,
+    })
+    .from(donations)
+    .where(gte(donations.createdAt, since))
+    .groupBy(sql`date_trunc('month', ${donations.createdAt})`)
+    .orderBy(sql`date_trunc('month', ${donations.createdAt})`)
+
+  return rows.map((r) => ({ month: r.month, total: Number(r.total) }))
+}
+
+export interface PaymentMethodBreakdownRow {
+  method: string
+  total: number
+}
+
+/** Donation totals grouped by payment method (dashboard chart). */
+export async function getPaymentMethodBreakdown(): Promise<PaymentMethodBreakdownRow[]> {
+  const client = requireDb()
+  const rows = await client
+    .select({
+      method: paymentTransactions.method,
+      total: sql<string>`coalesce(sum(${paymentTransactions.amount}), 0)`,
+    })
+    .from(paymentTransactions)
+    .where(eq(paymentTransactions.status, 'success'))
+    .groupBy(paymentTransactions.method)
+
+  return rows.map((r) => ({ method: r.method, total: Number(r.total) }))
+}
+
+export interface RecentDonationRow {
+  id: number
+  donorName: string
+  campaignTitle: string
+  amount: number
+  paymentStatus: string
+  proofStatus: string | null
+  createdAt: Date
+}
+
+/** Most recent donations platform-wide, for the admin dashboard table. */
+export async function findRecentDonations(limit: number): Promise<RecentDonationRow[]> {
+  const client = requireDb()
+  return client
+    .select({
+      id: donations.id,
+      donorName: users.fullName,
+      campaignTitle: campaigns.title,
+      amount: donations.amount,
+      paymentStatus: sql<string>`'success'`,
+      proofStatus: blockchainRecords.status,
+      createdAt: donations.createdAt,
+    })
+    .from(donations)
+    .innerJoin(users, eq(users.id, donations.donorId))
+    .innerJoin(campaigns, eq(campaigns.id, donations.campaignId))
+    .leftJoin(blockchainRecords, eq(blockchainRecords.donationId, donations.id))
+    .orderBy(desc(donations.createdAt))
+    .limit(limit)
+}
+
+/** Count of proofs (donation or disbursement) confirmed on-chain (dashboard stat). */
+export async function countConfirmedBlockchainProofs(): Promise<number> {
+  const client = requireDb()
+  const [row] = await client
+    .select({ total: sql<string>`count(*)` })
+    .from(blockchainRecords)
+    .where(eq(blockchainRecords.status, 'confirmed'))
+  return Number(row?.total ?? 0)
+}
+
 export interface AdminDonationStats {
   totalCount: number
   totalAmount: number

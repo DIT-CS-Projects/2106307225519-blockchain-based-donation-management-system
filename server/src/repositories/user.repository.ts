@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from 'drizzle-orm'
+import { and, count, desc, eq, ilike, isNull, or, sql, type SQL } from 'drizzle-orm'
 import { requireDb } from '../config/database'
 import { users, type NewUserRow, type UserRow } from '../database/schema'
 
@@ -87,6 +87,67 @@ export async function updateLoginState(
     .update(users)
     .set({ failedLoginAttempts, lockedUntil, updatedAt: new Date() })
     .where(eq(users.id, id))
+}
+
+/** IDs of all active users holding a given role (e.g. broadcasting to admins). */
+export async function findUserIdsByRole(role: UserRow['role']): Promise<number[]> {
+  const client = requireDb()
+  const rows = await client
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.role, role), isNull(users.deletedAt)))
+  return rows.map((r) => r.id)
+}
+
+// --- Admin ---
+
+export interface AdminUserFilters {
+  role?: UserRow['role']
+  search?: string
+  page: number
+  limit: number
+}
+
+export async function findUsersAdmin(
+  filters: AdminUserFilters,
+): Promise<{ rows: UserRow[]; total: number }> {
+  const client = requireDb()
+  const conditions: SQL[] = [isNull(users.deletedAt)]
+  if (filters.role) conditions.push(eq(users.role, filters.role))
+  if (filters.search) {
+    const term = `%${filters.search}%`
+    conditions.push(or(ilike(users.fullName, term), ilike(users.email, term))!)
+  }
+  const where = and(...conditions)
+
+  const [rows, [{ total }]] = await Promise.all([
+    client
+      .select()
+      .from(users)
+      .where(where)
+      .orderBy(desc(users.createdAt))
+      .limit(filters.limit)
+      .offset((filters.page - 1) * filters.limit),
+    client.select({ total: count() }).from(users).where(where),
+  ])
+  return { rows, total }
+}
+
+/** Registered (non-deleted) users, for the admin dashboard stat. */
+export async function countUsers(): Promise<number> {
+  const client = requireDb()
+  const [row] = await client.select({ total: count() }).from(users).where(isNull(users.deletedAt))
+  return row?.total ?? 0
+}
+
+export async function setUserStatus(id: number, status: UserRow['status']): Promise<UserRow | undefined> {
+  const client = requireDb()
+  const [row] = await client
+    .update(users)
+    .set({ status, updatedAt: new Date() })
+    .where(eq(users.id, id))
+    .returning()
+  return row
 }
 
 /** Upsert the initial administrator by email. Used only by the seed script. */

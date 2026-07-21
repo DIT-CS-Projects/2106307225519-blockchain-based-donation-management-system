@@ -1,3 +1,4 @@
+import path from 'node:path'
 import express, { type Express } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -13,7 +14,9 @@ import { errorHandler } from './middleware/errorHandler'
 export function createApp(): Express {
   const app = express()
 
-  app.use(helmet())
+  // Helmet's default CORP would block the client (a different origin) from
+  // loading uploaded images; cross-origin reads are the whole point here.
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
   app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }))
   app.use(express.json({ limit: '1mb' }))
   app.use(express.urlencoded({ extended: true }))
@@ -22,6 +25,9 @@ export function createApp(): Express {
   if (env.NODE_ENV !== 'test') {
     app.use(morgan('dev'))
   }
+
+  // Uploaded campaign/beneficiary images (server/src/middleware/upload.ts).
+  app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')))
 
   app.use('/api', apiLimiter, routes)
 

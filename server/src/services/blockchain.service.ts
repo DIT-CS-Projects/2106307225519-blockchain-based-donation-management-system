@@ -10,6 +10,9 @@ const REGISTRY_ABI = [
   'function registerDonation(uint256 donationId, uint256 campaignId, bytes32 proofHash) external',
   'function getDonation(uint256 donationId) external view returns (tuple(uint256 recordId, uint256 campaignId, bytes32 proofHash, uint64 timestamp, uint8 recordType, bool exists))',
   'event DonationRecorded(uint256 indexed donationId, uint256 indexed campaignId, bytes32 proofHash, uint64 timestamp)',
+  'function registerDisbursement(uint256 disbursementId, uint256 campaignId, bytes32 proofHash) external',
+  'function getDisbursement(uint256 disbursementId) external view returns (tuple(uint256 recordId, uint256 campaignId, bytes32 proofHash, uint64 timestamp, uint8 recordType, bool exists))',
+  'event DisbursementRecorded(uint256 indexed disbursementId, uint256 indexed campaignId, bytes32 proofHash, uint64 timestamp)',
 ] as const
 
 const NETWORK_LABEL: Record<typeof env.BLOCKCHAIN_NETWORK, string> = {
@@ -169,6 +172,109 @@ export async function getOnChainDonation(donationId: number): Promise<OnChainPro
 
   try {
     const proof = await c.contract.getDonation(donationId)
+    return {
+      exists: proof.exists,
+      proofHash: proof.proofHash,
+      campaignId: Number(proof.campaignId),
+      timestamp: Number(proof.timestamp),
+    }
+  } catch (error) {
+    if (error instanceof Error && /ProofNotFound/.test(error.message)) {
+      return { exists: false, proofHash: '', campaignId: 0, timestamp: 0 }
+    }
+    throw error
+  }
+}
+
+// --- Disbursements: same recording flow as donations (Decision 016). ---
+
+/**
+ * Deterministic proof hash for a disbursement, mirroring computeProofHash:
+ * SHA-256 over disbursement ID, campaign ID, amount, and completion timestamp.
+ */
+export function computeDisbursementProofHash(input: {
+  disbursementId: number
+  campaignId: number
+  amount: number
+  completedAt: Date
+}): string {
+  const payload = [
+    input.disbursementId,
+    input.campaignId,
+    input.amount,
+    input.completedAt.toISOString(),
+  ].join(':')
+  return `0x${createHash('sha256').update(payload).digest('hex')}`
+}
+
+/** Write a disbursement proof on-chain and wait for one confirmation. */
+export async function recordDisbursementProof(input: {
+  disbursementId: number
+  campaignId: number
+  proofHash: string
+}): Promise<RecordProofResult> {
+  const c = getClient()
+  if (!c) throw new Error('Blockchain is not configured')
+
+  try {
+    const tx = await c.contract.registerDisbursement(
+      input.disbursementId,
+      input.campaignId,
+      input.proofHash,
+    )
+    const receipt = (await tx.wait()) as ContractTransactionReceipt
+    return {
+      txHash: receipt.hash,
+      blockNumber: receipt.blockNumber,
+      network: NETWORK_LABEL[env.BLOCKCHAIN_NETWORK],
+    }
+  } catch (error) {
+    if (error instanceof Error && /ProofAlreadyExists/.test(error.message)) {
+      const onChain = await getOnChainDisbursement(input.disbursementId)
+      if (onChain.exists && onChain.proofHash === input.proofHash) {
+        logger.warn(`Disbursement ${input.disbursementId} was already recorded on-chain; reconciling.`)
+        const found = await findRecordedDisbursementTx(input.disbursementId)
+        if (!found) {
+          throw new Error(
+            `Proof exists on-chain for disbursement ${input.disbursementId} but its event log is missing`,
+            { cause: error },
+          )
+        }
+        return found
+      }
+    }
+    throw error
+  }
+}
+
+async function findRecordedDisbursementTx(disbursementId: number): Promise<RecordProofResult | null> {
+  const c = getClient()
+  if (!c) return null
+  const filter = c.contract.filters.DisbursementRecorded(disbursementId)
+  const [log] = await c.contract.queryFilter(filter)
+  if (!log) return null
+  return {
+    txHash: log.transactionHash,
+    blockNumber: log.blockNumber,
+    network: NETWORK_LABEL[env.BLOCKCHAIN_NETWORK],
+  }
+}
+
+export async function reconcileDisbursementProof(
+  disbursementId: number,
+  expectedProofHash: string,
+): Promise<RecordProofResult | null> {
+  const onChain = await getOnChainDisbursement(disbursementId)
+  if (!onChain.exists || onChain.proofHash !== expectedProofHash) return null
+  return findRecordedDisbursementTx(disbursementId)
+}
+
+export async function getOnChainDisbursement(disbursementId: number): Promise<OnChainProof> {
+  const c = getClient()
+  if (!c) throw new Error('Blockchain is not configured')
+
+  try {
+    const proof = await c.contract.getDisbursement(disbursementId)
     return {
       exists: proof.exists,
       proofHash: proof.proofHash,

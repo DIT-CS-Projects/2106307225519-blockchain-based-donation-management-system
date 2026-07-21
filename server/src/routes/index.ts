@@ -7,6 +7,11 @@ import contactRoutes from './contact.routes'
 import paymentRoutes from './payment.routes'
 import donationRoutes from './donation.routes'
 import verifyRoutes from './verify.routes'
+import notificationRoutes from './notification.routes'
+import beneficiaryRoutes from './beneficiary.routes'
+import disbursementRoutes from './disbursement.routes'
+import adminRoutes from './admin.routes'
+import reportRoutes from './report.routes'
 
 const router = Router()
 
@@ -18,8 +23,10 @@ router.use('/contact', contactRoutes)
 router.use('/payments', paymentRoutes)
 router.use('/donations', donationRoutes)
 router.use('/verify', verifyRoutes)
-
-// Feature routers are mounted here per stage:
-// router.use('/disbursements', disbursementRoutes)
+router.use('/notifications', notificationRoutes)
+router.use('/beneficiaries', beneficiaryRoutes)
+router.use('/disbursements', disbursementRoutes)
+router.use('/admin', adminRoutes)
+router.use('/reports', reportRoutes)
 
 export default router

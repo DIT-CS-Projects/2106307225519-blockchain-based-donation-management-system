@@ -1,13 +1,14 @@
-import { findDonatableCampaign } from '../repositories/campaign.repository'
+import { findCampaignByIdAdmin, findDonatableCampaign } from '../repositories/campaign.repository'
 import {
   createTransaction,
   findTransactionByReference,
   findTransactionStatusView,
   updateTransactionStatus,
 } from '../repositories/payment.repository'
-import { recordDonation } from '../repositories/donation.repository'
+import { findDistinctDonorIdsByCampaign, recordDonation } from '../repositories/donation.repository'
 import { recordBlockchainProof } from './donation.service'
 import { getPaymentProvider } from './payment'
+import { notify } from './notification.service'
 import {
   PAYMENT_REFERENCE_PREFIX,
   RECEIPT_NUMBER_PREFIX,
@@ -20,6 +21,7 @@ import {
 import { ApiError } from '../utils/ApiError'
 import { logger } from '../utils/logger'
 import type { CreateSessionInput } from '../validation/payment'
+import { formatTZS } from '../utils/format'
 
 export interface CreateSessionResult {
   paymentReference: string
@@ -141,14 +143,45 @@ export async function handleCallback(payload: unknown): Promise<CallbackResult> 
     providerResponse: result.raw,
   })
 
-  // Notifications are generated on donation success (Stage 6). Seam left here.
   logger.info(`Donation ${donation.id} recorded for payment ${reference}`)
 
   // Fire-and-forget: never block the payment response on a chain write
   // (flows/payment-flow.md). Failures are logged inside and heal on verify.
   void recordBlockchainProof(donation)
 
+  void notify({
+    userIds: [donation.donorId],
+    type: 'donation_success',
+    title: 'Thank you for your donation',
+    message: `Your donation of ${formatTZS(donation.amount)} was received.`,
+    link: `/donations/${donation.id}`,
+  })
+  void notifyIfGoalJustAchieved(donation.campaignId, donation.amount)
+
   return { status: 'success', reference, donationId: donation.id }
+}
+
+/**
+ * Fire 'campaign_goal_achieved' exactly once, at the donation that crosses the
+ * target (raisedAmount already includes this donation's credited amount).
+ */
+async function notifyIfGoalJustAchieved(campaignId: number, thisDonationAmount: number): Promise<void> {
+  const campaign = await findCampaignByIdAdmin(campaignId)
+  if (!campaign) return
+  const before = campaign.raisedAmount - thisDonationAmount
+  const justCrossed = before < campaign.targetAmount && campaign.raisedAmount >= campaign.targetAmount
+  if (!justCrossed) return
+
+  const donorIds = await findDistinctDonorIdsByCampaign(campaignId)
+  if (donorIds.length === 0) return
+
+  await notify({
+    userIds: donorIds,
+    type: 'campaign_goal_achieved',
+    title: `${campaign.title} reached its goal!`,
+    message: 'Thanks to donors like you, this campaign hit its funding target.',
+    link: `/campaigns/${campaignId}`,
+  })
 }
 
 export interface PaymentStatusResult {
