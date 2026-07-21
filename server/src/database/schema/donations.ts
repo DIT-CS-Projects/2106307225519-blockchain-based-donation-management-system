@@ -25,10 +25,6 @@ export const paymentStatus = pgEnum('payment_status', [
 // is stored as free text so new providers need no migration.
 export const paymentMethod = pgEnum('payment_method', ['mobile_money', 'bank'])
 
-// Blockchain proof lifecycle. Stage 4 only ever writes 'pending'; Stage 5 moves
-// rows to 'confirmed' once the on-chain transaction settles.
-export const proofStatus = pgEnum('proof_status', ['pending', 'confirmed', 'failed'])
-
 /**
  * A completed donation. Created only after a payment is verified
  * (docs/BUSINESS_RULES.md: Donation Rules). Immutable and never deleted, so
@@ -99,31 +95,7 @@ export const paymentTransactions = pgTable(
   ],
 )
 
-/**
- * Authoritative source for blockchain proof data (database/DATABASE_SCHEMA.md).
- * One row per donation. Stage 4 inserts it as 'pending'; Stage 5 fills in the
- * transaction hash and flips it to 'confirmed'. Never deleted.
- */
-export const blockchainRecords = pgTable(
-  'blockchain_records',
-  {
-    id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
-    donationId: bigint('donation_id', { mode: 'number' })
-      .notNull()
-      .references(() => donations.id),
-    status: proofStatus('status').notNull().default('pending'),
-    txHash: varchar('tx_hash', { length: 66 }),
-    network: varchar('network', { length: 40 }),
-    blockNumber: bigint('block_number', { mode: 'number' }),
-    recordedAt: timestamp('recorded_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [uniqueIndex('blockchain_records_donation_unique').on(table.donationId)],
-)
-
 export type DonationRow = typeof donations.$inferSelect
 export type NewDonationRow = typeof donations.$inferInsert
 export type PaymentTransactionRow = typeof paymentTransactions.$inferSelect
 export type NewPaymentTransactionRow = typeof paymentTransactions.$inferInsert
-export type BlockchainRecordRow = typeof blockchainRecords.$inferSelect
-export type NewBlockchainRecordRow = typeof blockchainRecords.$inferInsert

@@ -14,6 +14,10 @@ import {
 // creates a donor; admins are provisioned out-of-band (env-based seed script).
 export const userRole = pgEnum('user_role', ['donor', 'admin'])
 
+// Account status (api/admin.md: PATCH /users/:id/status). Suspended and
+// deactivated accounts are blocked from logging in.
+export const userStatus = pgEnum('user_status', ['active', 'suspended', 'deactivated'])
+
 export const users = pgTable(
   'users',
   {
@@ -23,6 +27,7 @@ export const users = pgTable(
     phone: varchar('phone', { length: 30 }).notNull(),
     passwordHash: text('password_hash').notNull(),
     role: userRole('role').notNull().default('donor'),
+    status: userStatus('status').notNull().default('active'),
     profilePhotoUrl: text('profile_photo_url'),
     // Account lockout after repeated failed logins (docs/SECURITY.md).
     failedLoginAttempts: integer('failed_login_attempts').notNull().default(0),
