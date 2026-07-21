@@ -154,17 +154,31 @@ Next up: Stage 6 — Administrator (dashboard, campaign management, beneficiarie
 
 ---
 
+# Completed — Stage 6 Administrator
+
+Database: beneficiaries, disbursements, disbursement_approvals, notifications, audit_logs tables; blockchain_records made polymorphic (donation OR disbursement, mirroring the contract's own RecordType) so disbursement proofs reuse the same table; users gained a status column (active/suspended/deactivated).
+
+Campaign management: admin CRUD (create as draft, update, archive, soft delete) with Multer local-disk image upload (validated type/size, random filenames — never the client-supplied name), all audit-logged. Beneficiaries: full CRUD, admin-only verification toggle, donor-facing reads show only verified beneficiaries (now live on the public campaign details page), contact info never exposed publicly.
+
+Disbursements: available balance = raised − completed disbursements; below the dual-approval threshold a payout is auto-approved and paid instantly (mock provider, real AzamPay adapter drops in later); at/above threshold it waits for a second administrator (the initiator can never approve their own) and rejection requires a reason. Every completed disbursement gets a blockchain proof via the same TransparencyRegistry contract used for donations (registerDisbursement, already built in Stage 1/5).
+
+Users: admin list/detail/status endpoints; suspending or deactivating a user revokes every session and blocks future login; an admin cannot suspend themselves.
+
+Dashboard: real aggregation (total donations/revenue, active campaigns, beneficiaries, registered users, confirmed chain transactions, recent donations, active campaign overview, donation-trend and payment-method charts via Recharts) behind a proper admin console shell (sidebar, mobile drawer, notification bell).
+
+Audit log: every admin write action (campaign/beneficiary/disbursement/user/notification) and every login attempt is recorded; read-only, searchable, filterable admin viewer.
+
+Notifications: in-app (DB-backed, bell + toast, 30s poll) for donation success, campaign closed/goal-achieved, beneficiary updates, password changed, disbursement completed/failed, and admin broadcasts; selected events also send email through an EmailProvider abstraction (console-log mock now, real Nodemailer/SMTP adapter behind the same interface once credentials exist — same pattern as the Stage 4 payment provider). The Stage 3 forgot-password flow, previously just logged, now actually sends through this provider.
+
+Reports: donation/campaign/beneficiary/disbursement/blockchain aggregation, each exportable as real CSV, Excel (exceljs), or PDF (pdfkit) through one shared export utility. The Stage 2 landing-page stats endpoint's `peopleHelped`/`verifiedDonations` seam (left at 0 pending "Stages 4-6") is now wired to real data.
+
+Verified end-to-end against live Neon and the local Hardhat chain: 46/47 automated API checks (campaign draft/publish visibility and RBAC, beneficiary verification gating, dual-approval disbursement lifecycle including self-approval prevention and insufficient-balance rejection, user suspend/reactivate/login-block, real dashboard numbers, audit trail, donor notification + broadcast delivery, all 5 reports with byte-verified CSV/xlsx/PDF exports, image upload + static serving, public stats). The one non-pass was a test-timing artifact (asserting an immediate response status that had already async-advanced to the next state), not a functional defect. Found and fixed one real bug along the way: `notify()` could crash the server via an unhandled rejection if a notification insert failed (e.g. a migration that hadn't applied yet); it now catches and logs internally, matching the fire-and-forget pattern already used elsewhere. Server and client build, lint, and typecheck clean.
+
+Next up: Stage 7 — Testing (manual, responsive, accessibility, performance, security), then Stage 8 Deployment.
+
+---
+
 # Pending
-
-Campaign Management
-
-Beneficiary Module
-
-Reports
-
-Notifications
-
-Audit Logs
 
 Testing
 
