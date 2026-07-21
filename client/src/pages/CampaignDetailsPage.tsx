@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { CampaignCard } from '@/components/cards/CampaignCard'
 import { DonationWidget } from '@/components/campaigns/DonationWidget'
 import { VerificationPanel } from '@/components/campaigns/VerificationPanel'
+import { BeneficiariesSection } from '@/components/campaigns/BeneficiariesSection'
 import { useFetch } from '@/hooks/useFetch'
 import { getCampaignDetails } from '@/services/campaigns'
 import { ROUTES } from '@/constants/routes'
@@ -105,6 +106,8 @@ export function CampaignDetailsPage() {
                 {campaign.description}
               </p>
             </div>
+
+            <BeneficiariesSection campaignId={campaign.id} />
           </div>
 
           <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">

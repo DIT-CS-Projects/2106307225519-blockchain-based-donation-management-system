@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { UserMenu } from '@/components/layout/UserMenu'
+import { NotificationBell } from '@/components/shared/NotificationBell'
 import { useScrolled } from '@/hooks/useScrolled'
 import { useAuth } from '@/hooks/useAuth'
 import { NAV_LINKS, ROUTES } from '@/constants/routes'
@@ -56,7 +57,10 @@ export function Navbar() {
         <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle />
           {status === 'authenticated' && user ? (
-            <UserMenu user={user} onLogout={handleLogout} />
+            <>
+              <NotificationBell />
+              <UserMenu user={user} onLogout={handleLogout} />
+            </>
           ) : status === 'unauthenticated' ? (
             <>
               <Button asChild variant="ghost">
@@ -70,6 +74,7 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-1 md:hidden">
+          {status === 'authenticated' && <NotificationBell />}
           <ThemeToggle />
           <MobileNav />
         </div>

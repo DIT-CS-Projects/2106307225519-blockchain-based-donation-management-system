@@ -13,6 +13,13 @@ export const ROUTES = {
   donations: '/donations',
   verify: '/verify',
   adminDashboard: '/admin',
+  adminCampaigns: '/admin/campaigns',
+  adminBeneficiaries: '/admin/beneficiaries',
+  adminDisbursements: '/admin/disbursements',
+  adminUsers: '/admin/users',
+  adminAudit: '/admin/audit',
+  adminReports: '/admin/reports',
+  adminNotifications: '/admin/notifications',
   privacy: '/privacy',
   terms: '/terms',
 } as const
@@ -50,4 +57,16 @@ export const NAV_LINKS = [
   { label: 'Campaigns', to: ROUTES.campaigns },
   { label: 'About', to: ROUTES.about },
   { label: 'Contact', to: ROUTES.contact },
+] as const
+
+/** Admin sidebar links (pages/admin-dashboard.md). */
+export const ADMIN_NAV_LINKS = [
+  { label: 'Dashboard', to: ROUTES.adminDashboard },
+  { label: 'Campaigns', to: ROUTES.adminCampaigns },
+  { label: 'Beneficiaries', to: ROUTES.adminBeneficiaries },
+  { label: 'Disbursements', to: ROUTES.adminDisbursements },
+  { label: 'Users', to: ROUTES.adminUsers },
+  { label: 'Reports', to: ROUTES.adminReports },
+  { label: 'Notifications', to: ROUTES.adminNotifications },
+  { label: 'Audit Log', to: ROUTES.adminAudit },
 ] as const
