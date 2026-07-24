@@ -1,18 +1,25 @@
 import type { NextFunction, Request, Response } from 'express'
 import { z } from 'zod'
 import {
+  approveCampaign,
   archiveCampaign,
   createCampaign,
   deleteCampaign,
   getCampaignAdmin,
   getCampaignDetails,
+  getManagedCampaign,
   listCampaigns,
   listCampaignsAdmin,
+  listMyCampaigns,
+  rejectCampaign,
+  submitCampaign,
   updateCampaign,
+  type Actor,
 } from '../services/campaign.service'
 import { ApiError } from '../utils/ApiError'
 import { uploadedFileUrl } from '../middleware/upload'
 import { createCampaignSchema, updateCampaignSchema } from '../validation/campaign'
+import { rejectReasonSchema } from '../validation/fundraiser'
 
 const CATEGORIES = [
   'Education',
@@ -69,11 +76,11 @@ export async function getCampaign(
   }
 }
 
-// --- Admin ---
+// --- Management (admin + owning fundraiser) ---
 
-function requireAdminId(req: Request): number {
+function requireActor(req: Request): Actor {
   if (!req.user) throw ApiError.unauthorized('Authentication required')
-  return req.user.id
+  return { id: req.user.id, role: req.user.role }
 }
 
 function parseCampaignId(req: Request): number {
@@ -83,7 +90,9 @@ function parseCampaignId(req: Request): number {
 }
 
 const adminListQuerySchema = z.object({
-  status: z.enum(['draft', 'active', 'completed', 'archived']).optional(),
+  status: z
+    .enum(['draft', 'pending_review', 'active', 'rejected', 'completed', 'archived'])
+    .optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 })
@@ -102,6 +111,21 @@ export async function getCampaignsAdmin(
   }
 }
 
+/** Campaigns owned by the acting fundraiser/administrator (their dashboard). */
+export async function getMyCampaigns(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const query = adminListQuerySchema.safeParse(req.query)
+    if (!query.success) throw ApiError.badRequest('Invalid filters')
+    res.json(await listMyCampaigns(requireActor(req).id, query.data))
+  } catch (error) {
+    next(error)
+  }
+}
+
 export async function getCampaignAdminDetail(
   req: Request,
   res: Response,
@@ -109,6 +133,19 @@ export async function getCampaignAdminDetail(
 ): Promise<void> {
   try {
     res.json({ campaign: await getCampaignAdmin(parseCampaignId(req)) })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/** Owner-or-admin campaign detail for the management surface. */
+export async function getManagedCampaignDetail(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    res.json({ campaign: await getManagedCampaign(requireActor(req), parseCampaignId(req)) })
   } catch (error) {
     next(error)
   }
@@ -124,7 +161,7 @@ export async function postCampaign(
     if (!parsed.success) {
       throw ApiError.badRequest(parsed.error.issues[0]?.message ?? 'Invalid campaign details')
     }
-    const campaign = await createCampaign(requireAdminId(req), parsed.data)
+    const campaign = await createCampaign(requireActor(req), parsed.data)
     res.status(201).json({ campaign })
   } catch (error) {
     next(error)
@@ -141,7 +178,50 @@ export async function putCampaign(
     if (!parsed.success) {
       throw ApiError.badRequest(parsed.error.issues[0]?.message ?? 'Invalid campaign details')
     }
-    const campaign = await updateCampaign(requireAdminId(req), parseCampaignId(req), parsed.data)
+    const campaign = await updateCampaign(requireActor(req), parseCampaignId(req), parsed.data)
+    res.json({ campaign })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postSubmitCampaign(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const campaign = await submitCampaign(requireActor(req), parseCampaignId(req))
+    res.json({ campaign })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postApproveCampaign(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const campaign = await approveCampaign(requireActor(req).id, parseCampaignId(req))
+    res.json({ campaign })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postRejectCampaign(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const parsed = rejectReasonSchema.safeParse(req.body)
+    if (!parsed.success) {
+      throw ApiError.badRequest(parsed.error.issues[0]?.message ?? 'A reason is required')
+    }
+    const campaign = await rejectCampaign(requireActor(req).id, parseCampaignId(req), parsed.data.reason)
     res.json({ campaign })
   } catch (error) {
     next(error)
@@ -154,7 +234,7 @@ export async function patchArchiveCampaign(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const campaign = await archiveCampaign(requireAdminId(req), parseCampaignId(req))
+    const campaign = await archiveCampaign(requireActor(req), parseCampaignId(req))
     res.json({ campaign })
   } catch (error) {
     next(error)
@@ -167,7 +247,7 @@ export async function deleteCampaignHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    await deleteCampaign(requireAdminId(req), parseCampaignId(req))
+    await deleteCampaign(requireActor(req), parseCampaignId(req))
     res.json({ message: 'Campaign deleted' })
   } catch (error) {
     next(error)

@@ -2,11 +2,13 @@ import type { NextFunction, Request, Response } from 'express'
 import { z } from 'zod'
 import { getDashboard } from '../services/dashboard.service'
 import * as adminUserService from '../services/adminUser.service'
+import * as fundraiserApplicationService from '../services/fundraiserApplication.service'
 import { listAuditLogs } from '../services/auditLog.service'
 import { notify, notifyAdmins } from '../services/notification.service'
 import { findUserIdsByRole } from '../repositories/user.repository'
 import { AUDIT_ACTIONS, recordAudit } from '../services/auditLog.service'
 import { ApiError } from '../utils/ApiError'
+import { rejectReasonSchema } from '../validation/fundraiser'
 
 function requireAdminId(req: Request): number {
   if (!req.user) throw ApiError.unauthorized('Authentication required')
@@ -30,7 +32,7 @@ function parseUserId(req: Request): number {
 }
 
 const listUsersQuerySchema = z.object({
-  role: z.enum(['donor', 'admin']).optional(),
+  role: z.enum(['donor', 'fundraiser', 'admin']).optional(),
   search: z.string().trim().max(200).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),
@@ -70,6 +72,80 @@ export async function updateUserStatus(
       parsed.data.status,
     )
     res.json({ user })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function promoteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const user = await adminUserService.promoteToAdmin(requireAdminId(req), parseUserId(req))
+    res.json({ user })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// --- Fundraiser applications (Decision 020) ---
+
+const applicationsQuerySchema = z.object({
+  status: z.enum(['pending', 'approved', 'rejected']).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+})
+
+export async function listFundraiserApplications(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const query = applicationsQuerySchema.safeParse(req.query)
+    if (!query.success) throw ApiError.badRequest('Invalid filters')
+    res.json(await fundraiserApplicationService.listApplications(query.data))
+  } catch (error) {
+    next(error)
+  }
+}
+
+function parseApplicationId(req: Request): number {
+  const id = idParamSchema.safeParse(req.params.id)
+  if (!id.success) throw ApiError.notFound('Application not found')
+  return id.data
+}
+
+export async function approveFundraiserApplication(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const application = await fundraiserApplicationService.approveApplication(
+      requireAdminId(req),
+      parseApplicationId(req),
+    )
+    res.json({ application })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function rejectFundraiserApplication(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const parsed = rejectReasonSchema.safeParse(req.body)
+    if (!parsed.success) {
+      throw ApiError.badRequest(parsed.error.issues[0]?.message ?? 'A reason is required')
+    }
+    const application = await fundraiserApplicationService.rejectApplication(
+      requireAdminId(req),
+      parseApplicationId(req),
+      parsed.data.reason,
+    )
+    res.json({ application })
   } catch (error) {
     next(error)
   }

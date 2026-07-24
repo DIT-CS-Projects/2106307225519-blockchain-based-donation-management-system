@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, sql, type SQL } from 'drizzle-orm'
 import { requireDb } from '../config/database'
 import {
   beneficiaries,
@@ -19,6 +19,27 @@ export async function getTotalDisbursed(campaignId: number): Promise<number> {
     .select({ total: sql<string>`coalesce(sum(${disbursements.amount}), 0)` })
     .from(disbursements)
     .where(and(eq(disbursements.campaignId, campaignId), eq(disbursements.status, 'completed')))
+  return Number(row?.total ?? 0)
+}
+
+/**
+ * Cumulative amount released on a campaign without administrator approval
+ * (Decision 020). Counts self-released payouts that are still live (approved,
+ * processing, or completed); failed or rejected payouts never leave the
+ * balance and so never consume the self-serve allowance.
+ */
+export async function getCumulativeSelfReleased(campaignId: number): Promise<number> {
+  const client = requireDb()
+  const [row] = await client
+    .select({ total: sql<string>`coalesce(sum(${disbursements.amount}), 0)` })
+    .from(disbursements)
+    .where(
+      and(
+        eq(disbursements.campaignId, campaignId),
+        eq(disbursements.selfReleased, true),
+        inArray(disbursements.status, ['approved', 'processing', 'completed']),
+      ),
+    )
   return Number(row?.total ?? 0)
 }
 
@@ -62,6 +83,8 @@ export async function insertApproval(data: NewDisbursementApprovalRow): Promise<
 export interface DisbursementListFilters {
   status?: DisbursementRow['status']
   campaignId?: number
+  /** Scope to campaigns owned by this user (fundraiser dashboard). */
+  campaignOwnerId?: number
   page: number
   limit: number
 }
@@ -101,6 +124,7 @@ export async function findDisbursements(
   const conditions: SQL[] = []
   if (filters.status) conditions.push(eq(disbursements.status, filters.status))
   if (filters.campaignId) conditions.push(eq(disbursements.campaignId, filters.campaignId))
+  if (filters.campaignOwnerId) conditions.push(eq(campaigns.ownerId, filters.campaignOwnerId))
   const where = conditions.length > 0 ? and(...conditions) : undefined
 
   const [rows, [{ total }]] = await Promise.all([
@@ -114,9 +138,11 @@ export async function findDisbursements(
       .orderBy(desc(disbursements.createdAt))
       .limit(filters.limit)
       .offset((filters.page - 1) * filters.limit),
+    // The campaigns join is kept in the count so an owner filter resolves.
     client
       .select({ total: count() })
       .from(disbursements)
+      .innerJoin(campaigns, eq(campaigns.id, disbursements.campaignId))
       .where(where),
   ])
   return { rows, total }

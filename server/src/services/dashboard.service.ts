@@ -8,6 +8,7 @@ import {
 import { countCampaignsByStatus, findCampaignsAdmin } from '../repositories/campaign.repository'
 import { countBeneficiaries } from '../repositories/beneficiary.repository'
 import { countUsers } from '../repositories/user.repository'
+import { countPendingApplications } from '../repositories/fundraiserApplication.repository'
 
 const RECENT_DONATIONS_LIMIT = 10
 const CAMPAIGN_OVERVIEW_LIMIT = 6
@@ -24,6 +25,12 @@ export interface DashboardStats {
 
 export interface DashboardResult {
   stats: DashboardStats
+  /** Review-queue counts for the admin console badge (Decision 020). */
+  pendingReviews: {
+    fundraiserApplications: number
+    campaigns: number
+    total: number
+  }
   recentDonations: {
     id: number
     donor: string
@@ -64,6 +71,8 @@ export async function getDashboard(): Promise<DashboardResult> {
     campaignOverview,
     donationTrend,
     paymentMethods,
+    pendingApplications,
+    pendingCampaigns,
   ] = await Promise.all([
     getAdminDonationStats(),
     countCampaignsByStatus('active'),
@@ -74,6 +83,8 @@ export async function getDashboard(): Promise<DashboardResult> {
     findCampaignsAdmin({ status: 'active', page: 1, limit: CAMPAIGN_OVERVIEW_LIMIT }),
     getPlatformMonthlyTotals(since),
     getPaymentMethodBreakdown(),
+    countPendingApplications(),
+    countCampaignsByStatus('pending_review'),
   ])
 
   return {
@@ -84,6 +95,11 @@ export async function getDashboard(): Promise<DashboardResult> {
       beneficiaries: beneficiaryCount,
       registeredUsers: userCount,
       blockchainTransactions: blockchainCount,
+    },
+    pendingReviews: {
+      fundraiserApplications: pendingApplications,
+      campaigns: pendingCampaigns,
+      total: pendingApplications + pendingCampaigns,
     },
     recentDonations: recentDonations.map((row) => ({
       id: row.id,

@@ -5,6 +5,7 @@ export interface UserDto {
   id: number
   fullName: string
   email: string
+  username: string | null
   phone: string
   role: UserRow['role']
   profilePhotoUrl: string | null
@@ -16,6 +17,7 @@ export function toUserDto(row: UserRow): UserDto {
     id: row.id,
     fullName: row.fullName,
     email: row.email,
+    username: row.username,
     phone: row.phone,
     role: row.role,
     profilePhotoUrl: row.profilePhotoUrl,

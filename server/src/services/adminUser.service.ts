@@ -1,12 +1,14 @@
 import {
   findUserById,
   findUsersAdmin,
+  setUserRole,
   setUserStatus,
   type AdminUserFilters,
 } from '../repositories/user.repository'
 import type { UserRow } from '../database/schema'
 import { ApiError } from '../utils/ApiError'
 import { AUDIT_ACTIONS, recordAudit } from './auditLog.service'
+import { notify } from './notification.service'
 import { revokeAllSessions } from './session.service'
 
 export interface AdminUserDto {
@@ -78,6 +80,43 @@ export async function updateUserStatus(
     entityType: 'user',
     entityId: id,
     details: { status },
+  })
+
+  return toDto(row)
+}
+
+/**
+ * Promote a user to administrator (Decision 020). An administrator cannot
+ * change their own role, and a user who is already an administrator is left
+ * unchanged.
+ */
+export async function promoteToAdmin(adminId: number, id: number): Promise<AdminUserDto> {
+  if (id === adminId) {
+    throw ApiError.badRequest('You cannot change your own role')
+  }
+  const target = await findUserById(id)
+  if (!target) throw ApiError.notFound('User not found')
+  if (target.role === 'admin') {
+    throw ApiError.badRequest('This user is already an administrator')
+  }
+
+  const row = await setUserRole(id, 'admin')
+  if (!row) throw ApiError.notFound('User not found')
+
+  void recordAudit({
+    userId: adminId,
+    action: AUDIT_ACTIONS.userPromote,
+    entityType: 'user',
+    entityId: id,
+    details: { from: target.role, to: 'admin' },
+  })
+
+  void notify({
+    userIds: [id],
+    type: 'account_promoted',
+    title: 'You are now an administrator',
+    message: 'Your account has been granted administrator access. Sign in again to use it.',
+    link: '/admin',
   })
 
   return toDto(row)

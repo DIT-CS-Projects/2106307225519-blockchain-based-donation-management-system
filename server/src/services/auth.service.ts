@@ -5,10 +5,14 @@ import {
 import {
   emailExists,
   findUserByEmail,
+  findUserByUsername,
   insertUser,
   phoneExists,
   updateLoginState,
+  usernameExists,
 } from '../repositories/user.repository'
+import type { UserRow } from '../database/schema'
+import { insertApplication } from '../repositories/fundraiserApplication.repository'
 import { hashPassword, verifyPassword } from '../utils/password'
 import { ApiError } from '../utils/ApiError'
 import { logger } from '../utils/logger'
@@ -29,7 +33,12 @@ export interface AuthResult {
   tokens: IssuedTokens
 }
 
-/** Register a new donor, then sign them in (api/authentication.md, Register). */
+/**
+ * Register a donor or, by choice, a fundraiser, then sign them in
+ * (api/authentication.md, Register; Decision 021). A fundraiser account gets the
+ * role immediately and its identity is recorded as an auto-approved fundraiser
+ * application. Public registration can never create an administrator.
+ */
 export async function register(
   input: RegisterInput,
   userAgent: string | null,
@@ -37,22 +46,66 @@ export async function register(
   if (await emailExists(input.email)) {
     throw ApiError.conflict('An account with this email already exists')
   }
+  if (input.username && (await usernameExists(input.username))) {
+    throw ApiError.conflict('That username is already taken')
+  }
   if (await phoneExists(input.phone)) {
     throw ApiError.conflict('An account with this phone number already exists')
   }
 
+  const isFundraiser = input.accountType === 'fundraiser'
   const passwordHash = await hashPassword(input.password)
   const user = await insertUser({
     fullName: input.fullName,
     email: input.email,
+    username: input.username ?? null,
     phone: input.phone,
     passwordHash,
-    role: 'donor',
+    role: isFundraiser ? 'fundraiser' : 'donor',
   })
 
+  if (isFundraiser) {
+    await recordSelfRegisteredFundraiser(user.id, input)
+  }
+
   const tokens = await issueSession(user, userAgent, true)
-  logger.info(`New donor registered: user ${user.id}`)
+  logger.info(`New ${isFundraiser ? 'fundraiser' : 'donor'} registered: user ${user.id}`)
   return { user: toUserDto(user), tokens }
+}
+
+/**
+ * Capture a self-registering fundraiser's identity as an auto-approved
+ * application (the identity trail and future home for KYC). Best-effort: the
+ * account already holds the fundraiser role, so a failure here is logged, not
+ * fatal to registration.
+ */
+async function recordSelfRegisteredFundraiser(
+  userId: number,
+  input: RegisterInput,
+): Promise<void> {
+  try {
+    await insertApplication({
+      userId,
+      displayName: input.displayName ?? input.fullName,
+      causeDescription: input.causeDescription ?? '',
+      identityReference: input.identityReference ?? '',
+      contactPhone: input.phone,
+      status: 'approved',
+      reviewedAt: new Date(),
+      decisionReason: 'Self-registered as a fundraiser',
+    })
+  } catch (error) {
+    logger.error(`Failed to record fundraiser application for user ${userId}:`, error)
+  }
+}
+
+/**
+ * Resolve a login identifier to a user: an email (contains '@') is matched by
+ * email, otherwise it is treated as a username. Both are stored lowercased.
+ */
+function findUserByIdentifier(identifier: string): Promise<UserRow | undefined> {
+  const value = identifier.toLowerCase()
+  return value.includes('@') ? findUserByEmail(value) : findUserByUsername(value)
 }
 
 /** Authenticate a user, tracking failed attempts and enforcing lockout. */
@@ -60,10 +113,10 @@ export async function login(
   input: LoginInput,
   userAgent: string | null,
 ): Promise<AuthResult> {
-  const user = await findUserByEmail(input.email)
+  const user = await findUserByIdentifier(input.identifier)
   if (!user) {
-    // Same generic failure whether or not the email exists.
-    throw ApiError.unauthorized('Incorrect email or password')
+    // Same generic failure whether or not the account exists.
+    throw ApiError.unauthorized('Incorrect email/username or password')
   }
 
   if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
@@ -85,7 +138,7 @@ export async function login(
     await registerFailedAttempt(user.id, user.failedLoginAttempts)
     logger.warn(`Failed login attempt: user ${user.id}`)
     void recordAudit({ userId: user.id, action: AUDIT_ACTIONS.loginFailed })
-    throw ApiError.unauthorized('Incorrect email or password')
+    throw ApiError.unauthorized('Incorrect email/username or password')
   }
 
   if (user.failedLoginAttempts > 0 || user.lockedUntil) {

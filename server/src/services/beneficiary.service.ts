@@ -10,12 +10,12 @@ import {
   type AdminBeneficiaryFilters,
   type PublicBeneficiaryFilters,
 } from '../repositories/beneficiary.repository'
-import { findCampaignByIdAdmin } from '../repositories/campaign.repository'
 import { findDistinctDonorIdsByCampaign } from '../repositories/donation.repository'
 import type { BeneficiaryRow } from '../database/schema'
 import { ApiError } from '../utils/ApiError'
 import { AUDIT_ACTIONS, recordAudit } from './auditLog.service'
 import { notify } from './notification.service'
+import { assertCampaignManageable, type Actor } from './campaign.service'
 import type { CreateBeneficiaryInput, UpdateBeneficiaryInput } from '../validation/beneficiary'
 
 /** Public shape: no contact info (docs/BLOCKCHAIN_ARCHITECTURE.md-style PII discipline). */
@@ -95,12 +95,30 @@ export async function getBeneficiaryAdmin(id: number): Promise<AdminBeneficiaryD
   return toAdminDto(row)
 }
 
+/** List beneficiaries on a campaign the actor may manage (owner or admin). */
+export async function listManagedBeneficiaries(
+  actor: Actor,
+  campaignId: number,
+  filters: Omit<AdminBeneficiaryFilters, 'campaignId'>,
+): Promise<AdminBeneficiaryListResult> {
+  await assertCampaignManageable(actor, campaignId)
+  const { rows, total } = await findBeneficiariesAdmin({ ...filters, campaignId })
+  return { items: rows.map(toAdminDto), total, page: filters.page, limit: filters.limit }
+}
+
+/** Fetch one beneficiary, enforcing campaign ownership for a fundraiser. */
+export async function getManagedBeneficiary(actor: Actor, id: number): Promise<AdminBeneficiaryDto> {
+  const row = await findBeneficiaryByIdAdmin(id)
+  if (!row) throw ApiError.notFound('Beneficiary not found')
+  await assertCampaignManageable(actor, row.campaignId)
+  return toAdminDto(row)
+}
+
 export async function createBeneficiary(
-  adminId: number,
+  actor: Actor,
   input: CreateBeneficiaryInput,
 ): Promise<AdminBeneficiaryDto> {
-  const campaign = await findCampaignByIdAdmin(input.campaignId)
-  if (!campaign) throw ApiError.badRequest('Campaign not found')
+  await assertCampaignManageable(actor, input.campaignId)
 
   const row = await insertBeneficiary({
     campaignId: input.campaignId,
@@ -112,7 +130,7 @@ export async function createBeneficiary(
     imageUrl: input.imageUrl ?? null,
   })
   void recordAudit({
-    userId: adminId,
+    userId: actor.id,
     action: AUDIT_ACTIONS.beneficiaryCreate,
     entityType: 'beneficiary',
     entityId: row.id,
@@ -122,18 +140,19 @@ export async function createBeneficiary(
 }
 
 export async function updateBeneficiary(
-  adminId: number,
+  actor: Actor,
   id: number,
   input: UpdateBeneficiaryInput,
 ): Promise<AdminBeneficiaryDto> {
   const existing = await findBeneficiaryByIdAdmin(id)
   if (!existing) throw ApiError.notFound('Beneficiary not found')
+  await assertCampaignManageable(actor, existing.campaignId)
 
   const row = await updateBeneficiaryRow(id, input)
   if (!row) throw ApiError.notFound('Beneficiary not found')
 
   void recordAudit({
-    userId: adminId,
+    userId: actor.id,
     action: AUDIT_ACTIONS.beneficiaryUpdate,
     entityType: 'beneficiary',
     entityId: row.id,
@@ -179,13 +198,14 @@ async function notifyPastDonorsOfUpdate(beneficiary: BeneficiaryRow): Promise<vo
   })
 }
 
-export async function deleteBeneficiary(adminId: number, id: number): Promise<void> {
+export async function deleteBeneficiary(actor: Actor, id: number): Promise<void> {
   const existing = await findBeneficiaryByIdAdmin(id)
   if (!existing) throw ApiError.notFound('Beneficiary not found')
+  await assertCampaignManageable(actor, existing.campaignId)
 
   await softDeleteBeneficiary(id)
   void recordAudit({
-    userId: adminId,
+    userId: actor.id,
     action: AUDIT_ACTIONS.beneficiaryDelete,
     entityType: 'beneficiary',
     entityId: id,

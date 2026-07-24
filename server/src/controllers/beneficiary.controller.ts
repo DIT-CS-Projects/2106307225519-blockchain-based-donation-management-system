@@ -10,6 +10,11 @@ function requireAdminId(req: Request): number {
   return req.user.id
 }
 
+function requireActor(req: Request): { id: number; role: 'donor' | 'fundraiser' | 'admin' } {
+  if (!req.user) throw ApiError.unauthorized('Authentication required')
+  return { id: req.user.id, role: req.user.role }
+}
+
 const idParamSchema = z.coerce.number().int().positive()
 
 function parseId(req: Request): number {
@@ -70,13 +75,46 @@ export async function detailAdmin(req: Request, res: Response, next: NextFunctio
   }
 }
 
+// --- Owner surface (fundraiser or admin) ---
+
+const managedListQuerySchema = z.object({
+  campaignId: z.coerce.number().int().positive(),
+  verified: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(50),
+})
+
+export async function listManaged(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const query = managedListQuerySchema.safeParse(req.query)
+    if (!query.success) throw ApiError.badRequest('A campaignId is required')
+    const { campaignId, ...filters } = query.data
+    res.json(await beneficiaryService.listManagedBeneficiaries(requireActor(req), campaignId, filters))
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function detailManaged(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    res.json({
+      beneficiary: await beneficiaryService.getManagedBeneficiary(requireActor(req), parseId(req)),
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export async function create(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const parsed = createBeneficiarySchema.safeParse(req.body)
     if (!parsed.success) {
       throw ApiError.badRequest(parsed.error.issues[0]?.message ?? 'Invalid beneficiary details')
     }
-    const beneficiary = await beneficiaryService.createBeneficiary(requireAdminId(req), parsed.data)
+    const beneficiary = await beneficiaryService.createBeneficiary(requireActor(req), parsed.data)
     res.status(201).json({ beneficiary })
   } catch (error) {
     next(error)
@@ -90,7 +128,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
       throw ApiError.badRequest(parsed.error.issues[0]?.message ?? 'Invalid beneficiary details')
     }
     const beneficiary = await beneficiaryService.updateBeneficiary(
-      requireAdminId(req),
+      requireActor(req),
       parseId(req),
       parsed.data,
     )
@@ -119,7 +157,7 @@ export async function verify(req: Request, res: Response, next: NextFunction): P
 
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    await beneficiaryService.deleteBeneficiary(requireAdminId(req), parseId(req))
+    await beneficiaryService.deleteBeneficiary(requireActor(req), parseId(req))
     res.json({ message: 'Beneficiary deleted' })
   } catch (error) {
     next(error)

@@ -6,10 +6,12 @@ import {
   register,
 } from '../controllers/auth.controller'
 import {
+  applyFundraiser,
   changePassword,
   forgotPassword,
   logoutAll,
   me,
+  myFundraiserApplication,
   resetPassword,
   updateProfile,
 } from '../controllers/account.controller'
@@ -36,5 +38,9 @@ router.post('/logout-all', requireAuth, logoutAll)
 router.get('/me', requireAuth, me)
 router.put('/profile', requireAuth, updateProfile)
 router.put('/change-password', requireAuth, changePassword)
+
+// Become a fundraiser (Decision 020, api/authentication.md).
+router.post('/fundraiser-application', requireAuth, applyFundraiser)
+router.get('/fundraiser-application', requireAuth, myFundraiserApplication)
 
 export default router

@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, isNull, or, sql, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from 'drizzle-orm'
 import { requireDb } from '../config/database'
 import { users, type NewUserRow, type UserRow } from '../database/schema'
 
@@ -24,6 +24,17 @@ export async function findUserById(id: number): Promise<UserRow | undefined> {
   return row
 }
 
+/** Find an active (not soft-deleted) user by username (stored lowercased). */
+export async function findUserByUsername(username: string): Promise<UserRow | undefined> {
+  const client = requireDb()
+  const [row] = await client
+    .select()
+    .from(users)
+    .where(and(eq(users.username, username), isNull(users.deletedAt)))
+    .limit(1)
+  return row
+}
+
 /** Whether any user (including soft-deleted) already uses this email. */
 export async function emailExists(email: string): Promise<boolean> {
   const client = requireDb()
@@ -31,6 +42,17 @@ export async function emailExists(email: string): Promise<boolean> {
     .select({ id: users.id })
     .from(users)
     .where(eq(users.email, email))
+    .limit(1)
+  return Boolean(row)
+}
+
+/** Whether any user (including soft-deleted) already uses this username. */
+export async function usernameExists(username: string): Promise<boolean> {
+  const client = requireDb()
+  const [row] = await client
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.username, username))
     .limit(1)
   return Boolean(row)
 }
@@ -133,6 +155,17 @@ export async function findUsersAdmin(
   return { rows, total }
 }
 
+/** Map of user id to display name for a set of ids (owner-name resolution). */
+export async function findUserNamesByIds(ids: number[]): Promise<Map<number, string>> {
+  if (ids.length === 0) return new Map()
+  const client = requireDb()
+  const rows = await client
+    .select({ id: users.id, fullName: users.fullName })
+    .from(users)
+    .where(inArray(users.id, ids))
+  return new Map(rows.map((r) => [r.id, r.fullName]))
+}
+
 /** Registered (non-deleted) users, for the admin dashboard stat. */
 export async function countUsers(): Promise<number> {
   const client = requireDb()
@@ -145,6 +178,17 @@ export async function setUserStatus(id: number, status: UserRow['status']): Prom
   const [row] = await client
     .update(users)
     .set({ status, updatedAt: new Date() })
+    .where(eq(users.id, id))
+    .returning()
+  return row
+}
+
+/** Change a user's role (fundraiser approval, admin promotion — Decision 020). */
+export async function setUserRole(id: number, role: UserRow['role']): Promise<UserRow | undefined> {
+  const client = requireDb()
+  const [row] = await client
+    .update(users)
+    .set({ role, updatedAt: new Date() })
     .where(eq(users.id, id))
     .returning()
   return row

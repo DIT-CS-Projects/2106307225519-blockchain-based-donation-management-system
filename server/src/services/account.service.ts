@@ -116,7 +116,7 @@ export async function forgotPassword(input: ForgotPasswordInput): Promise<void> 
   logger.info(`Password reset requested for user ${user.id}.`)
   await getEmailProvider().send({
     to: user.email,
-    subject: 'Reset your Changia password',
+    subject: 'Reset your ChangiaTanzania password',
     text: `Use this link to reset your password (valid for a limited time): ${resetLink}`,
   })
 }

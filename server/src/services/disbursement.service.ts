@@ -1,4 +1,3 @@
-import { findCampaignByIdAdmin } from '../repositories/campaign.repository'
 import { findVerifiedBeneficiaryInCampaign } from '../repositories/beneficiary.repository'
 import {
   confirmDisbursementProof,
@@ -6,6 +5,7 @@ import {
   findDisbursementDetail,
   findDisbursementById,
   findDisbursements,
+  getCumulativeSelfReleased,
   getTotalDisbursed,
   insertApproval,
   insertDisbursement,
@@ -16,6 +16,7 @@ import {
   type DisbursementListFilters,
   type DisbursementListRow,
 } from '../repositories/disbursement.repository'
+import { assertCampaignManageable, type Actor } from './campaign.service'
 import { getDisbursementProvider } from './disbursement'
 import {
   computeDisbursementProofHash,
@@ -38,19 +39,30 @@ export interface AvailableBalance {
   totalRaised: number
   totalDisbursed: number
   availableBalance: number
+  /** Cumulative amount released so far without administrator approval (Decision 020). */
+  cumulativeSelfReleased: number
+  /** Headroom left before a payout needs administrator approval. */
+  selfServeRemaining: number
 }
 
 /** Available balance = total raised - total COMPLETED disbursements (flows/disbursement-flow.md). */
-export async function getAvailableBalance(campaignId: number): Promise<AvailableBalance> {
-  const campaign = await findCampaignByIdAdmin(campaignId)
-  if (!campaign) throw ApiError.notFound('Campaign not found')
+export async function getAvailableBalance(
+  actor: Actor,
+  campaignId: number,
+): Promise<AvailableBalance> {
+  const campaign = await assertCampaignManageable(actor, campaignId)
 
-  const totalDisbursed = await getTotalDisbursed(campaignId)
+  const [totalDisbursed, cumulativeSelfReleased] = await Promise.all([
+    getTotalDisbursed(campaignId),
+    getCumulativeSelfReleased(campaignId),
+  ])
   return {
     campaignId,
     totalRaised: campaign.raisedAmount,
     totalDisbursed,
     availableBalance: campaign.raisedAmount - totalDisbursed,
+    cumulativeSelfReleased,
+    selfServeRemaining: Math.max(0, DUAL_APPROVAL_THRESHOLD_TZS - cumulativeSelfReleased),
   }
 }
 
@@ -92,9 +104,13 @@ export interface DisbursementListResult {
 }
 
 export async function listDisbursements(
+  actor: Actor,
   filters: DisbursementListFilters,
 ): Promise<DisbursementListResult> {
-  const { rows, total } = await findDisbursements(filters)
+  // A fundraiser only ever sees payouts on the campaigns they own.
+  const scoped: DisbursementListFilters =
+    actor.role === 'fundraiser' ? { ...filters, campaignOwnerId: actor.id } : filters
+  const { rows, total } = await findDisbursements(scoped)
   return { items: rows.map(toDto), total, page: filters.page, limit: filters.limit }
 }
 
@@ -127,24 +143,34 @@ function toDetailDto(row: DisbursementDetailRow, approvals: ApprovalRow[]): Disb
   }
 }
 
-export async function getDisbursementDetail(id: number): Promise<DisbursementDetailDto> {
+export async function getDisbursementDetail(
+  actor: Actor,
+  id: number,
+): Promise<DisbursementDetailDto> {
   const row = await findDisbursementDetail(id)
   if (!row) throw ApiError.notFound('Disbursement not found')
+  // A fundraiser may only view payouts on campaigns they own.
+  if (actor.role !== 'admin') {
+    await assertCampaignManageable(actor, row.campaignId)
+  }
   const approvals = await findApprovalsForDisbursement(id)
   return toDetailDto(row, approvals)
 }
 
 /**
- * Initiate a disbursement (flows/disbursement-flow.md). Below the threshold it
- * is auto-approved and paid out immediately; at or above it, a second
- * administrator must approve first (Decision 016).
+ * Initiate a disbursement (flows/disbursement-flow.md, Decision 020). The
+ * initiator is the campaign owner: a fundraiser on their own campaign, or an
+ * administrator on any campaign. The dual-approval threshold applies to the
+ * campaign's cumulative self-released total for a fundraiser, and to the single
+ * payout amount for an administrator (the existing rule). A payout that keeps
+ * the campaign under the threshold is auto-approved and paid immediately; one
+ * that reaches it waits for an administrator's approval.
  */
 export async function initiateDisbursement(
-  adminId: number,
+  actor: Actor,
   input: InitiateDisbursementInput,
 ): Promise<DisbursementDto> {
-  const campaign = await findCampaignByIdAdmin(input.campaignId)
-  if (!campaign) throw ApiError.badRequest('Campaign not found')
+  const campaign = await assertCampaignManageable(actor, input.campaignId)
 
   const beneficiary = await findVerifiedBeneficiaryInCampaign(input.beneficiaryId, input.campaignId)
   if (!beneficiary) {
@@ -157,18 +183,31 @@ export async function initiateDisbursement(
     throw new ApiError(409, `Amount exceeds the available balance of ${formatTZS(availableBalance)}`)
   }
 
-  const autoApproved = input.amount < DUAL_APPROVAL_THRESHOLD_TZS
+  let requiresApproval: boolean
+  if (actor.role === 'admin') {
+    // Administrators keep the per-payout rule (Decision 016).
+    requiresApproval = input.amount >= DUAL_APPROVAL_THRESHOLD_TZS
+  } else {
+    // Fundraisers are measured on the campaign's cumulative self-released total.
+    const cumulative = await getCumulativeSelfReleased(input.campaignId)
+    requiresApproval = cumulative + input.amount >= DUAL_APPROVAL_THRESHOLD_TZS
+  }
+  const autoApproved = !requiresApproval
+
   const row = await insertDisbursement({
     campaignId: input.campaignId,
     beneficiaryId: input.beneficiaryId,
     amount: input.amount,
     purpose: input.purpose,
     status: autoApproved ? 'approved' : 'pending_approval',
-    initiatedBy: adminId,
+    // Auto-approved payouts are self-released and count toward the cap; those
+    // that go through administrator approval do not.
+    selfReleased: autoApproved,
+    initiatedBy: actor.id,
   })
 
   void recordAudit({
-    userId: adminId,
+    userId: actor.id,
     action: AUDIT_ACTIONS.disbursementInitiate,
     entityType: 'disbursement',
     entityId: row.id,

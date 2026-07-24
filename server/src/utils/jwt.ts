@@ -1,12 +1,15 @@
 import jwt from 'jsonwebtoken'
 import { env } from '../config/env'
 import { ACCESS_TOKEN_TTL_SECONDS } from '../constants/auth'
-import type { UserRow } from '../database/schema'
+import { userRole, type UserRow } from '../database/schema'
 
 export interface AccessTokenPayload {
   sub: number
   role: UserRow['role']
 }
+
+// Kept in sync with the user_role enum (Decision 020: donor, fundraiser, admin).
+const VALID_ROLES = new Set<string>(userRole.enumValues)
 
 /**
  * Sign a short-lived access token. The client sends this as a Bearer token;
@@ -25,9 +28,10 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
     typeof decoded !== 'object' ||
     decoded === null ||
     typeof decoded.sub !== 'number' ||
-    (decoded.role !== 'donor' && decoded.role !== 'admin')
+    typeof decoded.role !== 'string' ||
+    !VALID_ROLES.has(decoded.role)
   ) {
     throw new Error('Malformed access token')
   }
-  return { sub: decoded.sub, role: decoded.role }
+  return { sub: decoded.sub, role: decoded.role as UserRow['role'] }
 }

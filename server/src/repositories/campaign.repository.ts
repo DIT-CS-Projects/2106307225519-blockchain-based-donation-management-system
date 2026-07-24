@@ -127,6 +127,29 @@ export async function findCampaignByIdAdmin(id: number): Promise<CampaignRow | u
   return row
 }
 
+/** Campaigns owned by a given user (fundraiser dashboard — Decision 020). */
+export async function findCampaignsByOwner(
+  ownerId: number,
+  filters: AdminCampaignListFilters,
+): Promise<{ rows: CampaignRow[]; total: number }> {
+  const client = requireDb()
+  const conditions: SQL[] = [isNull(campaigns.deletedAt), eq(campaigns.ownerId, ownerId)]
+  if (filters.status) conditions.push(eq(campaigns.status, filters.status))
+  const where = and(...conditions)
+
+  const [rows, [{ total }]] = await Promise.all([
+    client
+      .select()
+      .from(campaigns)
+      .where(where)
+      .orderBy(desc(campaigns.createdAt))
+      .limit(filters.limit)
+      .offset((filters.page - 1) * filters.limit),
+    client.select({ total: count() }).from(campaigns).where(where),
+  ])
+  return { rows, total }
+}
+
 export async function insertCampaign(data: NewCampaignRow): Promise<CampaignRow> {
   const client = requireDb()
   const [row] = await client.insert(campaigns).values(data).returning()
@@ -136,7 +159,16 @@ export async function insertCampaign(data: NewCampaignRow): Promise<CampaignRow>
 export type CampaignUpdate = Partial<
   Pick<
     NewCampaignRow,
-    'title' | 'description' | 'category' | 'imageUrl' | 'targetAmount' | 'startDate' | 'endDate' | 'status' | 'featured'
+    | 'title'
+    | 'description'
+    | 'category'
+    | 'imageUrl'
+    | 'targetAmount'
+    | 'startDate'
+    | 'endDate'
+    | 'status'
+    | 'featured'
+    | 'rejectionReason'
   >
 >
 

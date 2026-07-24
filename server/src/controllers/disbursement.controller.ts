@@ -12,6 +12,11 @@ function requireAdminId(req: Request): number {
   return req.user.id
 }
 
+function requireActor(req: Request): { id: number; role: 'donor' | 'fundraiser' | 'admin' } {
+  if (!req.user) throw ApiError.unauthorized('Authentication required')
+  return { id: req.user.id, role: req.user.role }
+}
+
 const idParamSchema = z.coerce.number().int().positive()
 
 function parseId(req: Request): number {
@@ -33,7 +38,7 @@ export async function list(req: Request, res: Response, next: NextFunction): Pro
   try {
     const query = listQuerySchema.safeParse(req.query)
     if (!query.success) throw ApiError.badRequest('Invalid filters')
-    res.json(await disbursementService.listDisbursements(query.data))
+    res.json(await disbursementService.listDisbursements(requireActor(req), query.data))
   } catch (error) {
     next(error)
   }
@@ -41,7 +46,9 @@ export async function list(req: Request, res: Response, next: NextFunction): Pro
 
 export async function detail(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    res.json({ disbursement: await disbursementService.getDisbursementDetail(parseId(req)) })
+    res.json({
+      disbursement: await disbursementService.getDisbursementDetail(requireActor(req), parseId(req)),
+    })
   } catch (error) {
     next(error)
   }
@@ -54,7 +61,7 @@ export async function initiate(req: Request, res: Response, next: NextFunction):
       throw ApiError.badRequest(parsed.error.issues[0]?.message ?? 'Invalid disbursement request')
     }
     const disbursement = await disbursementService.initiateDisbursement(
-      requireAdminId(req),
+      requireActor(req),
       parsed.data,
     )
     res.status(201).json({ disbursement })
@@ -98,7 +105,7 @@ export async function balance(req: Request, res: Response, next: NextFunction): 
   try {
     const campaignId = campaignIdParamSchema.safeParse(req.params.campaignId)
     if (!campaignId.success) throw ApiError.notFound('Campaign not found')
-    res.json(await disbursementService.getAvailableBalance(campaignId.data))
+    res.json(await disbursementService.getAvailableBalance(requireActor(req), campaignId.data))
   } catch (error) {
     next(error)
   }

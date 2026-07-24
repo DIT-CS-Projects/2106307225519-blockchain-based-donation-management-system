@@ -5,8 +5,13 @@ import {
   getCampaignAdminDetail,
   getCampaigns,
   getCampaignsAdmin,
+  getManagedCampaignDetail,
+  getMyCampaigns,
   patchArchiveCampaign,
+  postApproveCampaign,
   postCampaign,
+  postRejectCampaign,
+  postSubmitCampaign,
   putCampaign,
   uploadCampaignImage,
 } from '../controllers/campaign.controller'
@@ -15,22 +20,34 @@ import { imageUpload } from '../middleware/upload'
 
 const router = Router()
 
-// Contract: api/campaigns.md
+// Contract: api/campaigns.md. Literal segments are declared before the public
+// :id route so 'admin' / 'mine' / 'manage' never match as an id.
 
-// Admin (declared before the public :id route so 'admin' never matches as an id).
+// Platform-wide (administrator only).
 router.get('/admin', requireAuth, requireRole('admin'), getCampaignsAdmin)
 router.get('/admin/:id', requireAuth, requireRole('admin'), getCampaignAdminDetail)
-router.post('/', requireAuth, requireRole('admin'), postCampaign)
+
+// Owner surface (fundraiser or administrator; ownership enforced in the service).
+router.get('/mine', requireAuth, requireRole('fundraiser', 'admin'), getMyCampaigns)
+router.get('/manage/:id', requireAuth, requireRole('fundraiser', 'admin'), getManagedCampaignDetail)
+
+router.post('/', requireAuth, requireRole('fundraiser', 'admin'), postCampaign)
 router.post(
   '/upload',
   requireAuth,
-  requireRole('admin'),
+  requireRole('fundraiser', 'admin'),
   imageUpload('campaigns').single('image'),
   uploadCampaignImage,
 )
-router.put('/:id', requireAuth, requireRole('admin'), putCampaign)
-router.patch('/:id/archive', requireAuth, requireRole('admin'), patchArchiveCampaign)
-router.delete('/:id', requireAuth, requireRole('admin'), deleteCampaignHandler)
+router.post('/:id/submit', requireAuth, requireRole('fundraiser', 'admin'), postSubmitCampaign)
+
+// Review actions (administrator only).
+router.post('/:id/approve', requireAuth, requireRole('admin'), postApproveCampaign)
+router.post('/:id/reject', requireAuth, requireRole('admin'), postRejectCampaign)
+
+router.put('/:id', requireAuth, requireRole('fundraiser', 'admin'), putCampaign)
+router.patch('/:id/archive', requireAuth, requireRole('fundraiser', 'admin'), patchArchiveCampaign)
+router.delete('/:id', requireAuth, requireRole('fundraiser', 'admin'), deleteCampaignHandler)
 
 // Public.
 router.get('/', getCampaigns)

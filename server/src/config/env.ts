@@ -32,7 +32,7 @@ const envSchema = z.object({
   SMTP_PORT: z.coerce.number().int().positive().default(587),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  SMTP_FROM: z.string().default('Changia <no-reply@changia.org>'),
+  SMTP_FROM: z.string().default('ChangiaTanzania <no-reply@changia.org>'),
   // Disbursement payout gateway. 'mock' completes instantly, no credentials
   // needed; 'azampay' selects the real adapter once onboarded.
   DISBURSEMENT_PROVIDER: z.enum(['mock', 'azampay']).default('mock'),

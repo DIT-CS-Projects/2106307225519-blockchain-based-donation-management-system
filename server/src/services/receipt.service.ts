@@ -2,7 +2,7 @@ import PDFDocument from 'pdfkit'
 import type { DonationDetailRow } from '../repositories/donation.repository'
 
 // Brand name for receipts (docs/PROJECT_OVERVIEW.md).
-const BRAND = 'Changia'
+const BRAND = 'ChangiaTanzania'
 const INK = '#0F172A'
 const MUTED = '#64748B'
 const ACCENT = '#0D9488'
