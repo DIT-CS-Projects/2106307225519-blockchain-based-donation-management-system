@@ -41,23 +41,39 @@ Individuals or organizations contributing to fundraising campaigns.
 * Download donation receipts
 * View donation history
 * Track campaign progress
+* Apply to become a fundraiser
+
+---
+
+## Fundraisers
+
+Verified donors who run their own campaigns (Decision 020).
+
+### Capabilities
+
+* Everything a donor can do
+* Create and manage their own campaigns (each goes live after administrator review)
+* Add beneficiaries to their own campaigns (an administrator verifies them)
+* Initiate payouts to verified beneficiaries up to the self-serve allowance
+* Track activity and reports scoped to their own campaigns
 
 ---
 
 ## Administrators
 
-System managers responsible for overseeing the platform.
+Neutral platform operators responsible for overseeing the platform.
 
 ### Capabilities
 
+* Approve or reject fundraiser applications
+* Review, approve, or reject fundraiser campaigns
 * Manage campaigns
 * Verify beneficiaries
 * Review donations
-* Disburse funds to beneficiaries
-* Approve campaign publication
+* Disburse funds and approve payouts above the self-serve allowance
 * Generate reports
 * Monitor blockchain transactions
-* Manage users
+* Manage users, including promoting a user to administrator
 
 ---
 

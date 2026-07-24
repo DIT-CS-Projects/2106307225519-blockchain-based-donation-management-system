@@ -4,7 +4,7 @@ Base URL
 
 /api/disbursements
 
-Administrator only.
+Campaign owner (fundraiser) or administrator. A fundraiser is scoped to their own campaigns; an administrator sees all (Decision 020).
 
 ---
 
@@ -12,11 +12,13 @@ Administrator only.
 
 Disbursements are fiat payouts from a campaign's raised funds to a verified beneficiary.
 
+A payout is initiated by the campaign owner: a fundraiser on their own campaigns, or an administrator on any campaign.
+
 The backend sends payouts through the AzamPay disbursement API.
 
 Every completed disbursement produces an immutable blockchain proof, exactly like a donation.
 
-Large disbursements require approval from a second administrator (dual approval).
+The dual-approval threshold (1,000,000 TZS) applies to the cumulative amount already self-released on a campaign, not to a single payout. A payout that would take the campaign's cumulative self-released total to or above the threshold requires administrator approval; below that, it releases without a second approval (Decision 020).
 
 ---
 
@@ -24,7 +26,7 @@ Large disbursements require approval from a second administrator (dual approval)
 
 GET /
 
-Administrator only.
+Campaign owner or administrator. A fundraiser sees only disbursements on campaigns they own.
 
 Supports
 
@@ -40,7 +42,7 @@ Pagination
 
 GET /:id
 
-Administrator only.
+Campaign owner or administrator.
 
 Returns
 
@@ -60,7 +62,7 @@ Status
 
 POST /
 
-Administrator only.
+Campaign owner (fundraiser) or administrator. A fundraiser may initiate only on campaigns they own.
 
 Request
 
@@ -76,9 +78,9 @@ Behaviour
 
 - Beneficiary must be verified and belong to the campaign
 - Amount must not exceed the campaign's available balance
-- If amount is below the dual-approval threshold, status becomes Approved and payout is queued
-- If amount is at or above the threshold, status becomes Pending Approval
-- The initiating administrator can never approve their own disbursement
+- If this payout keeps the campaign's cumulative self-released total below the dual-approval threshold, status becomes Approved and payout is queued
+- If this payout would take the cumulative self-released total to or above the threshold, status becomes Pending Approval and an administrator must approve it
+- The initiator can never approve their own disbursement
 
 Response
 
@@ -95,7 +97,7 @@ Administrator only.
 Behaviour
 
 - Only disbursements in Pending Approval can be approved
-- The approver must be different from the initiator
+- The approver must be an administrator other than the initiator
 - On approval, payout is queued to AzamPay
 
 ---
@@ -151,7 +153,7 @@ Draft states progress as follows
 
 GET /balance/:campaignId
 
-Administrator only.
+Campaign owner or administrator.
 
 Returns
 
@@ -160,6 +162,10 @@ Total Raised
 Total Disbursed
 
 Available Balance
+
+Cumulative Self-Released (toward the dual-approval threshold)
+
+Self-Serve Remaining
 
 ---
 

@@ -108,9 +108,13 @@ Scale
 
 Purpose
 
-Create donor account.
+Create a donor or fundraiser account (Decision 021).
 
 ---
+
+Account Type
+
+A choice at the top of the form: Donor or Fundraiser (default Donor). Selecting Fundraiser reveals the fundraiser fields below and grants the fundraiser role immediately on sign-up.
 
 Fields
 
@@ -124,6 +128,8 @@ Password
 
 Confirm Password
 
+Fundraiser only: Name you fundraise under, Your cause, National ID or registration number
+
 ---
 
 Validation
@@ -135,6 +141,8 @@ Phone Unique
 Password Strength
 
 Passwords Match
+
+Fundraiser fields required when Fundraiser is selected
 
 ---
 
@@ -150,7 +158,9 @@ Account Created
 
 Auto Login
 
-Redirect Campaign Listing Page
+Donor: redirect to the campaign listing page
+
+Fundraiser: redirect to the fundraiser dashboard
 
 ---
 

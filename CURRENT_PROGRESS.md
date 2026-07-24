@@ -174,7 +174,48 @@ Reports: donation/campaign/beneficiary/disbursement/blockchain aggregation, each
 
 Verified end-to-end against live Neon and the local Hardhat chain: 46/47 automated API checks (campaign draft/publish visibility and RBAC, beneficiary verification gating, dual-approval disbursement lifecycle including self-approval prevention and insufficient-balance rejection, user suspend/reactivate/login-block, real dashboard numbers, audit trail, donor notification + broadcast delivery, all 5 reports with byte-verified CSV/xlsx/PDF exports, image upload + static serving, public stats). The one non-pass was a test-timing artifact (asserting an immediate response status that had already async-advanced to the next state), not a functional defect. Found and fixed one real bug along the way: `notify()` could crash the server via an unhandled rejection if a notification insert failed (e.g. a migration that hadn't applied yet); it now catches and logs internally, matching the fire-and-forget pattern already used elsewhere. Server and client build, lint, and typecheck clean.
 
-Next up: Stage 7 — Testing (manual, responsive, accessibility, performance, security), then Stage 8 Deployment.
+Next up: Stage 7 — Community Fundraisers (Decision 020).
+
+---
+
+# Completed — Stage 7 Community Fundraisers (Decision 020)
+
+The platform opened beyond a single admin-run NGO: any verified person can raise funds, with administrators acting as neutral operators. Separation of duties is preserved so no one both benefits from a payout and releases it beyond a self-serve allowance.
+
+Database: `user_role` gained `fundraiser`; campaigns gained `owner_id`, `rejection_reason`, and the review statuses `pending_review`/`rejected`; disbursements gained `self_released`; new `fundraiser_applications` table; five new notification types. Two additive Drizzle migrations, applied to Neon.
+
+Roles and onboarding: three roles — donor → fundraiser → admin. Two ways to become a fundraiser: register directly as one at sign-up (immediate role, identity captured as an auto-approved application — Decision 021), or upgrade an existing donor account via an application an administrator approves (Decision 020). Admins can promote a user to administrator; admin is never self-assignable. `verifyAccessToken` now derives its allowed roles from the `user_role` enum (a hardcoded donor/admin allowlist had to be widened — caught by the E2E when fundraiser tokens 401'd).
+
+Campaign ownership and review gate: every campaign has an owner; fundraisers manage only their own, admins manage all. Fundraiser campaigns start Pending Review and go live only after an admin approves (or are rejected with a reason). Public listings still show active/completed only.
+
+Beneficiaries: a fundraiser adds beneficiaries to their own campaigns; verification stays admin-only, which is the control that stops a fundraiser paying out to a fabricated payee.
+
+Disbursement threshold self-serve with cumulative cap: a fundraiser initiates payouts from their own campaign to verified beneficiaries. The 1,000,000 TZS dual-approval threshold applies to the campaign's cumulative self-released total (not a single payout): payouts release instantly while under the cap; the one that would cross it, and every one after, needs an administrator's approval (never the initiator). Admin-initiated payouts keep the per-payout rule. Admin-approved payouts do not count toward the cap.
+
+Frontend: "Become a fundraiser" on the account page (apply + pending/rejected/approved states, with a session refresh to activate the new role without a hard re-login); a fundraiser dashboard (own campaigns with status), create/edit campaign, and a per-campaign manage page (submit for review, add beneficiaries, view balance + self-serve remaining, release payouts). Admin console gained a Reviews page (fundraiser applications + campaigns awaiting review, approve/reject) and a "Make admin" action on the users page; sidebar shows Reviews; navbar surfaces a Fundraising link for fundraisers.
+
+Verified: 40/40 automated API E2E checks against live Neon + local server (application lifecycle and one-open-at-a-time rule, role activation on re-login, campaign review gate and public-visibility gating, ownership 403s across campaigns/beneficiaries/disbursements, admin-only verification, the full cumulative-cap threshold behaviour including that admin-approved payouts do not consume the allowance, self-approval prevention, and admin promotion including self-promotion block). Server and client typecheck, lint (0 errors), and build clean; both dev servers boot and the client proxies the API. Test data was cleaned up. Not yet done: a manual browser click-through of every fundraiser screen.
+
+Next up: Stage 8 — Testing (manual, responsive, accessibility, performance, security), then Stage 9 Deployment.
+
+---
+
+# Post-Stage 7 UX and branding pass
+
+A round of user-requested polish on top of Stage 7:
+
+- Brand renamed Changia → ChangiaTanzania across user-facing surfaces (APP_NAME, tab title/meta, PDF receipt brand, email from/subject, verify-page copy).
+- Replaced the placeholder favicon (a recolored Vite lightning bolt) with a proper teal ChangiaTanzania mark; the browser tab no longer shows a Vite logo.
+- Email-or-username sign-in: users gained an optional unique `username` (schema + migration, stored lowercased). Registration offers a username field; the login field accepts an email or username, resolved by whether it contains "@". Existing accounts keep signing in by email. Login now routes fundraisers to their dashboard.
+- Public-page motion: added a reduced-motion-aware route transition (framer-motion `m` + AnimatePresence, keyed on pathname) so navigating between public pages fades and rises; the landing hero already animated via LazyMotion. A shared motion kit (Stagger/StaggerItem/FadeInUp/GradientHeader) lives in components/shared/motion.tsx.
+- Restyled the donor and fundraiser post-login pages: gradient headers, a refreshed StatCard (tinted icon chip, hover lift), and staggered card entrances.
+- Admin console aligned with the fundraiser architecture: campaign list shows owner and all six statuses with tone-coded badges; the dashboard shows a "N awaiting your review" banner linking to the Reviews queue.
+- Public "Start a campaign" entry point: a visible nav link (desktop + mobile) and a landing closing-CTA link route by role — a visitor to sign-up with the fundraiser type pre-selected (`/register?type=fundraiser`), a donor to the become-a-fundraiser flow, and fundraisers/admins straight to their dashboard. Discoverability no longer depends on opening the register form.
+- Authenticated-experience cohesion pass: the account page gained a profile gradient header (initials avatar, role badge, username/email, member-since) with staggered cards; the fundraiser manage page header matches the dashboard's gradient header; and a shared BrandMark (teal tile + check, mirroring the favicon) now sits beside the wordmark in the navbar, mobile menu, and auth shell.
+
+Frontend design changes above are verified by typecheck, lint (0 errors), production build, and the Vite dev server transforming/serving every new module; not yet click-tested in a browser.
+
+Verified: 52/53 automated E2E checks pass against live Neon + local server (the one failure was a transient Neon ETIMEDOUT during a cold start, not a code defect — its query already reflected the new username column). Added checks cover username registration, sign-in by username and by email, and duplicate-username rejection. Client and server typecheck, lint (0 errors), and build clean. Not yet done: a manual browser click-through of the animations and restyled pages.
 
 ---
 

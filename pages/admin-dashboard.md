@@ -52,6 +52,8 @@ Contains
 
 Dashboard
 
+Reviews (fundraiser applications and campaigns awaiting approval)
+
 Campaigns
 
 Beneficiaries
@@ -69,6 +71,8 @@ Notifications
 Settings
 
 Logout
+
+A badge on Reviews shows the count of pending fundraiser applications plus campaigns in Pending Review.
 
 ---
 
@@ -128,6 +132,30 @@ Status
 
 ---
 
+# Reviews
+
+Two queues (Decision 020).
+
+Fundraiser Applications
+
+- Applicant, cause, identity reference, submitted date
+- Approve promotes the applicant to fundraiser
+- Reject requires a reason
+
+Campaigns Awaiting Review
+
+- Campaign, owner, category, target, submitted date
+- Approve sets the campaign Active and public
+- Reject requires a reason; the owner is notified
+
+API
+
+GET /admin/fundraiser-applications, POST /admin/fundraiser-applications/:id/approve, POST /admin/fundraiser-applications/:id/reject
+
+GET /campaigns?status=pending_review, POST /campaigns/:id/approve, POST /campaigns/:id/reject
+
+---
+
 # Disbursements
 
 Table
@@ -150,9 +178,11 @@ Actions
 
 Pending approvals are highlighted.
 
-An administrator cannot approve a disbursement they initiated.
+Payouts may be initiated by a campaign's fundraiser owner or an administrator. Approval, when required, is administrator-only and never the initiator.
 
-Available balance is shown per campaign before initiating a disbursement.
+The dual-approval threshold applies to a campaign's cumulative self-released total, not a single payout.
+
+Available balance and self-serve remaining are shown per campaign before initiating a disbursement.
 
 ---
 

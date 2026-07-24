@@ -40,7 +40,7 @@ POST
 /api/beneficiaries
 ```
 
-Admin only.
+Campaign owner (fundraiser) or administrator. A fundraiser may add beneficiaries only to campaigns they own. A new beneficiary is always created unverified; verification is administrator-only (Decision 020).
 
 Request
 
@@ -51,7 +51,6 @@ Request
 * Contact Information
 * Image
 * Campaign ID
-* Verification Status
 
 ---
 
@@ -63,7 +62,19 @@ PUT
 /api/beneficiaries/:id
 ```
 
-Updates beneficiary information.
+Campaign owner or administrator. Updates beneficiary information.
+
+---
+
+## Verify Beneficiary
+
+PATCH
+
+```http
+/api/beneficiaries/:id/verify
+```
+
+Administrator only. Sets or clears a beneficiary's verified status. A fundraiser can never verify their own beneficiary; this is the control that keeps a fundraiser from paying out to a fabricated payee (Decision 020).
 
 ---
 
@@ -75,7 +86,7 @@ DELETE
 /api/beneficiaries/:id
 ```
 
-Soft delete.
+Campaign owner or administrator. Soft delete.
 
 ---
 
@@ -92,11 +103,16 @@ Soft delete.
 
 Administrator
 
-* Full access
+* Full access on any campaign, including verification
+
+Fundraiser
+
+* Add, update, and soft-delete beneficiaries on campaigns they own
+* Cannot verify beneficiaries
 
 Donor
 
-* Read-only access to approved beneficiaries
+* Read-only access to verified beneficiaries
 
 ---
 

@@ -24,9 +24,9 @@ The system shall allow users to:
 
 ## Campaign Management
 
-Administrators shall be able to:
+Fundraisers and administrators shall be able to:
 
-- Create campaigns
+- Create campaigns they own
 - Edit campaigns
 - Archive campaigns
 - Delete campaigns
@@ -34,12 +34,18 @@ Administrators shall be able to:
 - Set fundraising targets
 - Update campaign progress
 
+A fundraiser may act only on the campaigns they own, and their new campaigns go live only after administrator review. Administrators shall additionally be able to:
+
+- Approve or reject fundraiser campaigns awaiting review
+- Manage any campaign
+
 Donors shall be able to:
 
 - Browse campaigns
 - Search campaigns
 - Filter campaigns
 - View campaign details
+- Apply to become a fundraiser
 
 ---
 
@@ -58,16 +64,20 @@ The system shall allow donors to:
 
 ## Fund Disbursement
 
-Administrators shall be able to:
+Campaign owners (fundraisers on their own campaigns, administrators on any) shall be able to:
 
 - Disburse funds to verified beneficiaries
-- View a campaign's available balance
-- Approve or reject disbursements requiring dual approval
+- View a campaign's available balance and self-serve remaining
+
+Administrators shall additionally be able to:
+
+- Approve or reject disbursements requiring administrator approval
 
 The system shall:
 
-- Require a second administrator's approval for large disbursements
-- Prevent an administrator from approving their own disbursement
+- Apply the dual-approval threshold to the cumulative amount self-released on a campaign, not to a single payout (Decision 020)
+- Require an administrator's approval once a campaign's cumulative self-released total would reach the threshold
+- Prevent anyone from approving their own disbursement
 - Generate a blockchain proof for every completed disbursement
 
 ---

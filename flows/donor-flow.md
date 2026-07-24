@@ -139,3 +139,29 @@ Donation Cancelled
 ↓
 
 Nothing Stored
+
+---
+
+## Becoming a Fundraiser
+
+A donor may apply to run their own campaigns (Decision 020).
+
+Donor Opens Become A Fundraiser
+
+↓
+
+Submit Application (name, cause, identity reference, contact)
+
+↓
+
+Application Pending
+
+↓
+
+Administrator Reviews
+
+↓
+
+Approved → Role Becomes Fundraiser → Fundraiser Dashboard Unlocked
+
+Rejected → Stays Donor → Notified With Reason → May Re-apply

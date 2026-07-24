@@ -382,4 +382,66 @@ Approved
 
 ---
 
+## Decision 020
+
+### Community Fundraisers with Campaign Ownership and Threshold Self-Serve Disbursement
+
+The platform opens beyond a single admin-run NGO. Any verified person with a legitimate cause can raise funds. This refines the two-role model in BUSINESS_RULES and the admin-only disbursement authority in Decision 016. It is not multi-NGO tenancy (Decision 017 keeps that future scope); it is community fundraising on one platform, with administrators acting as neutral operators.
+
+Roles
+
+* Three roles: donor, fundraiser, admin.
+* A donor upgrades to fundraiser through an application with identity details, approved by an administrator. This is the "reasonable cause" gate and the future home for KYC.
+* Administrators are the neutral platform operators and there may be several. An administrator can promote a user to administrator, so admin is no longer only a single seeded account.
+
+Campaign ownership
+
+* Every campaign has an owner. A fundraiser owns and manages only the campaigns they create; administrators manage all campaigns.
+* Fundraiser-created campaigns start in Pending Review and go live only after an administrator approves them. An administrator may reject with a reason. Administrator-created campaigns may publish directly.
+
+Beneficiaries
+
+* A fundraiser may add beneficiaries to their own campaigns, but verification stays administrator-only. No payout can reach an unverified beneficiary.
+
+Disbursement authority (refines Decision 016)
+
+* A fundraiser may initiate a payout from their own campaign to a verified beneficiary of that campaign.
+* The dual-approval threshold (1,000,000 TZS, the same named constant) now applies to the cumulative amount a fundraiser has self-released on a campaign, not to a single payout. While the running self-released total on the campaign stays below the threshold, payouts release without administrator approval. The payout that would cross the threshold, and every payout after it on that campaign, requires approval from an administrator (never the initiator).
+* Administrator-initiated payouts keep the existing rule: a second administrator approves at or above the threshold.
+* Available balance, on-chain proof, immutability, and the "approver is never the initiator" rule are unchanged.
+
+Separation of duties (invariant)
+
+* The party who benefits from a payout can never be the one who releases it beyond the self-serve allowance. Administrator-verified beneficiaries combined with the cumulative cap prevent a fundraiser from draining a campaign to a fabricated payee.
+
+Status
+
+Approved
+
+---
+
+## Decision 021
+
+### Direct Fundraiser Registration
+
+Refines Decision 020 and supersedes the "public registration creates donors only" rule from Decision 013 for the fundraiser role.
+
+A person chooses their account type at registration: donor or fundraiser. Choosing fundraiser creates the account with the fundraiser role immediately. There is no separate application or administrator approval step for self-registration.
+
+This is safe because every action that could cause harm still passes an administrator gate downstream:
+
+* A fundraiser's campaign starts in Pending Review and is not public until an administrator approves it.
+* A beneficiary must be verified by an administrator before any payout.
+* Payouts that reach the cumulative self-serve cap require administrator approval.
+
+Fundraiser registration collects the same identity and cause details as the fundraiser application (the name they fundraise under, their cause, and a national ID or registration number) and records them as an auto-approved fundraiser application, so the identity trail and the future home for KYC are preserved.
+
+The donor-to-fundraiser application flow (Decision 020) remains for existing donors who want to upgrade. Administrators are still never self-assignable: they are provisioned by the seed script or promoted by another administrator.
+
+Status
+
+Approved
+
+---
+
 Future architectural decisions should be added to this document instead of modifying previous decisions.

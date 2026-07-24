@@ -162,6 +162,28 @@ Download Receipts
 
 Edit Profile
 
+Apply to Fundraise (donors only)
+
+---
+
+# Fundraiser View
+
+For a user with the fundraiser role, this dashboard also surfaces the campaigns they own (Decision 020).
+
+Adds
+
+My Campaigns (with status: Draft, Pending Review, Active, Rejected, Completed, Archived)
+
+Create Campaign
+
+Manage Beneficiaries (on own campaigns)
+
+Initiate Payout (own campaigns, up to the self-serve allowance)
+
+Payout and review status for own campaigns
+
+A fundraiser sees only their own campaigns and beneficiaries here; platform-wide management stays in the admin console.
+
 ---
 
 # Charts

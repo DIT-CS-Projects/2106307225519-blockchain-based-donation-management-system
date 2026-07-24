@@ -54,11 +54,57 @@ Deactivate
 
 ---
 
+POST /users/:id/promote
+
+Promote a user to administrator (Decision 020). An administrator cannot change their own role.
+
+---
+
+# Fundraiser Applications
+
+GET /fundraiser-applications
+
+Returns pending and decided applications from donors requesting to become a fundraiser.
+
+Supports
+
+Status Filter
+
+Pagination
+
+---
+
+POST /fundraiser-applications/:id/approve
+
+Approve an application. Promotes the applicant's role to fundraiser and notifies them.
+
+---
+
+POST /fundraiser-applications/:id/reject
+
+Request
+
+Reason
+
+Reject an application. The applicant stays a donor and is notified with the reason.
+
+---
+
+# Campaign Review
+
+Campaigns submitted by fundraisers wait in Pending Review.
+
+The review queue is the campaign list filtered by status = pending_review (GET /api/campaigns?status=pending_review, administrator scope).
+
+Approve and reject actions are POST /api/campaigns/:id/approve and POST /api/campaigns/:id/reject (see api/campaigns.md). Administrator only.
+
+---
+
 # Beneficiaries
 
 Managed at /api/beneficiaries (see api/beneficiaries.md).
 
-Write operations are Administrator only.
+Fundraisers may add and edit beneficiaries on their own campaigns; verification is Administrator only.
 
 ---
 
@@ -66,7 +112,7 @@ Write operations are Administrator only.
 
 Managed at /api/disbursements (see api/disbursements.md).
 
-Administrator only. Large disbursements require dual approval.
+Fundraisers may initiate payouts on their own campaigns up to the self-serve allowance; payouts at or above the cumulative threshold require Administrator approval.
 
 ---
 

@@ -16,13 +16,19 @@ The application contains the following tables.
 
 ## users
 
-Stores user accounts.
+Stores user accounts. The role column is one of donor, fundraiser, or administrator (Decision 020).
+
+---
+
+## fundraiser_applications
+
+Stores donor requests to become a fundraiser, with the applicant's identity details and the administrator decision (pending, approved, rejected). Approval promotes the applicant's role to fundraiser.
 
 ---
 
 ## campaigns
 
-Stores fundraising campaigns.
+Stores fundraising campaigns. Each campaign has an owner (the user who created it): a fundraiser owns the campaigns they create, and administrator-created campaigns are owned by that administrator. Fundraiser campaigns start in Pending Review until an administrator approves them.
 
 ---
 
@@ -34,7 +40,7 @@ Stores every completed donation.
 
 ## beneficiaries
 
-Stores beneficiary information.
+Stores beneficiary information. A beneficiary is added by the owner of its campaign (fundraiser or administrator); verification is administrator-only.
 
 ---
 
@@ -58,13 +64,13 @@ Stores payment provider responses.
 
 ## disbursements
 
-Stores fund disbursements from campaigns to verified beneficiaries.
+Stores fund disbursements from campaigns to verified beneficiaries. A payout is initiated by the campaign owner (fundraiser or administrator). The initiated_by column records that user.
 
 ---
 
 ## disbursement_approvals
 
-Stores approval decisions for disbursements requiring dual approval.
+Stores approval decisions for disbursements that require administrator approval, that is, any payout that would take a campaign's cumulative self-released total to or above the dual-approval threshold (Decision 020).
 
 ---
 
@@ -97,6 +103,18 @@ users
 ↓
 
 donations
+
+users
+
+↓
+
+fundraiser_applications
+
+users
+
+↓
+
+campaigns (owner)
 
 campaigns
 

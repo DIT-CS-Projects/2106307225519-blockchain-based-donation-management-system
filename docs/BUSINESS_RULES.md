@@ -8,7 +8,7 @@ These rules must not be violated during development.
 
 # User Roles
 
-The system contains only two primary user roles.
+The system contains three user roles: donor, fundraiser, and administrator (Decision 020). At registration a person chooses to sign up as a donor or as a fundraiser; choosing fundraiser grants the role immediately (Decision 021). An existing donor can also upgrade to fundraiser by submitting an application that an administrator approves. An administrator can promote a user to administrator; the administrator role is never self-assignable.
 
 ## Donor
 
@@ -22,6 +22,7 @@ A donor can:
 - View blockchain verification
 - Manage profile
 - Receive notifications
+- Apply to become a fundraiser
 
 Donors cannot:
 
@@ -33,17 +34,31 @@ Donors cannot:
 
 ---
 
+## Fundraiser
+
+A fundraiser is a verified user who may run campaigns, whether they registered directly as a fundraiser (Decision 021) or upgraded from a donor account. In addition to everything a donor can do, a fundraiser can:
+
+- Create campaigns they own (each starts in Pending Review until an administrator approves it)
+- Edit and archive their own campaigns
+- Add beneficiaries to their own campaigns (verification stays administrator-only)
+- Initiate payouts from their own campaigns to verified beneficiaries, up to the self-serve allowance (see Disbursement Rules)
+- View activity and reports scoped to their own campaigns
+
+A fundraiser can only ever act on the campaigns they own. A fundraiser cannot verify beneficiaries, approve campaigns, release payouts above the self-serve allowance, access platform-wide reports or the audit log, or manage other users.
+
+---
+
 ## Administrator
 
-An administrator can:
+An administrator is a neutral platform operator. There may be several. An administrator can:
 
-- Manage users
-- Create campaigns
-- Edit campaigns
-- Archive campaigns
-- Manage beneficiaries
-- Disburse funds to beneficiaries
-- Approve or reject disbursements
+- Manage users, including promoting a user to administrator
+- Approve or reject fundraiser applications
+- Review, approve, or reject fundraiser campaigns
+- Create campaigns (may publish directly, without review)
+- Edit or archive any campaign
+- Manage and verify beneficiaries on any campaign
+- Disburse funds to beneficiaries and approve or reject payouts above the self-serve allowance
 - View reports
 - View audit logs
 - Verify blockchain records
@@ -68,9 +83,15 @@ Every campaign must contain:
 Campaign status may be:
 
 - Draft
+- Pending Review
 - Active
+- Rejected
 - Completed
 - Archived
+
+Every campaign has an owner. Fundraisers own and manage only the campaigns they create; administrators manage all campaigns (Decision 020).
+
+A campaign created by a fundraiser starts in Pending Review and becomes Active only after an administrator approves it. An administrator may reject it with a reason (status Rejected). A campaign created by an administrator may publish directly to Active.
 
 Campaigns may be marked as Featured to appear on the landing page.
 
@@ -102,7 +123,9 @@ The minimum donation amount is 1,000 TZS, defined as a named constant.
 
 # Beneficiary Rules
 
-Beneficiaries are managed only by administrators.
+A beneficiary is added by the owner of its campaign: a fundraiser on their own campaigns, or an administrator on any campaign.
+
+Verification is administrator-only. Only an administrator may verify a beneficiary, regardless of who added it.
 
 Each beneficiary belongs to exactly one campaign.
 
@@ -116,15 +139,19 @@ Beneficiaries are soft deleted, never hard deleted.
 
 # Disbursement Rules
 
-Only administrators may disburse funds.
+A payout is initiated by the owner of its campaign: a fundraiser on their own campaigns, or an administrator on any campaign.
 
 Funds are paid out from a campaign to a verified beneficiary of that campaign.
 
 A disbursement can never exceed the campaign's available balance (total raised minus total disbursed).
 
-Disbursements at or above the dual-approval threshold (1,000,000 TZS, a named constant) require approval from a second administrator.
+The dual-approval threshold is 1,000,000 TZS, a named constant. It applies to the cumulative amount already released without administrator approval on a campaign, not to a single payout (Decision 020).
 
-The initiating administrator can never approve their own disbursement.
+- While the running self-released total on a campaign stays below the threshold, a fundraiser or administrator payout releases without a second approval.
+- The payout that would cross the threshold, and every payout after it on that campaign, requires approval from an administrator.
+- For administrator-initiated payouts this is the existing rule: a second administrator approves at or above the threshold.
+
+The initiator can never approve their own disbursement. Any payout requiring approval must be approved by an administrator who did not initiate it.
 
 Every completed disbursement generates exactly one blockchain proof.
 
@@ -166,18 +193,19 @@ Notifications are generated when:
 
 # Audit Rules
 
-The audit log records administrator activities including:
+The audit log records privileged activities including:
 
-- campaign creation
-- campaign modification
-- campaign deletion
-- beneficiary management
+- campaign creation, modification, deletion, submission for review, approval, and rejection
+- beneficiary management and verification
+- disbursement initiation, approval, and rejection
+- fundraiser application submission, approval, and rejection
+- user status changes and promotion to administrator
 - report generation
 - login attempts
 - blockchain verification
 - administrative actions
 
-Audit records are read-only and cannot be modified through the application.
+Fundraiser actions on their own campaigns (campaign create/edit, beneficiary add, self-serve payout) are audited alongside administrator actions. Audit records are read-only and cannot be modified through the application.
 
 ---
 
@@ -186,6 +214,8 @@ Audit records are read-only and cannot be modified through the application.
 After login:
 
 Administrator → Admin Dashboard
+
+Fundraiser → Campaign Listing Page (the fundraiser dashboard, covering their own campaigns, beneficiaries, and payouts, is reachable through navigation)
 
 Donor → Campaign Listing Page
 

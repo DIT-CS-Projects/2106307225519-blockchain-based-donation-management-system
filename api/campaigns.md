@@ -4,6 +4,8 @@ Base URL
 
 /api/campaigns
 
+Ownership (Decision 020): every campaign has an owner. A fundraiser owns the campaigns they create and may manage only those; an administrator may manage any campaign. Endpoints marked "Owner or Administrator" authorize the campaign's owner or any administrator; a fundraiser acting on a campaign they do not own receives 403.
+
 ---
 
 # Get Campaigns
@@ -68,7 +70,7 @@ Newest active campaigns (v1 logic — donation-history based recommendations are
 
 POST /
 
-Admin Only
+Fundraiser or Administrator
 
 Request
 
@@ -86,9 +88,60 @@ Start Date
 
 End Date
 
+Behaviour
+
+- The creator becomes the campaign owner
+- A fundraiser's campaign is created in Pending Review and does not appear publicly until an administrator approves it
+- An administrator may publish directly (created as Draft or Active)
+
 Response
 
 201 Created
+
+---
+
+# Submit Campaign for Review
+
+POST /:id/submit
+
+Owner or Administrator
+
+Behaviour
+
+- Moves a Draft campaign to Pending Review
+- Only the campaign owner or an administrator may submit
+
+---
+
+# Approve Campaign
+
+POST /:id/approve
+
+Administrator only.
+
+Behaviour
+
+- Only a campaign in Pending Review can be approved
+- Status becomes Active
+- The owning fundraiser is notified
+
+---
+
+# Reject Campaign
+
+POST /:id/reject
+
+Administrator only.
+
+Request
+
+Reason
+
+Behaviour
+
+- Only a campaign in Pending Review can be rejected
+- Status becomes Rejected
+- The owning fundraiser is notified with the reason
 
 ---
 
@@ -96,7 +149,7 @@ Response
 
 PUT /:id
 
-Admin Only
+Owner or Administrator
 
 ---
 
@@ -104,7 +157,7 @@ Admin Only
 
 PATCH /:id/archive
 
-Admin Only
+Owner or Administrator
 
 ---
 
@@ -112,7 +165,7 @@ Admin Only
 
 DELETE /:id
 
-Admin Only
+Owner or Administrator
 
 Soft Delete
 
@@ -122,7 +175,7 @@ Soft Delete
 
 POST /upload
 
-Admin Only
+Fundraiser or Administrator
 
 Image Validation
 

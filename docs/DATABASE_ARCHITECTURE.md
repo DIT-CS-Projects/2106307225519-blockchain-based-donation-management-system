@@ -47,9 +47,25 @@ Stores:
 - Email
 - Phone Number
 - Password Hash
-- Role
+- Role (donor, fundraiser, or administrator — Decision 020)
 - Profile Photo
 - Account Status
+- Created Date
+
+---
+
+## Fundraiser Applications
+
+Stores donor requests to become a fundraiser (Decision 020).
+
+Stores:
+
+- Application ID
+- Applicant (User ID)
+- Identity / cause details
+- Status (pending, approved, rejected)
+- Reviewed By (administrator User ID)
+- Decision Reason
 - Created Date
 
 ---
@@ -67,9 +83,9 @@ Stores:
 - Current Amount
 - Start Date
 - End Date
-- Status
+- Status (draft, pending review, active, rejected, completed, archived)
 - Featured Flag
-- Created By
+- Created By (the owner: a fundraiser or an administrator)
 
 ---
 

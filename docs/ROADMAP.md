@@ -160,6 +160,26 @@ Audit Reports
 
 # Phase 8
 
+Community Fundraisers (Decision 020)
+
+Status: Pending
+
+Fundraiser Role (donor upgrade via reviewed application)
+
+Campaign Ownership and Fundraiser Campaign Management
+
+Campaign Review Gate (admin approves fundraiser campaigns)
+
+Fundraiser-Added Beneficiaries (admin verifies)
+
+Threshold Self-Serve Disbursement with Cumulative Cap
+
+Admin Review Queues and User Promotion to Administrator
+
+---
+
+# Phase 9
+
 Finalization
 
 Status: Pending

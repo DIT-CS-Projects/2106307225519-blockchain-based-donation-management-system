@@ -10,11 +10,13 @@ Blockchain records an immutable proof of every completed disbursement.
 
 ---
 
-Admin Opens Campaign
+Campaign Owner Opens Campaign
+
+(fundraiser on own campaign, or administrator on any)
 
 ↓
 
-View Available Balance
+View Available Balance And Self-Serve Remaining
 
 ↓
 
@@ -30,7 +32,7 @@ Validate Balance And Beneficiary
 
 ↓
 
-Amount Below Threshold?
+Cumulative Self-Released Stays Below Threshold?
 
 YES
 
@@ -50,7 +52,7 @@ Pending Approval
 
 ↓
 
-Second Admin Reviews
+Administrator Reviews (never the initiator)
 
 ↓
 
@@ -116,13 +118,17 @@ Admin May Retry
 
 ## Rules
 
+A payout is initiated by the campaign owner: a fundraiser on their own campaign, or an administrator on any campaign.
+
 A disbursement requires a verified beneficiary belonging to the campaign.
 
 A disbursement can never exceed the campaign's available balance.
 
-The initiating administrator can never approve their own disbursement.
+The dual-approval threshold applies to the cumulative amount already self-released on the campaign, not to a single payout (Decision 020).
 
-Disbursements at or above the threshold require a second administrator's approval.
+A payout that would take the campaign's cumulative self-released total to or above the threshold requires an administrator's approval.
+
+The initiator can never approve their own disbursement; the approver is always an administrator other than the initiator.
 
 Every completed disbursement produces exactly one blockchain transaction.
 

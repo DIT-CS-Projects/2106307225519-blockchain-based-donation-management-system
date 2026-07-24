@@ -22,11 +22,37 @@ Choose Action
 
 ├── Create Campaign
 ├── Edit Campaign
+├── Review Fundraiser Campaigns
+├── Review Fundraiser Applications
+├── Verify Beneficiaries
+├── Manage Users (status, promote to admin)
 ├── Manage Beneficiaries
 ├── View Donations
 ├── Reports
 ├── Notifications
 └── Audit Logs
+
+---
+
+Review Queues (Decision 020)
+
+Fundraiser Applications
+
+↓
+
+Approve → Applicant Becomes Fundraiser
+
+Reject → Applicant Notified With Reason
+
+---
+
+Fundraiser Campaigns (Pending Review)
+
+↓
+
+Approve → Campaign Becomes Active → Visible To Public
+
+Reject → Campaign Rejected → Owner Notified With Reason
 
 ---
 
