@@ -1,9 +1,12 @@
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ROUTES } from '@/constants/routes'
+import { useAuth } from '@/hooks/useAuth'
+import { ROUTES, startCampaignPath } from '@/constants/routes'
 
 export function ClosingCtaSection() {
+  const { user } = useAuth()
+
   return (
     <section className="border-t border-border bg-surface">
       <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-24 text-center lg:py-32">
@@ -20,6 +23,17 @@ export function ClosingCtaSection() {
             <ArrowRight aria-hidden="true" />
           </Link>
         </Button>
+        {user?.role !== 'fundraiser' && user?.role !== 'admin' && (
+          <p className="mt-6 text-sm text-muted-foreground">
+            Have a cause of your own?{' '}
+            <Link
+              to={startCampaignPath(user?.role)}
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Start a campaign
+            </Link>
+          </p>
+        )}
       </div>
     </section>
   )

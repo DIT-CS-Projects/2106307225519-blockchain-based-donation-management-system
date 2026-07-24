@@ -16,7 +16,11 @@ import { AccountPage } from '@/pages/AccountPage'
 import { DonationsPage } from '@/pages/DonationsPage'
 import { DonationDetailPage } from '@/pages/DonationDetailPage'
 import { CheckoutPage } from '@/pages/CheckoutPage'
+import { FundraiserDashboardPage } from '@/pages/FundraiserDashboardPage'
+import { FundraiserCampaignFormPage } from '@/pages/FundraiserCampaignFormPage'
+import { FundraiserCampaignManagePage } from '@/pages/FundraiserCampaignManagePage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
+import { AdminReviewsPage } from '@/pages/admin/AdminReviewsPage'
 import { AdminCampaignsPage } from '@/pages/admin/AdminCampaignsPage'
 import { AdminCampaignFormPage } from '@/pages/admin/AdminCampaignFormPage'
 import { AdminBeneficiariesPage } from '@/pages/admin/AdminBeneficiariesPage'
@@ -60,6 +64,14 @@ export function AppRoutes() {
           <Route path="/pay/:reference" element={<CheckoutPage />} />
         </Route>
 
+        {/* Fundraiser area (owner surface; admins may use it too) */}
+        <Route element={<ProtectedRoute roles={['fundraiser', 'admin']} />}>
+          <Route path={ROUTES.fundraiser} element={<FundraiserDashboardPage />} />
+          <Route path={ROUTES.fundraiserCampaignNew} element={<FundraiserCampaignFormPage />} />
+          <Route path="/fundraiser/campaigns/:id" element={<FundraiserCampaignManagePage />} />
+          <Route path="/fundraiser/campaigns/:id/edit" element={<FundraiserCampaignFormPage />} />
+        </Route>
+
         <Route path={ROUTES.privacy} element={<PrivacyPage />} />
         <Route path={ROUTES.terms} element={<TermsPage />} />
       </Route>
@@ -68,6 +80,7 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute roles={['admin']} />}>
         <Route element={<AdminLayout />}>
           <Route path={ROUTES.adminDashboard} element={<AdminDashboardPage />} />
+          <Route path={ROUTES.adminReviews} element={<AdminReviewsPage />} />
           <Route path={ROUTES.adminCampaigns} element={<AdminCampaignsPage />} />
           <Route path="/admin/campaigns/new" element={<AdminCampaignFormPage />} />
           <Route path="/admin/campaigns/:id/edit" element={<AdminCampaignFormPage />} />

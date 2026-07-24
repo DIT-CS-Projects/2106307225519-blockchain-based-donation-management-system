@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { RouteTransition } from '@/components/layout/RouteTransition'
 
 /** Shell for all public pages: Navbar on top, Footer below, page content in between. */
 export function PublicLayout() {
@@ -14,7 +14,7 @@ export function PublicLayout() {
       </a>
       <Navbar />
       <main id="content" className="flex-1">
-        <Outlet />
+        <RouteTransition />
       </main>
       <Footer />
     </div>

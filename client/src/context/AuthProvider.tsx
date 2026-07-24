@@ -94,6 +94,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [clearSession])
 
+  const refreshSession = useCallback(
+    () => authService.refresh().then(startSession),
+    [startSession],
+  )
+
   const value = useMemo(
     () => ({
       user,
@@ -104,8 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       logoutAll,
       updateUser: setUser,
+      refreshSession,
     }),
-    [user, status, login, register, logout, logoutAll],
+    [user, status, login, register, logout, logoutAll, refreshSession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { m } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { BrandMark } from '@/components/layout/BrandMark'
 import { ROUTES } from '@/constants/routes'
 import { APP_NAME } from '@/constants/config'
 
@@ -21,7 +22,11 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
         transition={{ duration: 0.3, ease: 'easeOut' }}
       >
         <div className="text-center">
-          <Link to={ROUTES.home} className="font-display text-2xl font-bold text-primary">
+          <Link
+            to={ROUTES.home}
+            className="inline-flex items-center gap-2 font-display text-2xl font-bold text-foreground"
+          >
+            <BrandMark className="size-8" />
             {APP_NAME}
           </Link>
           <h1 className="mt-6 font-display text-2xl font-semibold tracking-tight">{title}</h1>

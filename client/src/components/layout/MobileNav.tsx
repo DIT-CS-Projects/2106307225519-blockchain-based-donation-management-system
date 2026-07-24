@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Menu, X } from 'lucide-react'
+import { BrandMark } from '@/components/layout/BrandMark'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
-import { NAV_LINKS, ROUTES } from '@/constants/routes'
+import { NAV_LINKS, ROUTES, startCampaignPath } from '@/constants/routes'
 import { APP_NAME } from '@/constants/config'
 import { cn } from '@/lib/utils'
 
@@ -40,7 +41,12 @@ export function MobileNav() {
           <Dialog.Title className="sr-only">Navigation menu</Dialog.Title>
 
           <div className="flex h-16 items-center justify-between px-6">
-            <Link to={ROUTES.home} onClick={close} className="font-display text-xl font-bold text-primary">
+            <Link
+              to={ROUTES.home}
+              onClick={close}
+              className="flex items-center gap-2 font-display text-xl font-bold text-foreground"
+            >
+              <BrandMark />
               {APP_NAME}
             </Link>
             <Dialog.Close asChild>
@@ -79,12 +85,26 @@ export function MobileNav() {
                     </Link>
                   </Button>
                 )}
-                {user.role === 'donor' && (
+                {user.role === 'fundraiser' && (
                   <Button asChild variant="secondary" size="lg">
-                    <Link to={ROUTES.donations} onClick={close}>
-                      Donations
+                    <Link to={ROUTES.fundraiser} onClick={close}>
+                      Fundraising
                     </Link>
                   </Button>
+                )}
+                {user.role === 'donor' && (
+                  <>
+                    <Button asChild variant="secondary" size="lg">
+                      <Link to={ROUTES.donations} onClick={close}>
+                        Donations
+                      </Link>
+                    </Button>
+                    <Button asChild variant="secondary" size="lg">
+                      <Link to={startCampaignPath('donor')} onClick={close}>
+                        Start a campaign
+                      </Link>
+                    </Button>
+                  </>
                 )}
                 <Button asChild variant="secondary" size="lg">
                   <Link to={ROUTES.account} onClick={close}>
@@ -97,6 +117,11 @@ export function MobileNav() {
               </>
             ) : status === 'unauthenticated' ? (
               <>
+                <Button asChild variant="secondary" size="lg">
+                  <Link to={startCampaignPath()} onClick={close}>
+                    Start a campaign
+                  </Link>
+                </Button>
                 <Button asChild variant="secondary" size="lg">
                   <Link to={ROUTES.login} onClick={close}>
                     Log in

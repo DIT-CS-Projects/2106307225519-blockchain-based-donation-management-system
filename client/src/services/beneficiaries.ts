@@ -60,6 +60,22 @@ export async function getBeneficiaryAdmin(id: number): Promise<AdminBeneficiary>
   return data.beneficiary
 }
 
+// --- Owner surface (fundraiser or admin, scoped to a campaign they own) ---
+
+export async function getManagedBeneficiaries(
+  campaignId: number,
+): Promise<AdminBeneficiaryListResult> {
+  const { data } = await api.get<AdminBeneficiaryListResult>('/beneficiaries/manage', {
+    params: { campaignId },
+  })
+  return data
+}
+
+export async function getManagedBeneficiary(id: number): Promise<AdminBeneficiary> {
+  const { data } = await api.get<{ beneficiary: AdminBeneficiary }>(`/beneficiaries/manage/${id}`)
+  return data.beneficiary
+}
+
 export interface BeneficiaryFormInput {
   campaignId: number
   name: string

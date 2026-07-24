@@ -2,12 +2,22 @@ import { api } from '@/services/api'
 import type { CampaignCategory } from '@/constants/config'
 import type { Campaign } from '@/services/campaigns'
 
-// Contract: api/campaigns.md. Admin-only campaign management.
+// Contract: api/campaigns.md. Campaign management for administrators and, for
+// their own campaigns, fundraisers (Decision 020).
 
-export type AdminCampaignStatus = 'draft' | 'active' | 'completed' | 'archived'
+export type AdminCampaignStatus =
+  | 'draft'
+  | 'pending_review'
+  | 'active'
+  | 'rejected'
+  | 'completed'
+  | 'archived'
 
 export interface AdminCampaign extends Omit<Campaign, 'status'> {
   status: AdminCampaignStatus
+  ownerId: number | null
+  ownerName: string | null
+  rejectionReason: string | null
 }
 
 export interface AdminCampaignListParams {
@@ -32,6 +42,35 @@ export async function getCampaignsAdmin(
 
 export async function getCampaignAdmin(id: number): Promise<AdminCampaign> {
   const { data } = await api.get<{ campaign: AdminCampaign }>(`/campaigns/admin/${id}`)
+  return data.campaign
+}
+
+/** Campaigns owned by the signed-in fundraiser/administrator. */
+export async function getMyCampaigns(
+  params: AdminCampaignListParams = {},
+): Promise<AdminCampaignListResult> {
+  const { data } = await api.get<AdminCampaignListResult>('/campaigns/mine', { params })
+  return data
+}
+
+/** Owner-or-admin detail (used by the fundraiser manage view). */
+export async function getManagedCampaign(id: number): Promise<AdminCampaign> {
+  const { data } = await api.get<{ campaign: AdminCampaign }>(`/campaigns/manage/${id}`)
+  return data.campaign
+}
+
+export async function submitCampaign(id: number): Promise<AdminCampaign> {
+  const { data } = await api.post<{ campaign: AdminCampaign }>(`/campaigns/${id}/submit`)
+  return data.campaign
+}
+
+export async function approveCampaign(id: number): Promise<AdminCampaign> {
+  const { data } = await api.post<{ campaign: AdminCampaign }>(`/campaigns/${id}/approve`)
+  return data.campaign
+}
+
+export async function rejectCampaign(id: number, reason: string): Promise<AdminCampaign> {
+  const { data } = await api.post<{ campaign: AdminCampaign }>(`/campaigns/${id}/reject`, { reason })
   return data.campaign
 }
 

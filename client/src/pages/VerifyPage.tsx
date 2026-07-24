@@ -119,7 +119,7 @@ export function VerifyPage() {
       <div className="mt-10">
         {phase === 'idle' && (
           <p className="text-center text-sm text-muted-foreground">
-            Every receipt from Changia carries a unique number like this one.
+            Every receipt from ChangiaTanzania carries a unique number like this one.
           </p>
         )}
 

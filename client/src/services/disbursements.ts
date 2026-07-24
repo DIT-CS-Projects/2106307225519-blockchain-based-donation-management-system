@@ -1,6 +1,7 @@
 import { api } from '@/services/api'
 
-// Contract: api/disbursements.md (base path /api/disbursements). Admin only.
+// Contract: api/disbursements.md (base path /api/disbursements). Campaign owner
+// (fundraiser) or administrator; approval stays admin-only (Decision 020).
 
 export type DisbursementStatus =
   | 'pending_approval'
@@ -63,6 +64,10 @@ export interface AvailableBalance {
   totalRaised: number
   totalDisbursed: number
   availableBalance: number
+  /** Cumulative amount released without administrator approval (Decision 020). */
+  cumulativeSelfReleased: number
+  /** Headroom left before a payout needs administrator approval. */
+  selfServeRemaining: number
 }
 
 export async function getAvailableBalance(campaignId: number): Promise<AvailableBalance> {

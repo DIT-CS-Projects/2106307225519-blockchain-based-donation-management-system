@@ -12,7 +12,10 @@ export const ROUTES = {
   account: '/account',
   donations: '/donations',
   verify: '/verify',
+  fundraiser: '/fundraiser',
+  fundraiserCampaignNew: '/fundraiser/campaigns/new',
   adminDashboard: '/admin',
+  adminReviews: '/admin/reviews',
   adminCampaigns: '/admin/campaigns',
   adminBeneficiaries: '/admin/beneficiaries',
   adminDisbursements: '/admin/disbursements',
@@ -34,6 +37,27 @@ export function campaignDetailsPath(id: number | string) {
 /** Detail route for a single donation. */
 export function donationDetailsPath(id: number | string) {
   return `${ROUTES.donations}/${id}`
+}
+
+/** Fundraiser: edit one of the signed-in fundraiser's campaigns. */
+export function fundraiserCampaignEditPath(id: number | string) {
+  return `${ROUTES.fundraiser}/campaigns/${id}/edit`
+}
+
+/** Fundraiser: manage one campaign (beneficiaries, payouts, review status). */
+export function fundraiserCampaignManagePath(id: number | string) {
+  return `${ROUTES.fundraiser}/campaigns/${id}`
+}
+
+/**
+ * "Start a campaign" destination by role: a visitor is sent to sign up as a
+ * fundraiser, a donor to the become-a-fundraiser flow, and a fundraiser/admin
+ * straight to their dashboard.
+ */
+export function startCampaignPath(role?: string | null): string {
+  if (role === 'admin' || role === 'fundraiser') return ROUTES.fundraiser
+  if (role === 'donor') return ROUTES.account
+  return `${ROUTES.register}?type=fundraiser`
 }
 
 /** Mock checkout page for a payment reference. */
@@ -62,6 +86,7 @@ export const NAV_LINKS = [
 /** Admin sidebar links (pages/admin-dashboard.md). */
 export const ADMIN_NAV_LINKS = [
   { label: 'Dashboard', to: ROUTES.adminDashboard },
+  { label: 'Reviews', to: ROUTES.adminReviews },
   { label: 'Campaigns', to: ROUTES.adminCampaigns },
   { label: 'Beneficiaries', to: ROUTES.adminBeneficiaries },
   { label: 'Disbursements', to: ROUTES.adminDisbursements },

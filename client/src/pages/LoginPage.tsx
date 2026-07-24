@@ -16,7 +16,9 @@ import { APP_NAME } from '@/constants/config'
 import { loginSchema, type LoginValues } from '@/lib/authSchemas'
 
 function homeForRole(role: UserRole): string {
-  return role === 'admin' ? ROUTES.adminDashboard : ROUTES.campaigns
+  if (role === 'admin') return ROUTES.adminDashboard
+  if (role === 'fundraiser') return ROUTES.fundraiser
+  return ROUTES.campaigns
 }
 
 interface LocationState {
@@ -41,7 +43,7 @@ export function LoginPage() {
     setFormError(null)
     try {
       const user = await login({
-        email: values.email,
+        identifier: values.identifier,
         password: values.password,
         rememberMe: values.rememberMe,
       })
@@ -76,13 +78,13 @@ export function LoginPage() {
           </p>
         )}
 
-        <FormField id="email" label="Email" error={errors.email?.message}>
+        <FormField id="identifier" label="Email or username" error={errors.identifier?.message}>
           <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            aria-invalid={!!errors.email}
-            {...register('email')}
+            id="identifier"
+            type="text"
+            autoComplete="username"
+            aria-invalid={!!errors.identifier}
+            {...register('identifier')}
           />
         </FormField>
 

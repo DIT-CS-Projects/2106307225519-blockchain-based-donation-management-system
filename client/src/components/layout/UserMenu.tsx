@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { HandCoins, LayoutDashboard, LogOut, User } from 'lucide-react'
+import { HandCoins, LayoutDashboard, LogOut, Megaphone, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/constants/routes'
 import type { AuthUser } from '@/services/auth'
@@ -20,6 +20,14 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
           <Link to={ROUTES.adminDashboard}>
             <LayoutDashboard aria-hidden="true" />
             Dashboard
+          </Link>
+        </Button>
+      )}
+      {user.role === 'fundraiser' && (
+        <Button asChild variant="ghost">
+          <Link to={ROUTES.fundraiser}>
+            <Megaphone aria-hidden="true" />
+            Fundraising
           </Link>
         </Button>
       )}

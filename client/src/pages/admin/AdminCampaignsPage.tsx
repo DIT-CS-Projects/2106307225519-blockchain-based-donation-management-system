@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { StatusBadge, campaignStatusTone } from '@/components/shared/StatusBadge'
 import { useFetch } from '@/hooks/useFetch'
 import { toApiError } from '@/services/api'
 import {
@@ -23,7 +24,21 @@ import {
 } from '@/services/adminCampaigns'
 import { formatDate, formatTZS, fundingPercent } from '@/utils/format'
 
-const STATUSES: (AdminCampaignStatus | 'all')[] = ['all', 'draft', 'active', 'completed', 'archived']
+const STATUSES: (AdminCampaignStatus | 'all')[] = [
+  'all',
+  'draft',
+  'pending_review',
+  'active',
+  'rejected',
+  'completed',
+  'archived',
+]
+
+function statusLabel(s: AdminCampaignStatus | 'all'): string {
+  if (s === 'all') return 'All'
+  const words = s.replace(/_/g, ' ')
+  return words[0].toUpperCase() + words.slice(1)
+}
 
 export function AdminCampaignsPage() {
   const [status, setStatus] = useState<AdminCampaignStatus | 'all'>('all')
@@ -86,7 +101,7 @@ export function AdminCampaignsPage() {
         >
           {STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s === 'all' ? 'All' : s[0].toUpperCase() + s.slice(1)}
+              {statusLabel(s)}
             </option>
           ))}
         </Select>
@@ -114,6 +129,7 @@ export function AdminCampaignsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
+                  <TableHead>Owner</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Progress</TableHead>
@@ -125,8 +141,11 @@ export function AdminCampaignsPage() {
                 {data.items.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">{c.title}</TableCell>
+                    <TableCell className="text-muted-foreground">{c.ownerName ?? 'Platform'}</TableCell>
                     <TableCell>{c.category}</TableCell>
-                    <TableCell className="capitalize">{c.status}</TableCell>
+                    <TableCell>
+                      <StatusBadge label={c.status} tone={campaignStatusTone(c.status)} />
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {fundingPercent(c.raisedAmount, c.targetAmount)}% of {formatTZS(c.targetAmount)}
                     </TableCell>

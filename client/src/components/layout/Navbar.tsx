@@ -4,9 +4,11 @@ import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { NotificationBell } from '@/components/shared/NotificationBell'
+import { Megaphone } from 'lucide-react'
+import { BrandMark } from '@/components/layout/BrandMark'
 import { useScrolled } from '@/hooks/useScrolled'
 import { useAuth } from '@/hooks/useAuth'
-import { NAV_LINKS, ROUTES } from '@/constants/routes'
+import { NAV_LINKS, ROUTES, startCampaignPath } from '@/constants/routes'
 import { APP_NAME } from '@/constants/config'
 import { cn } from '@/lib/utils'
 
@@ -32,7 +34,11 @@ export function Navbar() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link to={ROUTES.home} className="font-display text-xl font-bold text-primary">
+        <Link
+          to={ROUTES.home}
+          className="flex items-center gap-2 font-display text-xl font-bold text-foreground"
+        >
+          <BrandMark />
           {APP_NAME}
         </Link>
 
@@ -55,6 +61,14 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          {(status === 'unauthenticated' || user?.role === 'donor') && (
+            <Button asChild variant="ghost">
+              <Link to={startCampaignPath(user?.role)}>
+                <Megaphone aria-hidden="true" />
+                Start a campaign
+              </Link>
+            </Button>
+          )}
           <ThemeToggle />
           {status === 'authenticated' && user ? (
             <>

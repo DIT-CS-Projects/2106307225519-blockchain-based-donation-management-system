@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { BadgeCheck, HandCoins, Heart, LayoutGrid, Users, Wallet } from 'lucide-react'
+import { BadgeCheck, ClipboardCheck, HandCoins, Heart, LayoutGrid, Users, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProgressBar } from '@/components/ui/progress'
@@ -39,11 +39,33 @@ export function AdminDashboardPage() {
     )
   }
 
-  const { stats, recentDonations, campaignOverview, charts } = data
+  const { stats, recentDonations, campaignOverview, charts, pendingReviews } = data
 
   return (
     <div>
       <h1 className="font-display text-2xl font-bold sm:text-3xl">Dashboard</h1>
+
+      {pendingReviews && pendingReviews.total > 0 && (
+        <Link
+          to={ROUTES.adminReviews}
+          className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4 transition-colors hover:bg-primary/10"
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
+              <ClipboardCheck className="size-5" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="font-medium">{pendingReviews.total} awaiting your review</p>
+              <p className="text-sm text-muted-foreground">
+                {pendingReviews.fundraiserApplications} fundraiser
+                {pendingReviews.fundraiserApplications === 1 ? '' : 's'} · {pendingReviews.campaigns}{' '}
+                campaign{pendingReviews.campaigns === 1 ? '' : 's'}
+              </p>
+            </div>
+          </div>
+          <span className="text-sm font-medium text-primary">Review now</span>
+        </Link>
+      )}
 
       <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard icon={HandCoins} label="Total donations" value={String(stats.totalDonations)} />

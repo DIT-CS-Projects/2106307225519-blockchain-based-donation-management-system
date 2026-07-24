@@ -13,6 +13,8 @@ export interface AuthContextValue {
   logoutAll: () => Promise<void>
   /** Replace the cached user after a profile update. */
   updateUser: (user: AuthUser) => void
+  /** Rotate the session to pick up a server-side role change (e.g. fundraiser approval). */
+  refreshSession: () => Promise<AuthUser>
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined)

@@ -1,11 +1,12 @@
 import { api } from '@/services/api'
 
-export type UserRole = 'donor' | 'admin'
+export type UserRole = 'donor' | 'fundraiser' | 'admin'
 
 export interface AuthUser {
   id: number
   fullName: string
   email: string
+  username: string | null
   phone: string
   role: UserRole
   profilePhotoUrl: string | null
@@ -20,12 +21,19 @@ export interface AuthSession {
 export interface RegisterPayload {
   fullName: string
   email: string
+  username?: string
   phone: string
   password: string
+  // Direct fundraiser registration (Decision 021).
+  accountType?: 'donor' | 'fundraiser'
+  displayName?: string
+  causeDescription?: string
+  identityReference?: string
 }
 
 export interface LoginPayload {
-  email: string
+  // Email or username.
+  identifier: string
   password: string
   rememberMe?: boolean
 }
@@ -93,4 +101,44 @@ export async function logout(): Promise<void> {
 
 export async function logoutAll(): Promise<void> {
   await api.post('/auth/logout-all')
+}
+
+// Become a fundraiser (Decision 020, api/authentication.md).
+
+export type FundraiserApplicationStatus = 'pending' | 'approved' | 'rejected'
+
+export interface FundraiserApplication {
+  id: number
+  displayName: string
+  causeDescription: string
+  identityReference: string
+  contactPhone: string
+  status: FundraiserApplicationStatus
+  decisionReason: string | null
+  createdAt: string
+  reviewedAt: string | null
+}
+
+export interface ApplyFundraiserPayload {
+  displayName: string
+  causeDescription: string
+  identityReference: string
+  contactPhone: string
+}
+
+export async function applyFundraiser(
+  payload: ApplyFundraiserPayload,
+): Promise<FundraiserApplication> {
+  const { data } = await api.post<{ application: FundraiserApplication }>(
+    '/auth/fundraiser-application',
+    payload,
+  )
+  return data.application
+}
+
+export async function getFundraiserApplication(): Promise<FundraiserApplication | null> {
+  const { data } = await api.get<{ application: FundraiserApplication | null }>(
+    '/auth/fundraiser-application',
+  )
+  return data.application
 }

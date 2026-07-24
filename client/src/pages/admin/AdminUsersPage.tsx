@@ -15,7 +15,7 @@ import {
 import { useFetch } from '@/hooks/useFetch'
 import { useAuth } from '@/hooks/useAuth'
 import { toApiError } from '@/services/api'
-import { getUsers, updateUserStatus, type UserStatus } from '@/services/admin'
+import { getUsers, promoteUser, updateUserStatus, type UserStatus } from '@/services/admin'
 import type { UserRole } from '@/services/auth'
 import { formatDate } from '@/utils/format'
 
@@ -46,6 +46,19 @@ export function AdminUsersPage() {
     }
   }
 
+  const onPromote = async (id: number) => {
+    setBusyId(id)
+    try {
+      await promoteUser(id)
+      toast.success('User promoted to administrator')
+      retry()
+    } catch (err) {
+      toast.error(toApiError(err).message)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   return (
     <div>
       <h1 className="font-display text-2xl font-bold sm:text-3xl">Users</h1>
@@ -60,6 +73,7 @@ export function AdminUsersPage() {
         <Select value={role} onChange={(e) => setRole(e.target.value as UserRole | 'all')} className="w-40">
           <option value="all">All roles</option>
           <option value="donor">Donor</option>
+          <option value="fundraiser">Fundraiser</option>
           <option value="admin">Admin</option>
         </Select>
       </div>
@@ -89,7 +103,8 @@ export function AdminUsersPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Joined</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -99,7 +114,7 @@ export function AdminUsersPage() {
                     <TableCell className="text-muted-foreground">{u.email}</TableCell>
                     <TableCell className="capitalize">{u.role}</TableCell>
                     <TableCell className="text-muted-foreground">{formatDate(u.createdAt)}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell>
                       <Select
                         className="w-36"
                         value={u.status}
@@ -112,6 +127,17 @@ export function AdminUsersPage() {
                           </option>
                         ))}
                       </Select>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {u.role !== 'admin' && u.id !== currentUser?.id && (
+                        <Button
+                          variant="secondary"
+                          disabled={busyId === u.id}
+                          onClick={() => void onPromote(u.id)}
+                        >
+                          Make admin
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

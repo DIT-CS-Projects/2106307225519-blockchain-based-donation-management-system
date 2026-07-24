@@ -12,8 +12,15 @@ export interface DashboardStats {
   blockchainTransactions: number
 }
 
+export interface PendingReviews {
+  fundraiserApplications: number
+  campaigns: number
+  total: number
+}
+
 export interface DashboardResult {
   stats: DashboardStats
+  pendingReviews: PendingReviews
   recentDonations: {
     id: number
     donor: string
@@ -81,6 +88,73 @@ export async function getUser(id: number): Promise<AdminUser> {
 export async function updateUserStatus(id: number, status: UserStatus): Promise<AdminUser> {
   const { data } = await api.patch<{ user: AdminUser }>(`/admin/users/${id}/status`, { status })
   return data.user
+}
+
+export async function promoteUser(id: number): Promise<AdminUser> {
+  const { data } = await api.post<{ user: AdminUser }>(`/admin/users/${id}/promote`)
+  return data.user
+}
+
+// Fundraiser applications review (Decision 020).
+
+export type FundraiserApplicationStatus = 'pending' | 'approved' | 'rejected'
+
+export interface AdminFundraiserApplication {
+  id: number
+  userId: number
+  applicantName: string
+  applicantEmail: string
+  displayName: string
+  causeDescription: string
+  identityReference: string
+  contactPhone: string
+  status: FundraiserApplicationStatus
+  decisionReason: string | null
+  createdAt: string
+  reviewedAt: string | null
+}
+
+export interface AdminFundraiserApplicationListParams {
+  status?: FundraiserApplicationStatus
+  page?: number
+  limit?: number
+}
+
+export interface AdminFundraiserApplicationListResult {
+  items: AdminFundraiserApplication[]
+  total: number
+  page: number
+  limit: number
+}
+
+export async function getFundraiserApplications(
+  params: AdminFundraiserApplicationListParams = {},
+): Promise<AdminFundraiserApplicationListResult> {
+  const { data } = await api.get<AdminFundraiserApplicationListResult>(
+    '/admin/fundraiser-applications',
+    { params },
+  )
+  return data
+}
+
+export async function approveFundraiserApplication(
+  id: number,
+): Promise<AdminFundraiserApplication> {
+  const { data } = await api.post<{ application: AdminFundraiserApplication }>(
+    `/admin/fundraiser-applications/${id}/approve`,
+  )
+  return data.application
+}
+
+export async function rejectFundraiserApplication(
+  id: number,
+  reason: string,
+): Promise<AdminFundraiserApplication> {
+  const { data } = await api.post<{ application: AdminFundraiserApplication }>(
+    `/admin/fundraiser-applications/${id}/reject`,
+    { reason },
+  )
+  return data.application
 }
 
 export interface AuditLogEntry {

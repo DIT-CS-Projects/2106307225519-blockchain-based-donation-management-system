@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { BadgeCheck, HandCoins, Heart, Receipt } from 'lucide-react'
+import { ArrowRight, BadgeCheck, HandCoins, Heart, Receipt } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatCard } from '@/components/shared/StatCard'
+import { GradientHeader, Stagger, StaggerItem } from '@/components/shared/motion'
 import { DonationHistoryList } from '@/components/donations/DonationHistoryList'
 import { useFetch } from '@/hooks/useFetch'
 import { useAuth } from '@/hooks/useAuth'
@@ -26,14 +27,24 @@ export function DonationsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-12 lg:py-16">
-      <header>
-        <h1 className="font-display text-3xl font-bold">
-          Your donations{firstName ? `, ${firstName}` : ''}
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Every donation you make, with its receipt and blockchain proof.
-        </p>
-      </header>
+      <GradientHeader>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-primary">Your giving</p>
+            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight">
+              Your donations{firstName ? `, ${firstName}` : ''}
+            </h1>
+            <p className="mt-2 max-w-xl text-muted-foreground">
+              Every donation you make, with its receipt and blockchain proof.
+            </p>
+          </div>
+          <Button asChild>
+            <Link to={ROUTES.campaigns}>
+              Browse campaigns <ArrowRight aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
+      </GradientHeader>
 
       {loading && <DonationsSkeleton />}
 
@@ -49,29 +60,33 @@ export function DonationsPage() {
 
       {!loading && !error && data && (
         <>
-          <section className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatCard
-              icon={HandCoins}
-              label="Total donated"
-              value={formatTZS(data.summary.totalDonated)}
-            />
-            <StatCard
-              icon={Heart}
-              label="Campaigns supported"
-              value={String(data.summary.campaignsSupported)}
-            />
-            <StatCard
-              icon={Receipt}
-              label="Donations"
-              value={String(data.summary.donationCount)}
-            />
-            <StatCard
-              icon={BadgeCheck}
-              label="Verified"
-              value={String(data.summary.verifiedCount)}
-              hint="Confirmed on-chain"
-            />
-          </section>
+          <Stagger className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StaggerItem>
+              <StatCard
+                icon={HandCoins}
+                label="Total donated"
+                value={formatTZS(data.summary.totalDonated)}
+              />
+            </StaggerItem>
+            <StaggerItem>
+              <StatCard
+                icon={Heart}
+                label="Campaigns supported"
+                value={String(data.summary.campaignsSupported)}
+              />
+            </StaggerItem>
+            <StaggerItem>
+              <StatCard icon={Receipt} label="Donations" value={String(data.summary.donationCount)} />
+            </StaggerItem>
+            <StaggerItem>
+              <StatCard
+                icon={BadgeCheck}
+                label="Verified"
+                value={String(data.summary.verifiedCount)}
+                hint="Confirmed on-chain"
+              />
+            </StaggerItem>
+          </Stagger>
 
           <section className="mt-10">
             <h2 className="font-display text-xl font-semibold">History</h2>
