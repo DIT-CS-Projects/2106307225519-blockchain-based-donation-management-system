@@ -13,6 +13,12 @@ export const notificationType = pgEnum('notification_type', [
   'system_announcement',
   'disbursement_completed',
   'disbursement_failed',
+  // Community fundraisers (Decision 020).
+  'fundraiser_application_approved',
+  'fundraiser_application_rejected',
+  'campaign_approved',
+  'campaign_rejected',
+  'account_promoted',
 ])
 
 /**

@@ -1,5 +1,6 @@
 import {
   bigint,
+  boolean,
   index,
   jsonb,
   pgEnum,
@@ -44,6 +45,11 @@ export const disbursements = pgTable(
     amount: bigint('amount', { mode: 'number' }).notNull(),
     purpose: text('purpose').notNull(),
     status: disbursementStatus('status').notNull().default('pending_approval'),
+    // True when this payout was released without administrator approval, that
+    // is, under the self-serve allowance (Decision 020). Such payouts count
+    // toward a campaign's cumulative self-released total; dual-approved ones do
+    // not.
+    selfReleased: boolean('self_released').notNull().default(false),
     initiatedBy: bigint('initiated_by', { mode: 'number' })
       .notNull()
       .references(() => users.id),

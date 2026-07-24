@@ -10,9 +10,11 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 
-// Roles: docs/BUSINESS_RULES.md (User Roles). Public registration only ever
-// creates a donor; admins are provisioned out-of-band (env-based seed script).
-export const userRole = pgEnum('user_role', ['donor', 'admin'])
+// Roles: docs/BUSINESS_RULES.md (User Roles), Decisions 020 and 021.
+// Registration creates a donor or, by choice, a fundraiser (immediate role).
+// A donor can also upgrade to fundraiser via an approved application. Admin is
+// never self-assignable: it is seeded or granted by another administrator.
+export const userRole = pgEnum('user_role', ['donor', 'fundraiser', 'admin'])
 
 // Account status (api/admin.md: PATCH /users/:id/status). Suspended and
 // deactivated accounts are blocked from logging in.
@@ -24,6 +26,9 @@ export const users = pgTable(
     id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
     fullName: varchar('full_name', { length: 120 }).notNull(),
     email: varchar('email', { length: 200 }).notNull(),
+    // Optional unique handle; a user may sign in with their email or username.
+    // Stored lowercased. Nullable, so existing accounts keep signing in by email.
+    username: varchar('username', { length: 30 }),
     phone: varchar('phone', { length: 30 }).notNull(),
     passwordHash: text('password_hash').notNull(),
     role: userRole('role').notNull().default('donor'),
@@ -39,6 +44,7 @@ export const users = pgTable(
   },
   (table) => [
     uniqueIndex('users_email_unique').on(table.email),
+    uniqueIndex('users_username_unique').on(table.username),
     uniqueIndex('users_phone_unique').on(table.phone),
     index('users_role_idx').on(table.role),
   ],

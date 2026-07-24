@@ -2,6 +2,7 @@
 // donations, disbursements, ...). Re-export them all from this barrel so the
 // Drizzle client and drizzle-kit see the full schema.
 export * from './users'
+export * from './fundraiserApplications'
 export * from './campaigns'
 export * from './sessions'
 export * from './passwordResets'
