@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus } from 'lucide-react'
+import { Clock, HandCoins, Megaphone, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProgressBar } from '@/components/ui/progress'
+import { StatCard } from '@/components/shared/StatCard'
 import { StatusBadge, campaignStatusTone } from '@/components/shared/StatusBadge'
 import { GradientHeader, Stagger, StaggerItem } from '@/components/shared/motion'
 import { useFetch } from '@/hooks/useFetch'
@@ -61,7 +62,28 @@ export function FundraiserDashboardPage() {
               </Button>
             </div>
           ) : (
-            <Stagger className="grid gap-4">
+            <>
+              <div className="mb-8 grid gap-4 sm:grid-cols-3">
+                <StatCard
+                  icon={HandCoins}
+                  label="Total raised"
+                  value={formatTZS(data.items.reduce((sum, c) => sum + c.raisedAmount, 0))}
+                  hint="Across all your campaigns"
+                />
+                <StatCard
+                  icon={Megaphone}
+                  label="Active campaigns"
+                  value={String(data.items.filter((c) => c.status === 'active').length)}
+                  hint="Live and accepting donations"
+                />
+                <StatCard
+                  icon={Clock}
+                  label="Awaiting review"
+                  value={String(data.items.filter((c) => c.status === 'pending_review').length)}
+                  hint="Pending administrator approval"
+                />
+              </div>
+              <Stagger className="grid gap-4">
               {data.items.map((c) => {
                 const pct = c.targetAmount > 0 ? Math.min(100, (c.raisedAmount / c.targetAmount) * 100) : 0
                 return (
@@ -91,7 +113,8 @@ export function FundraiserDashboardPage() {
                   </StaggerItem>
                 )
               })}
-            </Stagger>
+              </Stagger>
+            </>
           )}
         </div>
       )}

@@ -61,22 +61,22 @@ export function FadeInUp({ children, className, delay = 0 }: MotionProps & { del
   )
 }
 
-/** A soft teal gradient wash used behind page headers. */
+/** A teal gradient wash used behind page headers. */
 export function GradientHeader({ children, className }: MotionProps) {
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-border bg-card p-8 sm:p-10',
+        'relative overflow-hidden rounded-2xl border border-primary/15 bg-linear-to-br from-primary/10 via-card to-accent/10 p-8 shadow-sm sm:p-10',
         className,
       )}
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-16 -top-24 size-64 rounded-full bg-primary/15 blur-3xl"
+        className="pointer-events-none absolute -right-12 -top-20 size-72 rounded-full bg-primary/30 blur-3xl"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 -left-10 size-56 rounded-full bg-accent/10 blur-3xl"
+        className="pointer-events-none absolute -bottom-24 -left-8 size-64 rounded-full bg-accent/20 blur-3xl"
       />
       <div className="relative">{children}</div>
     </div>
