@@ -77,32 +77,24 @@ export async function updateUserStatus(
   }
 }
 
-export async function promoteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const user = await adminUserService.promoteToAdmin(requireAdminId(req), parseUserId(req))
-    res.json({ user })
-  } catch (error) {
-    next(error)
-  }
-}
+// --- Fundraisers (Decision 024) ---
 
-// --- Fundraiser applications (Decision 020) ---
-
-const applicationsQuerySchema = z.object({
+const fundraisersQuerySchema = z.object({
   status: z.enum(['pending', 'approved', 'rejected']).optional(),
+  search: z.string().trim().max(200).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 })
 
-export async function listFundraiserApplications(
+export async function listFundraisers(
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
-    const query = applicationsQuerySchema.safeParse(req.query)
+    const query = fundraisersQuerySchema.safeParse(req.query)
     if (!query.success) throw ApiError.badRequest('Invalid filters')
-    res.json(await fundraiserApplicationService.listApplications(query.data))
+    res.json(await fundraiserApplicationService.listFundraisers(query.data))
   } catch (error) {
     next(error)
   }

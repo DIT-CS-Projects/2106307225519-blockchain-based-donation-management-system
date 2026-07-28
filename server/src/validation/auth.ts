@@ -4,7 +4,8 @@ import { passwordSchema } from '../utils/password'
 const email = z.string().trim().toLowerCase().email().max(200)
 
 // Permissive phone: local or international format, digits with optional
-// separators. Uniqueness (not format) is the real constraint here.
+// separators. Phone is not unique; multiple accounts may share a number
+// (Decision 025).
 const phone = z
   .string()
   .trim()
@@ -14,7 +15,8 @@ const phone = z
 
 const fullName = z.string().trim().min(1, 'Full name is required').max(120)
 
-// Optional handle: 3-30 chars, letters/numbers/underscore, stored lowercased.
+// Required handle: 3-30 chars, letters/numbers/underscore, stored lowercased.
+// A user may sign in with either their email or this username.
 const username = z
   .string()
   .trim()
@@ -29,7 +31,7 @@ export const registerSchema = z
   .object({
     fullName,
     email,
-    username: username.optional(),
+    username,
     phone,
     password: passwordSchema,
     accountType: z.enum(['donor', 'fundraiser']).default('donor'),

@@ -47,7 +47,7 @@ export function RegisterPage() {
       await registerUser({
         fullName: values.fullName,
         email: values.email,
-        username: values.username || undefined,
+        username: values.username,
         phone: values.phone,
         password: values.password,
         accountType: values.accountType,
@@ -121,7 +121,7 @@ export function RegisterPage() {
 
         <FormField
           id="username"
-          label="Username (optional)"
+          label="Username"
           error={errors.username?.message}
           hint="You can sign in with your email or this username."
         >
@@ -149,8 +149,8 @@ export function RegisterPage() {
         {isFundraiser && (
           <div className="grid gap-5 rounded-lg border border-border bg-muted/30 p-5">
             <p className="text-sm text-muted-foreground">
-              Tell us about your fundraising. Your campaigns still go live only after an administrator
-              reviews them.
+              Tell us about your fundraising. An administrator reviews and approves your account
+              before you can create campaigns.
             </p>
             <FormField
               id="displayName"

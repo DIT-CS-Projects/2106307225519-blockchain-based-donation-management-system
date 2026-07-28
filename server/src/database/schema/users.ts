@@ -10,10 +10,12 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 
-// Roles: docs/BUSINESS_RULES.md (User Roles), Decisions 020 and 021.
-// Registration creates a donor or, by choice, a fundraiser (immediate role).
-// A donor can also upgrade to fundraiser via an approved application. Admin is
-// never self-assignable: it is seeded or granted by another administrator.
+// Roles: docs/BUSINESS_RULES.md (User Roles), Decisions 021 and 024.
+// Donor and fundraiser are distinct actors chosen at registration; there is no
+// conversion between them. A fundraiser holds the role from sign-up but must be
+// approved by an administrator before creating campaigns. Admin is never
+// self-assignable and is not granted in-app: it is created only by the seed
+// script.
 export const userRole = pgEnum('user_role', ['donor', 'fundraiser', 'admin'])
 
 // Account status (api/admin.md: PATCH /users/:id/status). Suspended and
@@ -45,7 +47,6 @@ export const users = pgTable(
   (table) => [
     uniqueIndex('users_email_unique').on(table.email),
     uniqueIndex('users_username_unique').on(table.username),
-    uniqueIndex('users_phone_unique').on(table.phone),
     index('users_role_idx').on(table.role),
   ],
 )

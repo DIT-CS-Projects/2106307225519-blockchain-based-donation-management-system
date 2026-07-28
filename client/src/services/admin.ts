@@ -90,71 +90,61 @@ export async function updateUserStatus(id: number, status: UserStatus): Promise<
   return data.user
 }
 
-export async function promoteUser(id: number): Promise<AdminUser> {
-  const { data } = await api.post<{ user: AdminUser }>(`/admin/users/${id}/promote`)
-  return data.user
-}
-
-// Fundraiser applications review (Decision 020).
+// Fundraisers directory + approval (Decision 024). Donors and fundraisers are
+// separate actors; a fundraiser account must be approved before it can create
+// campaigns.
 
 export type FundraiserApplicationStatus = 'pending' | 'approved' | 'rejected'
 
-export interface AdminFundraiserApplication {
-  id: number
+export interface AdminFundraiser {
+  applicationId: number
   userId: number
-  applicantName: string
-  applicantEmail: string
+  fullName: string
+  email: string
+  phone: string
+  accountStatus: UserStatus
+  joinedAt: string
   displayName: string
   causeDescription: string
   identityReference: string
   contactPhone: string
-  status: FundraiserApplicationStatus
+  applicationStatus: FundraiserApplicationStatus
   decisionReason: string | null
-  createdAt: string
+  appliedAt: string
   reviewedAt: string | null
+  campaignsCount: number
+  totalRaised: number
 }
 
-export interface AdminFundraiserApplicationListParams {
+export interface AdminFundraiserListParams {
   status?: FundraiserApplicationStatus
+  search?: string
   page?: number
   limit?: number
 }
 
-export interface AdminFundraiserApplicationListResult {
-  items: AdminFundraiserApplication[]
+export interface AdminFundraiserListResult {
+  items: AdminFundraiser[]
   total: number
   page: number
   limit: number
 }
 
-export async function getFundraiserApplications(
-  params: AdminFundraiserApplicationListParams = {},
-): Promise<AdminFundraiserApplicationListResult> {
-  const { data } = await api.get<AdminFundraiserApplicationListResult>(
-    '/admin/fundraiser-applications',
-    { params },
-  )
+export async function getFundraisers(
+  params: AdminFundraiserListParams = {},
+): Promise<AdminFundraiserListResult> {
+  const { data } = await api.get<AdminFundraiserListResult>('/admin/fundraisers', { params })
   return data
 }
 
-export async function approveFundraiserApplication(
-  id: number,
-): Promise<AdminFundraiserApplication> {
-  const { data } = await api.post<{ application: AdminFundraiserApplication }>(
-    `/admin/fundraiser-applications/${id}/approve`,
-  )
-  return data.application
+/** Approve a pending fundraiser account. `applicationId` comes from the row. */
+export async function approveFundraiser(applicationId: number): Promise<void> {
+  await api.post(`/admin/fundraisers/${applicationId}/approve`)
 }
 
-export async function rejectFundraiserApplication(
-  id: number,
-  reason: string,
-): Promise<AdminFundraiserApplication> {
-  const { data } = await api.post<{ application: AdminFundraiserApplication }>(
-    `/admin/fundraiser-applications/${id}/reject`,
-    { reason },
-  )
-  return data.application
+/** Reject a pending fundraiser account with a reason. */
+export async function rejectFundraiser(applicationId: number, reason: string): Promise<void> {
+  await api.post(`/admin/fundraisers/${applicationId}/reject`, { reason })
 }
 
 export interface AuditLogEntry {

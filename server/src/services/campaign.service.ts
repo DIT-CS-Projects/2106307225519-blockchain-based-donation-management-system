@@ -17,6 +17,7 @@ import type { CampaignRow, UserRow } from '../database/schema'
 import { ApiError } from '../utils/ApiError'
 import { AUDIT_ACTIONS, recordAudit } from './auditLog.service'
 import { notify } from './notification.service'
+import { assertFundraiserApproved } from './fundraiserApplication.service'
 import { findDistinctDonorIdsByCampaign } from '../repositories/donation.repository'
 import type { CreateCampaignInput, UpdateCampaignInput } from '../validation/campaign'
 
@@ -206,6 +207,9 @@ export async function createCampaign(
   input: CreateCampaignInput,
 ): Promise<AdminCampaignDto> {
   const isFundraiser = actor.role === 'fundraiser'
+  // A fundraiser cannot create campaigns until an administrator approves their
+  // account (Decision 024). Administrators are never gated.
+  if (isFundraiser) await assertFundraiserApproved(actor.id)
   const row = await insertCampaign({
     title: input.title,
     description: input.description,

@@ -1,8 +1,5 @@
 // Donation and payment constants. Source of truth: docs/BUSINESS_RULES.md.
 
-/** Minimum donation amount, in whole TZS (Donation Rules). */
-export const MIN_DONATION_TZS = 1_000
-
 /** Upper guardrail on a single donation to catch fat-finger input, in TZS. */
 export const MAX_DONATION_TZS = 100_000_000
 

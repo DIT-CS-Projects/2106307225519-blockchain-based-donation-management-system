@@ -7,7 +7,6 @@ import {
   findUserByEmail,
   findUserByUsername,
   insertUser,
-  phoneExists,
   updateLoginState,
   usernameExists,
 } from '../repositories/user.repository'
@@ -25,6 +24,7 @@ import {
 } from './session.service'
 import { toUserDto, type UserDto } from './user.dto'
 import { AUDIT_ACTIONS, recordAudit } from './auditLog.service'
+import { notifyAdmins } from './notification.service'
 
 const MS_PER_SECOND = 1000
 
@@ -35,9 +35,12 @@ export interface AuthResult {
 
 /**
  * Register a donor or, by choice, a fundraiser, then sign them in
- * (api/authentication.md, Register; Decision 021). A fundraiser account gets the
- * role immediately and its identity is recorded as an auto-approved fundraiser
- * application. Public registration can never create an administrator.
+ * (api/authentication.md, Register; Decisions 021 and 023). Donors and
+ * fundraisers are distinct actors: a fundraiser is chosen at sign-up, never
+ * converted from a donor. A new fundraiser gets the role immediately but their
+ * account stays PENDING administrator approval, recorded as a pending
+ * fundraiser application, and cannot create campaigns until approved. Public
+ * registration can never create an administrator.
  */
 export async function register(
   input: RegisterInput,
@@ -46,11 +49,8 @@ export async function register(
   if (await emailExists(input.email)) {
     throw ApiError.conflict('An account with this email already exists')
   }
-  if (input.username && (await usernameExists(input.username))) {
+  if (await usernameExists(input.username)) {
     throw ApiError.conflict('That username is already taken')
-  }
-  if (await phoneExists(input.phone)) {
-    throw ApiError.conflict('An account with this phone number already exists')
   }
 
   const isFundraiser = input.accountType === 'fundraiser'
@@ -58,14 +58,14 @@ export async function register(
   const user = await insertUser({
     fullName: input.fullName,
     email: input.email,
-    username: input.username ?? null,
+    username: input.username,
     phone: input.phone,
     passwordHash,
     role: isFundraiser ? 'fundraiser' : 'donor',
   })
 
   if (isFundraiser) {
-    await recordSelfRegisteredFundraiser(user.id, input)
+    await recordFundraiserSignup(user.id, input)
   }
 
   const tokens = await issueSession(user, userAgent, true)
@@ -74,15 +74,13 @@ export async function register(
 }
 
 /**
- * Capture a self-registering fundraiser's identity as an auto-approved
- * application (the identity trail and future home for KYC). Best-effort: the
- * account already holds the fundraiser role, so a failure here is logged, not
- * fatal to registration.
+ * Capture a self-registering fundraiser's identity as a PENDING application
+ * (Decision 024): the account holds the fundraiser role but must be approved by
+ * an administrator before it can create campaigns. Administrators are notified
+ * so the account appears in their review queue. Best-effort: a failure here is
+ * logged, not fatal to registration.
  */
-async function recordSelfRegisteredFundraiser(
-  userId: number,
-  input: RegisterInput,
-): Promise<void> {
+async function recordFundraiserSignup(userId: number, input: RegisterInput): Promise<void> {
   try {
     await insertApplication({
       userId,
@@ -90,10 +88,13 @@ async function recordSelfRegisteredFundraiser(
       causeDescription: input.causeDescription ?? '',
       identityReference: input.identityReference ?? '',
       contactPhone: input.phone,
-      status: 'approved',
-      reviewedAt: new Date(),
-      decisionReason: 'Self-registered as a fundraiser',
+      status: 'pending',
     })
+    void notifyAdmins(
+      'A fundraiser is awaiting approval',
+      `${input.displayName ?? input.fullName} registered as a fundraiser and needs administrator review.`,
+      '/admin/fundraisers',
+    )
   } catch (error) {
     logger.error(`Failed to record fundraiser application for user ${userId}:`, error)
   }

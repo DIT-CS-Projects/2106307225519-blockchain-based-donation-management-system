@@ -9,7 +9,6 @@ import {
 import {
   findUserByEmail,
   findUserById,
-  phoneExists,
   updateUserPassword,
   updateUserProfile,
 } from '../repositories/user.repository'
@@ -47,10 +46,6 @@ export async function updateProfile(
   const user = await findUserById(userId)
   if (!user) {
     throw ApiError.notFound('User not found')
-  }
-
-  if (input.phone && input.phone !== user.phone && (await phoneExists(input.phone))) {
-    throw ApiError.conflict('An account with this phone number already exists')
   }
 
   const updated = await updateUserProfile(userId, {

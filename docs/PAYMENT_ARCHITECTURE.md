@@ -114,6 +114,42 @@ Payment Provider API
 
 This design allows providers to be changed without affecting business logic.
 
+Two adapters exist today:
+
+- mock: a self-contained local checkout, the default. No credentials or public callback URL needed.
+- azampay: the real gateway for mobile money.
+
+Selected with PAYMENT_PROVIDER. The azampay adapter activates only when every credential is present (app name, client id, client secret, API key, callback secret); otherwise the service falls back to the mock and logs a warning, so a half-configured environment still boots.
+
+---
+
+# AzamPay Adapter
+
+## Mobile money
+
+- createSession requests an AzamPay auth token, then calls the MNO checkout endpoint with the payer's mobile number, the amount, our payment reference (as externalId) and the operator.
+- AzamPay pushes a USSD/PIN prompt to the payer's handset. There is no hosted checkout page and no redirect.
+- The donor is sent to an in-app waiting screen that polls payment status until the callback resolves the transaction, then to the receipt.
+
+## Bank
+
+- The bank rail is not wired to AzamPay yet. While PAYMENT_PROVIDER=azampay, bank checkouts keep running on the mock provider inside the adapter, so the rail stays functional.
+
+## Provider naming
+
+- Our keys map to AzamPay operators: mpesa to Mpesa, airtel to Airtel, mixx (Mixx by Yas, formerly Tigo Pesa) to Tigo, halopesa to Halopesa.
+
+## Callback authenticity
+
+- AzamPay posts asynchronously to the registered callback URL, which carries an unguessable secret as a query parameter (?key=...).
+- A callback is accepted only when the secret matches, the echoed reference (utilityref) matches the stored transaction, and the amount matches. The secret travels in the URL, never in the stored payload.
+- Duplicate callbacks are idempotent: a transaction is finalized once.
+
+## Local development
+
+- AzamPay cannot reach localhost. To test the live gateway, expose the backend with a public tunnel (for example ngrok or cloudflared to PORT 4000) and register that URL plus the secret as the callback in the AzamPay portal.
+- The mock provider remains the default and needs no tunnel or credentials.
+
 ---
 
 # Failed Payments

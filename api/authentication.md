@@ -12,7 +12,7 @@ POST /register
 
 Description
 
-Create a new account as a donor or, by choice, a fundraiser (Decision 021). A fundraiser account receives the fundraiser role immediately; the additional fields capture the applicant's identity and cause and are stored as an auto-approved fundraiser application.
+Create a new account as a donor or, by choice, a fundraiser (Decisions 021 and 024). Donors and fundraisers are separate actors chosen here at sign-up. A fundraiser account receives the fundraiser role immediately but stays pending administrator approval and cannot create campaigns until approved; the additional fields capture the applicant's identity and cause and are stored as a pending fundraiser application.
 
 Authentication
 
@@ -23,6 +23,7 @@ Request
 {
   "fullName": "",
   "email": "",
+  "username": "",
   "phone": "",
   "password": "",
   "accountType": "donor | fundraiser (default donor)",
@@ -36,7 +37,7 @@ Validation
 - Full name required
 - Valid email
 - Unique email
-- Unique phone
+- Username required (3-30 chars, letters/numbers/underscore), unique; usable to sign in alongside email
 - Strong password
 - accountType is donor or fundraiser (default donor)
 - When accountType is fundraiser: displayName, causeDescription, and identityReference are required
@@ -144,34 +145,15 @@ Confirm Password
 
 ---
 
-# Become a Fundraiser
+# Fundraiser Approval Status
 
-POST /fundraiser-application
-
-Authentication Required (donor)
-
-Submits an application to become a fundraiser (Decision 020). An administrator reviews it (see api/admin.md). Approval promotes the account's role to fundraiser.
-
-Request
-
-- Organisation or individual name
-- Cause description
-- Identity reference (national ID or registration number)
-- Contact phone
-
-Behaviour
-
-- Only a donor may apply; a fundraiser or administrator receives 409
-- One open (pending) application at a time
-- A rejected applicant may re-apply
-
----
+There is no "apply to become a fundraiser" endpoint (Decision 024). Donors and fundraisers are separate actors: a fundraiser is chosen at registration. Admin review of the resulting account happens in api/admin.md (Fundraisers).
 
 GET /fundraiser-application
 
 Authentication Required
 
-Returns the current user's latest application and its status (pending, approved, rejected), or none.
+Returns the signed-in fundraiser's application and its approval status (pending, approved, rejected), or none. Used by the fundraiser dashboard to show its locked "under review" state.
 
 ---
 

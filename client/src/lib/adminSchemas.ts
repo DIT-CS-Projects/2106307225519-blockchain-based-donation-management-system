@@ -44,27 +44,6 @@ export const disbursementFormSchema = z.object({
 
 export type DisbursementFormValues = z.infer<typeof disbursementFormSchema>
 
-export const fundraiserApplicationSchema = z.object({
-  displayName: z.string().trim().min(2, 'Enter the name you fundraise under').max(150),
-  causeDescription: z
-    .string()
-    .trim()
-    .min(20, 'Describe your cause in at least 20 characters')
-    .max(2000),
-  identityReference: z
-    .string()
-    .trim()
-    .min(4, 'Enter a valid national ID or registration number')
-    .max(120),
-  contactPhone: z
-    .string()
-    .trim()
-    .min(7, 'Enter a valid phone number')
-    .max(30),
-})
-
-export type FundraiserApplicationValues = z.infer<typeof fundraiserApplicationSchema>
-
 export const broadcastFormSchema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(150),
   message: z.string().trim().min(1, 'Message is required').max(1000),

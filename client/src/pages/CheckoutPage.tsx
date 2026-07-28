@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Loader2, Lock, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { LoadingScreen } from '@/components/shared/LoadingScreen'
+import { MobilePaymentWaiting } from '@/components/donations/MobilePaymentWaiting'
 import { useFetch } from '@/hooks/useFetch'
 import { completeMockPayment, getPaymentStatus } from '@/services/payments'
 import { toApiError } from '@/services/api'
@@ -93,7 +94,11 @@ export function CheckoutPage() {
     )
   }
 
-  const missingToken = token.length === 0
+  // Real gateway (AzamPay): no capability token in the URL. The push already went
+  // to the donor's phone; show the waiting screen that polls until it resolves.
+  if (token.length === 0) {
+    return <MobilePaymentWaiting initial={status} />
+  }
 
   return (
     <div className="mx-auto max-w-md px-6 py-16 sm:py-24">
@@ -118,11 +123,6 @@ export function CheckoutPage() {
           </p>
         </div>
 
-        {missingToken && (
-          <p role="alert" className="mt-4 text-sm text-destructive">
-            This checkout link is missing its security token. Please restart the donation.
-          </p>
-        )}
         {actionError && (
           <p role="alert" className="mt-4 text-sm text-destructive">
             {actionError}
@@ -133,7 +133,7 @@ export function CheckoutPage() {
           className="mt-6 w-full"
           size="lg"
           onClick={() => run('SUCCESS')}
-          disabled={processing !== null || missingToken}
+          disabled={processing !== null}
         >
           {processing === 'pay' ? (
             <>

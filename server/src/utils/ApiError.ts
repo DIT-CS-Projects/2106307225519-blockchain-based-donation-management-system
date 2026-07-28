@@ -27,4 +27,8 @@ export class ApiError extends Error {
   static conflict(message = 'Conflict') {
     return new ApiError(409, message)
   }
+
+  static badGateway(message = 'Upstream service error') {
+    return new ApiError(502, message)
+  }
 }

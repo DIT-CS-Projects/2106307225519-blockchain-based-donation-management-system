@@ -14,7 +14,7 @@ const CONFIG: Record<
   confirmed: {
     label: 'Verified on-chain',
     icon: BadgeCheck,
-    className: 'bg-primary/10 text-primary',
+    className: 'bg-secondary text-secondary-foreground',
   },
   failed: {
     label: 'Proof failed',

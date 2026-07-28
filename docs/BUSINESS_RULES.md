@@ -8,7 +8,7 @@ These rules must not be violated during development.
 
 # User Roles
 
-The system contains three user roles: donor, fundraiser, and administrator (Decision 020). At registration a person chooses to sign up as a donor or as a fundraiser; choosing fundraiser grants the role immediately (Decision 021). An existing donor can also upgrade to fundraiser by submitting an application that an administrator approves. An administrator can promote a user to administrator; the administrator role is never self-assignable.
+The system contains three user roles: donor, fundraiser, and administrator (Decisions 020 and 024). Donor and fundraiser are separate actors chosen at registration, with no conversion between them: choosing fundraiser grants the role immediately (Decision 021), but the account stays pending until an administrator approves it and cannot create campaigns before then. There is no donor-to-fundraiser upgrade and no in-app role promotion of any kind. The administrator role is never self-assignable and is created only by the seed script.
 
 ## Donor
 
@@ -22,7 +22,6 @@ A donor can:
 - View blockchain verification
 - Manage profile
 - Receive notifications
-- Apply to become a fundraiser
 
 Donors cannot:
 
@@ -36,7 +35,7 @@ Donors cannot:
 
 ## Fundraiser
 
-A fundraiser is a verified user who may run campaigns, whether they registered directly as a fundraiser (Decision 021) or upgraded from a donor account. In addition to everything a donor can do, a fundraiser can:
+A fundraiser is a user who registered to run campaigns (Decision 021) and whose account has been approved by an administrator (Decision 024). Until approval the account can sign in but its dashboard is locked. Once approved, in addition to everything a donor can do, a fundraiser can:
 
 - Create campaigns they own (each starts in Pending Review until an administrator approves it)
 - Edit and archive their own campaigns
@@ -52,8 +51,8 @@ A fundraiser can only ever act on the campaigns they own. A fundraiser cannot ve
 
 An administrator is a neutral platform operator. There may be several. An administrator can:
 
-- Manage users, including promoting a user to administrator
-- Approve or reject fundraiser applications
+- Manage users (activate, suspend, or deactivate accounts)
+- Approve or reject fundraiser accounts
 - Review, approve, or reject fundraiser campaigns
 - Create campaigns (may publish directly, without review)
 - Edit or archive any campaign
@@ -117,7 +116,7 @@ Every completed donation generates:
 
 Cancelled payments do not generate blockchain transactions.
 
-The minimum donation amount is 1,000 TZS, defined as a named constant.
+There is no minimum donation amount; any whole-shilling amount above zero is accepted. An upper guardrail catches fat-finger input, defined as a named constant.
 
 ---
 
@@ -198,8 +197,8 @@ The audit log records privileged activities including:
 - campaign creation, modification, deletion, submission for review, approval, and rejection
 - beneficiary management and verification
 - disbursement initiation, approval, and rejection
-- fundraiser application submission, approval, and rejection
-- user status changes and promotion to administrator
+- fundraiser account approval and rejection
+- user status changes
 - report generation
 - login attempts
 - blockchain verification

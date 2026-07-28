@@ -444,4 +444,100 @@ Approved
 
 ---
 
+## Decision 022
+
+### Impact Points (donor rewards)
+
+Donors earn Impact Points, an off-chain loyalty currency, for engagement. Points recognize and encourage giving; they are never money, never redeemable for cash, and never leave the platform. They are deliberately kept off-chain: they are operational data, not proof, so they belong in PostgreSQL, not on the blockchain (per the blockchain philosophy, "Blockchain stores proof only").
+
+Points are recorded as an append-only ledger (`reward_events`), mirroring the immutability of donation history. A donor's balance and tier are always derived by summing the ledger, so the balance can never drift from the history.
+
+Earning rules (one source of truth in the reward service, surfaced to the client via the API so copy never drifts):
+
+* 1 point per 1,000 TZS donated, with a minimum of 1 point per donation.
+* A one-time 100-point bonus on a donor's first ever donation.
+* A 50-point bonus each time a donor supports a campaign they had not backed before (rewarding breadth of engagement, not just repetition).
+
+Tiers are derived from the lifetime balance: Bronze (0), Silver (500), Gold (2,000), Platinum (5,000).
+
+Awarding happens inside the payment success flow, fire-and-forget, exactly like blockchain proof recording: a rewards failure is logged and never affects the donation. Awarding is idempotent (unique `donation_id`, `type`), so a duplicate payment callback never double-awards.
+
+This decision does not change the payment, donation, or blockchain flows; it only reads from donations and appends to its own ledger.
+
+Status
+
+Approved
+
+---
+
+## Decision 023
+
+### No Minimum Donation Amount
+
+Supersedes the minimum-donation clause of Decision 013 ("Minimum donation amount is 1,000 TZS").
+
+There is no minimum donation amount. A donor may give any whole-shilling amount above zero. The named constant `MIN_DONATION_TZS` is removed from both the client and server; the only remaining amount guardrail is the existing upper bound (`MAX_DONATION_TZS`), which catches fat-finger input and is unrelated to this decision.
+
+This lowers the barrier to a donor's first gift, consistent with the platform's calm-confidence positioning: nobody is turned away for giving what they can. Impact Points (Decision 022) already round up to a 1-point minimum per donation, so even the smallest gift is recognized.
+
+Status
+
+Approved
+
+---
+
+## Decision 024
+
+### Fundraisers and Donors Are Separate Actors, Approved by an Administrator
+
+Revises Decision 020 (donor upgrades to fundraiser via an approved application) and completes Decision 021 (direct fundraiser registration).
+
+Donor and fundraiser are two distinct actors. There is no conversion between them and no in-app role promotion of any kind:
+
+* A donor cannot "become" a fundraiser. The donor account page no longer offers an application, and the donor-only apply endpoint is removed. Someone who wants to fundraise registers a fundraiser account.
+* Administrators are no longer promoted from within the app. The "Make admin" action is removed; an administrator is created only by the seed script. Public registration still can never create an administrator.
+
+A fundraiser is chosen at registration and holds the `fundraiser` role from sign-up, but the account is not usable until an administrator approves it. On sign-up the fundraiser's identity is captured as a pending `fundraiser_applications` row (previously auto-approved). Until approval:
+
+* The fundraiser can sign in and reach their dashboard, which shows a locked "under review" state.
+* Creating a campaign is blocked in the service layer (`assertFundraiserApproved`), not just hidden in the UI.
+
+Administrators approve fundraisers in a dedicated Fundraisers console: a directory of fundraiser accounts (identity, approval status, account status, campaigns and total raised) with the approval queue built in, plus account suspend/activate. Campaign review is unchanged and stays on the Reviews page: an approved fundraiser's individual campaigns are still reviewed before going live.
+
+No database migration is required. The existing `fundraiser_applications` table and `user_status` enum carry the new semantics; existing self-registered fundraisers (auto-approved under Decision 021) are grandfathered as approved.
+
+Status
+
+Approved
+
+---
+
+## Decision 025
+
+### Phone Numbers Are Not Unique Per Account
+
+A household or shared line is common; requiring a distinct phone number per account blocked legitimate registrations for no fraud-prevention benefit (phone is not an auth factor here).
+
+Multiple accounts, donor or fundraiser, may share the same phone number. The `users_phone_unique` index is dropped and the registration and profile-update conflict checks (`phoneExists`) are removed. Email and username remain unique.
+
+Status
+
+Approved
+
+---
+
+## Decision 026
+
+### Username Is Required at Registration
+
+Completes email-or-username sign-in. Sign-in by username was already supported, but registration left the handle optional, so most accounts had no username to sign in with.
+
+Every new account chooses a username at registration (3-30 characters, letters/numbers/underscore, stored lowercased, unique). Either the email or the username can then be used to sign in. The `users.username` column stays nullable so accounts created before this decision are grandfathered; only new registrations are required to supply one.
+
+Status
+
+Approved
+
+---
+
 Future architectural decisions should be added to this document instead of modifying previous decisions.

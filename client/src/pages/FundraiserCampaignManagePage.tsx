@@ -49,7 +49,7 @@ export function FundraiserCampaignManagePage() {
 
   if (error || !campaign) {
     return (
-      <section className="mx-auto max-w-3xl px-6 py-16 text-center">
+      <section className="mx-auto max-w-3xl text-center">
         <p className="text-muted-foreground">Could not load this campaign.</p>
         <Button variant="secondary" className="mt-4" onClick={() => navigate(ROUTES.fundraiser)}>
           Back to your campaigns
@@ -59,7 +59,7 @@ export function FundraiserCampaignManagePage() {
   }
 
   return (
-    <section className="mx-auto max-w-3xl px-6 py-12">
+    <section className="mx-auto max-w-3xl">
       <Link
         to={ROUTES.fundraiser}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

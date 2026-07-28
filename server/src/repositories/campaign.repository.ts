@@ -1,4 +1,4 @@
-import { SQL, and, asc, count, desc, eq, gte, ilike, isNull, lte, ne, or } from 'drizzle-orm'
+import { SQL, and, asc, count, desc, eq, gte, ilike, inArray, isNull, lte, ne, or, sql } from 'drizzle-orm'
 import { requireDb } from '../config/database'
 import { campaigns, type CampaignRow, type NewCampaignRow } from '../database/schema'
 
@@ -191,6 +191,31 @@ export async function softDeleteCampaign(id: number): Promise<void> {
     .update(campaigns)
     .set({ deletedAt: new Date(), updatedAt: new Date() })
     .where(eq(campaigns.id, id))
+}
+
+/**
+ * Per-owner campaign totals (count and money raised) for a set of owners, in a
+ * single grouped query. Used by the admin fundraisers directory (Decision 024).
+ */
+export async function aggregateCampaignsByOwners(
+  ownerIds: number[],
+): Promise<Map<number, { count: number; raised: number }>> {
+  if (ownerIds.length === 0) return new Map()
+  const client = requireDb()
+  const rows = await client
+    .select({
+      ownerId: campaigns.ownerId,
+      total: count(),
+      raised: sql<number>`coalesce(sum(${campaigns.raisedAmount}), 0)`,
+    })
+    .from(campaigns)
+    .where(and(inArray(campaigns.ownerId, ownerIds), isNull(campaigns.deletedAt)))
+    .groupBy(campaigns.ownerId)
+  return new Map(
+    rows
+      .filter((r): r is typeof r & { ownerId: number } => r.ownerId != null)
+      .map((r) => [r.ownerId, { count: Number(r.total), raised: Number(r.raised) }]),
+  )
 }
 
 /** Count of campaigns in a given status (admin dashboard stat). */

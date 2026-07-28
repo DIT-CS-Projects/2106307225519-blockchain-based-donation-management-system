@@ -9,10 +9,10 @@ import {
 } from 'drizzle-orm/pg-core'
 import { users } from './users'
 
-// A donor's request to become a fundraiser (Decision 020, api/authentication.md).
-// An administrator reviews it; approval promotes the applicant's role to
-// fundraiser. A donor may hold only one open (pending) application at a time,
-// but a rejected applicant may re-apply.
+// A fundraiser account's approval record (Decisions 021 and 024). A fundraiser
+// self-registers (never converted from a donor) and their identity is captured
+// here as a pending application. An administrator approves it before the
+// account can create campaigns; the row is also the future home for KYC.
 export const fundraiserApplicationStatus = pgEnum('fundraiser_application_status', [
   'pending',
   'approved',

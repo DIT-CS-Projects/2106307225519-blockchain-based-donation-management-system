@@ -2,10 +2,17 @@ import type { Response } from 'express'
 import { env } from '../config/env'
 import { REFRESH_COOKIE_NAME, REFRESH_COOKIE_PATH } from '../constants/auth'
 
+// In production the SPA (Vercel) and API (Render) live on different origins, so
+// the refresh cookie is sent cross-site. SameSite=Lax would drop it on those
+// requests and silently break token rotation; SameSite=None keeps it flowing,
+// and it requires Secure (always true over HTTPS in production). Locally we
+// stay on Lax so the cookie works over plain http on localhost.
+const isProduction = env.NODE_ENV === 'production'
+
 const baseOptions = {
   httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: env.NODE_ENV === 'production',
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+  secure: isProduction,
   path: REFRESH_COOKIE_PATH,
 }
 

@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { PublicLayout } from '@/layouts/PublicLayout'
 import { AdminLayout } from '@/layouts/AdminLayout'
+import { FundraiserLayout } from '@/layouts/FundraiserLayout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { LandingPage } from '@/pages/LandingPage'
 import { CampaignsPage } from '@/pages/CampaignsPage'
@@ -15,12 +16,14 @@ import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { AccountPage } from '@/pages/AccountPage'
 import { DonationsPage } from '@/pages/DonationsPage'
 import { DonationDetailPage } from '@/pages/DonationDetailPage'
+import { RewardsPage } from '@/pages/RewardsPage'
 import { CheckoutPage } from '@/pages/CheckoutPage'
 import { FundraiserDashboardPage } from '@/pages/FundraiserDashboardPage'
 import { FundraiserCampaignFormPage } from '@/pages/FundraiserCampaignFormPage'
 import { FundraiserCampaignManagePage } from '@/pages/FundraiserCampaignManagePage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
 import { AdminReviewsPage } from '@/pages/admin/AdminReviewsPage'
+import { AdminFundraisersPage } from '@/pages/admin/AdminFundraisersPage'
 import { AdminCampaignsPage } from '@/pages/admin/AdminCampaignsPage'
 import { AdminCampaignFormPage } from '@/pages/admin/AdminCampaignFormPage'
 import { AdminBeneficiariesPage } from '@/pages/admin/AdminBeneficiariesPage'
@@ -61,19 +64,22 @@ export function AppRoutes() {
           <Route path={ROUTES.account} element={<AccountPage />} />
           <Route path={ROUTES.donations} element={<DonationsPage />} />
           <Route path={`${ROUTES.donations}/:id`} element={<DonationDetailPage />} />
+          <Route path={ROUTES.rewards} element={<RewardsPage />} />
           <Route path="/pay/:reference" element={<CheckoutPage />} />
         </Route>
 
-        {/* Fundraiser area (owner surface; admins may use it too) */}
-        <Route element={<ProtectedRoute roles={['fundraiser', 'admin']} />}>
+        <Route path={ROUTES.privacy} element={<PrivacyPage />} />
+        <Route path={ROUTES.terms} element={<TermsPage />} />
+      </Route>
+
+      {/* Fundraiser console (owner surface; admins may use it too) */}
+      <Route element={<ProtectedRoute roles={['fundraiser', 'admin']} />}>
+        <Route element={<FundraiserLayout />}>
           <Route path={ROUTES.fundraiser} element={<FundraiserDashboardPage />} />
           <Route path={ROUTES.fundraiserCampaignNew} element={<FundraiserCampaignFormPage />} />
           <Route path="/fundraiser/campaigns/:id" element={<FundraiserCampaignManagePage />} />
           <Route path="/fundraiser/campaigns/:id/edit" element={<FundraiserCampaignFormPage />} />
         </Route>
-
-        <Route path={ROUTES.privacy} element={<PrivacyPage />} />
-        <Route path={ROUTES.terms} element={<TermsPage />} />
       </Route>
 
       {/* Administrator console (RBAC) */}
@@ -81,6 +87,7 @@ export function AppRoutes() {
         <Route element={<AdminLayout />}>
           <Route path={ROUTES.adminDashboard} element={<AdminDashboardPage />} />
           <Route path={ROUTES.adminReviews} element={<AdminReviewsPage />} />
+          <Route path={ROUTES.adminFundraisers} element={<AdminFundraisersPage />} />
           <Route path={ROUTES.adminCampaigns} element={<AdminCampaignsPage />} />
           <Route path="/admin/campaigns/new" element={<AdminCampaignFormPage />} />
           <Route path="/admin/campaigns/:id/edit" element={<AdminCampaignFormPage />} />

@@ -18,6 +18,22 @@ const envSchema = z.object({
   PAYMENT_PROVIDER: z.enum(['mock', 'azampay']).default('mock'),
   // How long a checkout session stays payable before it expires.
   PAYMENT_SESSION_TTL_MINUTES: z.coerce.number().int().positive().default(30),
+  // AzamPay sandbox/production credentials (docs/PAYMENT_ARCHITECTURE.md). All
+  // optional so the app boots on the mock; the adapter falls back to mock unless
+  // every value below is present. Auth token comes from the authenticator host;
+  // checkout calls hit the checkout host with that token plus the API key.
+  AZAMPAY_APP_NAME: z.string().min(1).optional(),
+  AZAMPAY_CLIENT_ID: z.string().min(1).optional(),
+  AZAMPAY_CLIENT_SECRET: z.string().min(1).optional(),
+  AZAMPAY_API_KEY: z.string().min(1).optional(),
+  AZAMPAY_AUTH_BASE_URL: z
+    .string()
+    .url()
+    .default('https://authenticator-sandbox.azampay.co.tz'),
+  AZAMPAY_CHECKOUT_BASE_URL: z.string().url().default('https://sandbox.azampay.co.tz'),
+  // Unguessable secret embedded in the registered callback URL (?key=...). The
+  // adapter rejects any callback that does not present it (docs/SECURITY.md).
+  AZAMPAY_CALLBACK_SECRET: z.string().min(1).optional(),
   // Blockchain (Decision 010). 'local' targets a Hardhat node for development;
   // 'sepolia' is the flip-the-switch upgrade for demonstration.
   BLOCKCHAIN_NETWORK: z.enum(['local', 'sepolia']).default('local'),

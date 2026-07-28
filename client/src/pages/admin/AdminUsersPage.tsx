@@ -15,7 +15,7 @@ import {
 import { useFetch } from '@/hooks/useFetch'
 import { useAuth } from '@/hooks/useAuth'
 import { toApiError } from '@/services/api'
-import { getUsers, promoteUser, updateUserStatus, type UserStatus } from '@/services/admin'
+import { getUsers, updateUserStatus, type UserStatus } from '@/services/admin'
 import type { UserRole } from '@/services/auth'
 import { formatDate } from '@/utils/format'
 
@@ -38,19 +38,6 @@ export function AdminUsersPage() {
     try {
       await updateUserStatus(id, status)
       toast.success('User status updated')
-      retry()
-    } catch (err) {
-      toast.error(toApiError(err).message)
-    } finally {
-      setBusyId(null)
-    }
-  }
-
-  const onPromote = async (id: number) => {
-    setBusyId(id)
-    try {
-      await promoteUser(id)
-      toast.success('User promoted to administrator')
       retry()
     } catch (err) {
       toast.error(toApiError(err).message)
@@ -104,7 +91,6 @@ export function AdminUsersPage() {
                   <TableHead>Role</TableHead>
                   <TableHead>Joined</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -127,17 +113,6 @@ export function AdminUsersPage() {
                           </option>
                         ))}
                       </Select>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {u.role !== 'admin' && u.id !== currentUser?.id && (
-                        <Button
-                          variant="secondary"
-                          disabled={busyId === u.id}
-                          onClick={() => void onPromote(u.id)}
-                        >
-                          Make admin
-                        </Button>
-                      )}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { ProfileForm } from '@/components/account/ProfileForm'
 import { ChangePasswordForm } from '@/components/account/ChangePasswordForm'
-import { BecomeFundraiserCard } from '@/components/account/BecomeFundraiserCard'
 import { Button } from '@/components/ui/button'
 import { GradientHeader, Stagger, StaggerItem } from '@/components/shared/motion'
 import { StatusBadge, type StatusTone } from '@/components/shared/StatusBadge'
@@ -60,7 +59,7 @@ export function AccountPage() {
     <section className="mx-auto max-w-2xl px-6 py-16">
       <GradientHeader>
         <div className="flex flex-wrap items-center gap-5">
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 font-display text-2xl font-semibold text-primary">
+          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-secondary font-display text-2xl font-semibold text-secondary-foreground">
             {initials(user.fullName)}
           </span>
           <div className="min-w-0">
@@ -84,10 +83,6 @@ export function AccountPage() {
           <AccountCard title="Profile" description="Update your name and contact details.">
             <ProfileForm user={user} onUpdated={updateUser} />
           </AccountCard>
-        </StaggerItem>
-
-        <StaggerItem>
-          <BecomeFundraiserCard />
         </StaggerItem>
 
         <StaggerItem>

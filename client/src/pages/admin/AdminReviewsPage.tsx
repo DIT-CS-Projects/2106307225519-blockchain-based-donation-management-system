@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -6,22 +7,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useFetch } from '@/hooks/useFetch'
 import { toApiError } from '@/services/api'
 import {
-  approveFundraiserApplication,
-  getFundraiserApplications,
-  rejectFundraiserApplication,
-} from '@/services/admin'
-import {
   approveCampaign,
   getCampaignsAdmin,
   rejectCampaign,
 } from '@/services/adminCampaigns'
-import { formatDate, formatTZS } from '@/utils/format'
+import { formatTZS } from '@/utils/format'
+import { ROUTES } from '@/constants/routes'
 
-/** Administrator review queues: fundraiser applications and pending campaigns (Decision 020). */
+/**
+ * Administrator campaign review queue (Decision 020). Fundraiser account
+ * approvals live on the dedicated Fundraisers page (Decision 024).
+ */
 export function AdminReviewsPage() {
-  const applications = useFetch(
-    useCallback(() => getFundraiserApplications({ status: 'pending', limit: 50 }), []),
-  )
   const campaigns = useFetch(
     useCallback(() => getCampaignsAdmin({ status: 'pending_review', limit: 50 }), []),
   )
@@ -31,37 +28,13 @@ export function AdminReviewsPage() {
       <div>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">Reviews</h1>
         <p className="mt-2 text-muted-foreground">
-          Approve fundraiser applications and campaigns before they go live.
+          Approve campaigns before they go live. New fundraisers are approved on the{' '}
+          <Link to={ROUTES.adminFundraisers} className="text-primary hover:underline">
+            Fundraisers
+          </Link>{' '}
+          page.
         </p>
       </div>
-
-      <section>
-        <h2 className="font-display text-lg font-semibold">Fundraiser applications</h2>
-        {applications.loading && <Skeleton className="mt-4 h-40 w-full" />}
-        {!applications.loading && applications.data && (
-          <div className="mt-4 grid gap-3">
-            {applications.data.items.length === 0 && <EmptyRow label="No applications awaiting review." />}
-            {applications.data.items.map((a) => (
-              <ReviewCard
-                key={a.id}
-                title={a.displayName}
-                subtitle={`${a.applicantName} · ${a.applicantEmail}`}
-                meta={`Applied ${formatDate(a.createdAt)}`}
-                onApprove={async () => {
-                  await approveFundraiserApplication(a.id)
-                }}
-                onReject={async (reason) => {
-                  await rejectFundraiserApplication(a.id, reason)
-                }}
-                onChanged={applications.retry}
-              >
-                <p className="text-sm text-muted-foreground">{a.causeDescription}</p>
-                <p className="mt-1 text-xs text-muted-foreground">ID reference: {a.identityReference}</p>
-              </ReviewCard>
-            ))}
-          </div>
-        )}
-      </section>
 
       <section>
         <h2 className="font-display text-lg font-semibold">Campaigns awaiting review</h2>

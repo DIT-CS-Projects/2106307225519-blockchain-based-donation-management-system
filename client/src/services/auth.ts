@@ -21,7 +21,7 @@ export interface AuthSession {
 export interface RegisterPayload {
   fullName: string
   email: string
-  username?: string
+  username: string
   phone: string
   password: string
   // Direct fundraiser registration (Decision 021).
@@ -103,7 +103,8 @@ export async function logoutAll(): Promise<void> {
   await api.post('/auth/logout-all')
 }
 
-// Become a fundraiser (Decision 020, api/authentication.md).
+// A fundraiser's own approval status, for the dashboard (Decision 024). Donors
+// and fundraisers are separate actors: there is no donor "apply" path.
 
 export type FundraiserApplicationStatus = 'pending' | 'approved' | 'rejected'
 
@@ -117,23 +118,6 @@ export interface FundraiserApplication {
   decisionReason: string | null
   createdAt: string
   reviewedAt: string | null
-}
-
-export interface ApplyFundraiserPayload {
-  displayName: string
-  causeDescription: string
-  identityReference: string
-  contactPhone: string
-}
-
-export async function applyFundraiser(
-  payload: ApplyFundraiserPayload,
-): Promise<FundraiserApplication> {
-  const { data } = await api.post<{ application: FundraiserApplication }>(
-    '/auth/fundraiser-application',
-    payload,
-  )
-  return data.application
 }
 
 export async function getFundraiserApplication(): Promise<FundraiserApplication | null> {

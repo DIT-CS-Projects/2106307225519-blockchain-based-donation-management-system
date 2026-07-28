@@ -92,20 +92,6 @@ export function MobileNav() {
                     </Link>
                   </Button>
                 )}
-                {user.role === 'donor' && (
-                  <>
-                    <Button asChild variant="secondary" size="lg">
-                      <Link to={ROUTES.donations} onClick={close}>
-                        Donations
-                      </Link>
-                    </Button>
-                    <Button asChild variant="secondary" size="lg">
-                      <Link to={startCampaignPath('donor')} onClick={close}>
-                        Start a campaign
-                      </Link>
-                    </Button>
-                  </>
-                )}
                 <Button asChild variant="secondary" size="lg">
                   <Link to={ROUTES.account} onClick={close}>
                     Account

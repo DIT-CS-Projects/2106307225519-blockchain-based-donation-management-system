@@ -9,7 +9,6 @@ import {
   resetPasswordSchema,
   updateProfileSchema,
 } from '../validation/auth'
-import { applyFundraiserSchema } from '../validation/fundraiser'
 
 // requireAuth guarantees req.user on the routes below.
 function requireUserId(req: Request): number {
@@ -109,26 +108,6 @@ export async function logoutAll(
     await accountService.logoutAllDevices(requireUserId(req))
     clearRefreshCookie(res)
     res.json({ message: 'Signed out of all devices' })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export async function applyFundraiser(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
-    const parsed = applyFundraiserSchema.safeParse(req.body)
-    if (!parsed.success) {
-      throw ApiError.badRequest(parsed.error.issues[0]?.message ?? 'Invalid application details')
-    }
-    const application = await fundraiserApplicationService.applyToFundraise(
-      requireUserId(req),
-      parsed.data,
-    )
-    res.status(201).json({ application })
   } catch (error) {
     next(error)
   }

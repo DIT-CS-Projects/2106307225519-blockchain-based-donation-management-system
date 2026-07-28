@@ -10,16 +10,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/useAuth'
 import { toApiError } from '@/services/api'
-import type { UserRole } from '@/services/auth'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES, homeForRole } from '@/constants/routes'
 import { APP_NAME } from '@/constants/config'
 import { loginSchema, type LoginValues } from '@/lib/authSchemas'
-
-function homeForRole(role: UserRole): string {
-  if (role === 'admin') return ROUTES.adminDashboard
-  if (role === 'fundraiser') return ROUTES.fundraiser
-  return ROUTES.campaigns
-}
 
 interface LocationState {
   from?: { pathname: string; search?: string }

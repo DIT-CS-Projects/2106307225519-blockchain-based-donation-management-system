@@ -6,7 +6,6 @@ import {
   register,
 } from '../controllers/auth.controller'
 import {
-  applyFundraiser,
   changePassword,
   forgotPassword,
   logoutAll,
@@ -39,8 +38,8 @@ router.get('/me', requireAuth, me)
 router.put('/profile', requireAuth, updateProfile)
 router.put('/change-password', requireAuth, changePassword)
 
-// Become a fundraiser (Decision 020, api/authentication.md).
-router.post('/fundraiser-application', requireAuth, applyFundraiser)
+// A fundraiser reads their own approval status for the dashboard (Decision 024).
+// There is no donor "apply" path: donors and fundraisers are separate actors.
 router.get('/fundraiser-application', requireAuth, myFundraiserApplication)
 
 export default router

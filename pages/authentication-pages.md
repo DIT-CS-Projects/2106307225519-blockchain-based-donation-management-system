@@ -122,6 +122,8 @@ Full Name
 
 Email
 
+Username
+
 Phone
 
 Password
@@ -136,7 +138,7 @@ Validation
 
 Email Unique
 
-Phone Unique
+Username Required and Unique
 
 Password Strength
 

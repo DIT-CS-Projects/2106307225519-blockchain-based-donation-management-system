@@ -1,20 +1,18 @@
 import {
   countPendingApplications,
   findApplicationById,
-  findApplications,
+  findFundraisersAdmin,
   findLatestApplicationByUser,
-  findPendingApplicationByUser,
-  insertApplication,
   updateApplication,
-  type ApplicationListFilters,
-  type ApplicationListRow,
+  type FundraiserListFilters,
+  type FundraiserListRow,
 } from '../repositories/fundraiserApplication.repository'
+import { aggregateCampaignsByOwners } from '../repositories/campaign.repository'
 import { findUserById, setUserRole } from '../repositories/user.repository'
-import type { FundraiserApplicationRow } from '../database/schema'
+import type { FundraiserApplicationRow, UserRow } from '../database/schema'
 import { ApiError } from '../utils/ApiError'
 import { AUDIT_ACTIONS, recordAudit } from './auditLog.service'
 import { notify } from './notification.service'
-import type { ApplyFundraiserInput } from '../validation/fundraiser'
 
 export interface FundraiserApplicationDto {
   id: number
@@ -42,91 +40,105 @@ function toDto(row: FundraiserApplicationRow): FundraiserApplicationDto {
   }
 }
 
-/**
- * A donor applies to become a fundraiser (Decision 020). Only a donor may
- * apply, and only one application may be open at a time; a rejected applicant
- * may re-apply.
- */
-export async function applyToFundraise(
-  userId: number,
-  input: ApplyFundraiserInput,
-): Promise<FundraiserApplicationDto> {
-  const user = await findUserById(userId)
-  if (!user) throw ApiError.unauthorized('Authentication required')
-  if (user.role !== 'donor') {
-    throw ApiError.conflict('Only donors can apply to become a fundraiser')
-  }
-
-  const pending = await findPendingApplicationByUser(userId)
-  if (pending) {
-    throw ApiError.conflict('You already have an application awaiting review')
-  }
-
-  const row = await insertApplication({
-    userId,
-    displayName: input.displayName,
-    causeDescription: input.causeDescription,
-    identityReference: input.identityReference,
-    contactPhone: input.contactPhone,
-  })
-
-  void recordAudit({
-    userId,
-    action: AUDIT_ACTIONS.fundraiserApply,
-    entityType: 'fundraiser_application',
-    entityId: row.id,
-  })
-
-  return toDto(row)
-}
-
 /** The current user's latest application, or null if they have never applied. */
 export async function getMyApplication(userId: number): Promise<FundraiserApplicationDto | null> {
   const row = await findLatestApplicationByUser(userId)
   return row ? toDto(row) : null
 }
 
-// --- Admin review ---
-
-export interface AdminApplicationDto extends FundraiserApplicationDto {
-  userId: number
-  applicantName: string
-  applicantEmail: string
-}
-
-function toAdminDto(row: ApplicationListRow): AdminApplicationDto {
-  return {
-    id: row.id,
-    userId: row.userId,
-    applicantName: row.applicantName,
-    applicantEmail: row.applicantEmail,
-    displayName: row.displayName,
-    causeDescription: row.causeDescription,
-    identityReference: row.identityReference,
-    contactPhone: row.contactPhone,
-    status: row.status,
-    decisionReason: row.decisionReason,
-    createdAt: row.createdAt.toISOString(),
-    reviewedAt: row.reviewedAt?.toISOString() ?? null,
+/**
+ * Guard: a fundraiser may only create campaigns once an administrator has
+ * approved their account (Decision 024). Administrators are never gated. Throws
+ * 403 while the account is pending or rejected.
+ */
+export async function assertFundraiserApproved(userId: number): Promise<void> {
+  const latest = await findLatestApplicationByUser(userId)
+  if (latest?.status === 'approved') return
+  if (latest?.status === 'rejected') {
+    throw ApiError.forbidden(
+      'Your fundraiser account was not approved. Contact support if you believe this is a mistake.',
+    )
   }
+  throw ApiError.forbidden('Your fundraiser account is awaiting administrator approval.')
 }
 
-export interface AdminApplicationListResult {
-  items: AdminApplicationDto[]
+// --- Admin fundraisers directory (Decision 024) ---
+
+export interface AdminFundraiserDto {
+  applicationId: number
+  userId: number
+  fullName: string
+  email: string
+  phone: string
+  accountStatus: UserRow['status']
+  joinedAt: string
+  displayName: string
+  causeDescription: string
+  identityReference: string
+  contactPhone: string
+  applicationStatus: FundraiserApplicationRow['status']
+  decisionReason: string | null
+  appliedAt: string
+  reviewedAt: string | null
+  campaignsCount: number
+  totalRaised: number
+}
+
+export interface AdminFundraiserListResult {
+  items: AdminFundraiserDto[]
   total: number
   page: number
   limit: number
 }
 
-export async function listApplications(
-  filters: ApplicationListFilters,
-): Promise<AdminApplicationListResult> {
-  const { rows, total } = await findApplications(filters)
-  return { items: rows.map(toAdminDto), total, page: filters.page, limit: filters.limit }
+function toFundraiserDto(
+  row: FundraiserListRow,
+  stats: Map<number, { count: number; raised: number }>,
+): AdminFundraiserDto {
+  const owned = stats.get(row.userId)
+  return {
+    applicationId: row.applicationId,
+    userId: row.userId,
+    fullName: row.fullName,
+    email: row.email,
+    phone: row.phone,
+    accountStatus: row.accountStatus,
+    joinedAt: row.joinedAt.toISOString(),
+    displayName: row.displayName,
+    causeDescription: row.causeDescription,
+    identityReference: row.identityReference,
+    contactPhone: row.contactPhone,
+    applicationStatus: row.applicationStatus,
+    decisionReason: row.decisionReason,
+    appliedAt: row.appliedAt.toISOString(),
+    reviewedAt: row.reviewedAt?.toISOString() ?? null,
+    campaignsCount: owned?.count ?? 0,
+    totalRaised: owned?.raised ?? 0,
+  }
+}
+
+/** Fundraiser accounts with approval state and campaign totals (admin console). */
+export async function listFundraisers(
+  filters: FundraiserListFilters,
+): Promise<AdminFundraiserListResult> {
+  const { rows, total } = await findFundraisersAdmin(filters)
+  const stats = await aggregateCampaignsByOwners(rows.map((r) => r.userId))
+  return {
+    items: rows.map((row) => toFundraiserDto(row, stats)),
+    total,
+    page: filters.page,
+    limit: filters.limit,
+  }
 }
 
 export function countPending(): Promise<number> {
   return countPendingApplications()
+}
+
+export interface AdminApplicationDto extends FundraiserApplicationDto {
+  userId: number
+  applicantName: string
+  applicantEmail: string
 }
 
 /** Build an admin DTO from an updated application row plus the applicant record. */
@@ -140,7 +152,11 @@ async function toReviewedDto(row: FundraiserApplicationRow): Promise<AdminApplic
   }
 }
 
-/** Approve an application: promote the applicant to fundraiser and notify them. */
+/**
+ * Approve a pending fundraiser account (Decision 024): the applicant may now
+ * create campaigns. The fundraiser role was granted at sign-up; setUserRole is
+ * kept as a defensive no-op that also settles any legacy pending row.
+ */
 export async function approveApplication(
   adminId: number,
   id: number,
@@ -170,15 +186,15 @@ export async function approveApplication(
   void notify({
     userIds: [application.userId],
     type: 'fundraiser_application_approved',
-    title: 'You are now a fundraiser',
-    message: 'Your application was approved. You can now create and manage your own campaigns.',
-    link: '/dashboard',
+    title: 'Your fundraiser account is approved',
+    message: 'An administrator approved your account. You can now create and manage campaigns.',
+    link: '/fundraiser',
   })
 
   return toReviewedDto(updated)
 }
 
-/** Reject an application with a reason. The applicant stays a donor. */
+/** Reject a pending fundraiser account with a reason (Decision 024). */
 export async function rejectApplication(
   adminId: number,
   id: number,
@@ -209,9 +225,9 @@ export async function rejectApplication(
   void notify({
     userIds: [application.userId],
     type: 'fundraiser_application_rejected',
-    title: 'Fundraiser application update',
-    message: `Your fundraiser application was not approved. Reason: ${reason}. You may apply again.`,
-    link: '/account',
+    title: 'Fundraiser account update',
+    message: `Your fundraiser account was not approved. Reason: ${reason}.`,
+    link: '/fundraiser',
   })
 
   return toReviewedDto(updated)

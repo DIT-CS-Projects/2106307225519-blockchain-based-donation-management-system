@@ -12,6 +12,7 @@ import beneficiaryRoutes from './beneficiary.routes'
 import disbursementRoutes from './disbursement.routes'
 import adminRoutes from './admin.routes'
 import reportRoutes from './report.routes'
+import rewardRoutes from './reward.routes'
 
 const router = Router()
 
@@ -28,5 +29,6 @@ router.use('/beneficiaries', beneficiaryRoutes)
 router.use('/disbursements', disbursementRoutes)
 router.use('/admin', adminRoutes)
 router.use('/reports', reportRoutes)
+router.use('/rewards', rewardRoutes)
 
 export default router

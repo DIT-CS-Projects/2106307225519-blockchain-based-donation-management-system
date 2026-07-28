@@ -105,7 +105,7 @@ export function FundraiserCampaignFormPage() {
   if (isEdit && loading) return <LoadingScreen label="Loading campaign" />
 
   return (
-    <section className="mx-auto max-w-2xl px-6 py-16">
+    <section className="mx-auto max-w-2xl">
       <h1 className="font-display text-2xl font-bold sm:text-3xl">
         {isEdit ? 'Edit campaign' : 'New campaign'}
       </h1>

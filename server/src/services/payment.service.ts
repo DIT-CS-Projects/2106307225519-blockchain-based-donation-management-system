@@ -7,6 +7,7 @@ import {
 } from '../repositories/payment.repository'
 import { findDistinctDonorIdsByCampaign, recordDonation } from '../repositories/donation.repository'
 import { recordBlockchainProof } from './donation.service'
+import { awardForDonation } from './reward.service'
 import { getPaymentProvider } from './payment'
 import { notify } from './notification.service'
 import {
@@ -21,6 +22,7 @@ import {
 import { ApiError } from '../utils/ApiError'
 import { logger } from '../utils/logger'
 import type { CreateSessionInput } from '../validation/payment'
+import type { CallbackContext } from './payment/provider'
 import { formatTZS } from '../utils/format'
 
 export interface CreateSessionResult {
@@ -55,6 +57,7 @@ export async function createSession(
     provider: input.provider,
     campaignTitle: campaign.title,
     callbackToken,
+    accountNumber: input.accountNumber,
   })
 
   await createTransaction({
@@ -90,7 +93,10 @@ export interface CallbackResult {
  * donation or mark the attempt terminal. Idempotent, so duplicate callbacks
  * never double-record (flows/payment-flow.md).
  */
-export async function handleCallback(payload: unknown): Promise<CallbackResult> {
+export async function handleCallback(
+  payload: unknown,
+  context?: CallbackContext,
+): Promise<CallbackResult> {
   const provider = getPaymentProvider()
 
   const reference = provider.extractReference(payload)
@@ -103,7 +109,7 @@ export async function handleCallback(payload: unknown): Promise<CallbackResult> 
     throw ApiError.notFound('Payment not found')
   }
 
-  const result = provider.verifyCallback(payload, transaction)
+  const result = provider.verifyCallback(payload, transaction, context)
   if (!result.verified) {
     throw ApiError.badRequest('Payment callback could not be verified')
   }
@@ -148,6 +154,10 @@ export async function handleCallback(payload: unknown): Promise<CallbackResult> 
   // Fire-and-forget: never block the payment response on a chain write
   // (flows/payment-flow.md). Failures are logged inside and heal on verify.
   void recordBlockchainProof(donation)
+
+  // Fire-and-forget: Impact Points are a loyalty perk, never a reason to fail a
+  // donation. Awarding is idempotent, so a duplicate callback is harmless.
+  void awardForDonation(donation)
 
   void notify({
     userIds: [donation.donorId],

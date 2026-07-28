@@ -36,7 +36,10 @@ export async function callback(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const result = await paymentService.handleCallback(req.body)
+    // AzamPay carries its shared secret in the registered callback URL (?key=...);
+    // the mock ignores it. Kept out of the body so it never lands in stored logs.
+    const callbackKey = typeof req.query.key === 'string' ? req.query.key : undefined
+    const result = await paymentService.handleCallback(req.body, { callbackKey })
     res.status(200).json(result)
   } catch (error) {
     next(error)

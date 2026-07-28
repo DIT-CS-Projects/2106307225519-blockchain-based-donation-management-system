@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES, homeForRole } from '@/constants/routes'
 import { LoadingScreen } from '@/components/shared/LoadingScreen'
 import type { UserRole } from '@/services/auth'
 
@@ -27,7 +27,7 @@ export function ProtectedRoute({ roles }: ProtectedRouteProps) {
   }
 
   if (roles && !roles.includes(user.role)) {
-    return <Navigate to={ROUTES.home} replace />
+    return <Navigate to={homeForRole(user.role)} replace />
   }
 
   return <Outlet />

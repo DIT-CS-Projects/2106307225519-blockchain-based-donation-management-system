@@ -11,6 +11,8 @@ export interface CreateSessionInput {
   campaignTitle: string
   /** Capability secret the provider must echo back on the callback. */
   callbackToken: string
+  /** Payer mobile number, required by mobile-money rails (AzamPay MNO push). */
+  accountNumber?: string
 }
 
 /** What a provider returns once a checkout session exists. */
@@ -31,6 +33,15 @@ export interface VerifyCallbackResult {
 }
 
 /**
+ * Out-of-body signals a provider may need to authenticate a callback, taken from
+ * the HTTP request rather than the payload. AzamPay uses the secret carried in
+ * the registered callback URL (?key=...); the mock ignores this.
+ */
+export interface CallbackContext {
+  callbackKey?: string
+}
+
+/**
  * A payment provider adapter. The backend talks to every gateway through this
  * interface so business logic never depends on a specific provider
  * (docs/PAYMENT_ARCHITECTURE.md: Payment Service Layer). Real AzamPay drops in
@@ -42,5 +53,9 @@ export interface PaymentProvider {
   /** Pull the payment reference out of a raw callback payload. */
   extractReference(payload: unknown): string | null
   /** Verify authenticity and read the outcome, given the stored transaction. */
-  verifyCallback(payload: unknown, transaction: PaymentTransactionRow): VerifyCallbackResult
+  verifyCallback(
+    payload: unknown,
+    transaction: PaymentTransactionRow,
+    context?: CallbackContext,
+  ): VerifyCallbackResult
 }

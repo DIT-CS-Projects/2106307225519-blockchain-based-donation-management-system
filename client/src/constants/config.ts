@@ -11,7 +11,6 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 export const CURRENCY = 'TZS'
 
 // Business constants. Source of truth: docs/BUSINESS_RULES.md
-export const MIN_DONATION_TZS = 1_000
 export const DUAL_APPROVAL_THRESHOLD_TZS = 1_000_000
 
 export const CAMPAIGN_CATEGORIES = [

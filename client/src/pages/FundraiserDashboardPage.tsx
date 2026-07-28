@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Clock, HandCoins, Megaphone, Plus } from 'lucide-react'
+import { Clock, HandCoins, Megaphone, Plus, ShieldAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProgressBar } from '@/components/ui/progress'
@@ -8,21 +8,49 @@ import { StatCard } from '@/components/shared/StatCard'
 import { StatusBadge, campaignStatusTone } from '@/components/shared/StatusBadge'
 import { GradientHeader, Stagger, StaggerItem } from '@/components/shared/motion'
 import { useFetch } from '@/hooks/useFetch'
+import { useAuth } from '@/hooks/useAuth'
 import { getMyCampaigns } from '@/services/adminCampaigns'
+import { getFundraiserApplication, type FundraiserApplicationStatus } from '@/services/auth'
 import {
   ROUTES,
   fundraiserCampaignManagePath,
 } from '@/constants/routes'
 import { formatTZS } from '@/utils/format'
 
-/** A fundraiser's home: the campaigns they own and a way to start a new one. */
+/**
+ * A fundraiser's home: the campaigns they own and a way to start a new one.
+ * A fundraiser account must be approved by an administrator first (Decision
+ * 023); until then the dashboard is locked. Administrators are never gated.
+ */
 export function FundraiserDashboardPage() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
+  const application = useFetch(useCallback(() => getFundraiserApplication(), []))
   const { data, loading, error, retry } = useFetch(
     useCallback(() => getMyCampaigns({ limit: 50 }), []),
   )
 
+  const approved = isAdmin || application.data?.status === 'approved'
+
+  if (!isAdmin && application.loading) {
+    return (
+      <section className="mx-auto max-w-5xl">
+        <Skeleton className="h-64 w-full" />
+      </section>
+    )
+  }
+
+  if (!approved) {
+    return (
+      <FundraiserGate
+        status={application.data?.status ?? 'pending'}
+        reason={application.data?.decisionReason ?? null}
+      />
+    )
+  }
+
   return (
-    <section className="mx-auto max-w-5xl px-6 py-16">
+    <section className="mx-auto max-w-5xl">
       <GradientHeader>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -118,6 +146,56 @@ export function FundraiserDashboardPage() {
           )}
         </div>
       )}
+    </section>
+  )
+}
+
+/** Locked state shown while a fundraiser account is pending or was rejected. */
+function FundraiserGate({
+  status,
+  reason,
+}: {
+  status: FundraiserApplicationStatus
+  reason: string | null
+}) {
+  const rejected = status === 'rejected'
+  return (
+    <section className="mx-auto max-w-2xl">
+      <GradientHeader>
+        <p className="text-sm font-medium text-primary">Fundraiser</p>
+        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">
+          {rejected ? 'Account not approved' : 'Account under review'}
+        </h1>
+        <p className="mt-3 leading-relaxed text-muted-foreground">
+          {rejected
+            ? 'An administrator did not approve your fundraiser account.'
+            : 'Thanks for signing up. An administrator is reviewing your fundraiser account. You can create campaigns once it is approved.'}
+        </p>
+      </GradientHeader>
+
+      <div className="mt-8 rounded-lg border border-border bg-card p-6 sm:p-8">
+        <div className="flex items-center gap-3">
+          <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            {rejected ? (
+              <ShieldAlert className="size-5" aria-hidden="true" />
+            ) : (
+              <Clock className="size-5" aria-hidden="true" />
+            )}
+          </span>
+          <StatusBadge
+            label={rejected ? 'not approved' : 'under review'}
+            tone={rejected ? 'danger' : 'warning'}
+          />
+        </div>
+        {rejected && reason && (
+          <p className="mt-4 text-sm text-muted-foreground">Reason: {reason}</p>
+        )}
+        <p className="mt-4 text-sm text-muted-foreground">
+          {rejected
+            ? 'Contact support if you believe this is a mistake.'
+            : 'We will notify you as soon as a decision is made.'}
+        </p>
+      </div>
     </section>
   )
 }

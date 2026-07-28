@@ -37,8 +37,8 @@ export const registerSchema = z
   .object({
     fullName,
     email,
-    // Optional handle; when set it can be used to sign in.
-    username: z.union([z.literal(''), usernameField]).optional(),
+    // Required handle; can be used to sign in alongside the email.
+    username: usernameField,
     phone,
     password: passwordSchema,
     confirmPassword: z.string().min(1, 'Confirm your password'),

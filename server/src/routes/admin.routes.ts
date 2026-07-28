@@ -5,9 +5,8 @@ import {
   broadcastNotification,
   dashboard,
   getUser,
-  listFundraiserApplications,
+  listFundraisers,
   listUsers,
-  promoteUser,
   rejectFundraiserApplication,
   updateUserStatus,
 } from '../controllers/admin.controller'
@@ -22,12 +21,11 @@ router.get('/dashboard', dashboard)
 router.get('/users', listUsers)
 router.get('/users/:id', getUser)
 router.patch('/users/:id/status', updateUserStatus)
-router.post('/users/:id/promote', promoteUser)
 
-// Fundraiser applications (Decision 020).
-router.get('/fundraiser-applications', listFundraiserApplications)
-router.post('/fundraiser-applications/:id/approve', approveFundraiserApplication)
-router.post('/fundraiser-applications/:id/reject', rejectFundraiserApplication)
+// Fundraisers directory + approval (Decision 024). :id is the application id.
+router.get('/fundraisers', listFundraisers)
+router.post('/fundraisers/:id/approve', approveFundraiserApplication)
+router.post('/fundraisers/:id/reject', rejectFundraiserApplication)
 
 router.get('/audit', audit)
 router.post('/notifications', broadcastNotification)

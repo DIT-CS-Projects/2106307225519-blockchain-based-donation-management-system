@@ -57,17 +57,6 @@ export async function usernameExists(username: string): Promise<boolean> {
   return Boolean(row)
 }
 
-/** Whether any user (including soft-deleted) already uses this phone. */
-export async function phoneExists(phone: string): Promise<boolean> {
-  const client = requireDb()
-  const [row] = await client
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.phone, phone))
-    .limit(1)
-  return Boolean(row)
-}
-
 export async function insertUser(data: NewUserRow): Promise<UserRow> {
   const client = requireDb()
   const [row] = await client.insert(users).values(data).returning()
@@ -183,7 +172,7 @@ export async function setUserStatus(id: number, status: UserRow['status']): Prom
   return row
 }
 
-/** Change a user's role (fundraiser approval, admin promotion — Decision 020). */
+/** Change a user's role. Used defensively when settling a fundraiser approval. */
 export async function setUserRole(id: number, role: UserRow['role']): Promise<UserRow | undefined> {
   const client = requireDb()
   const [row] = await client

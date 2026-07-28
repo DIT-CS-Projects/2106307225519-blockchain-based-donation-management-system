@@ -54,39 +54,37 @@ Deactivate
 
 ---
 
-POST /users/:id/promote
+# Fundraisers
 
-Promote a user to administrator (Decision 020). An administrator cannot change their own role.
+Directory of fundraiser accounts with the approval queue built in (Decision 024). Donors and fundraisers are separate actors; there is no role promotion (the former POST /users/:id/promote is removed, and administrators are created only by the seed script).
 
----
+GET /fundraisers
 
-# Fundraiser Applications
-
-GET /fundraiser-applications
-
-Returns pending and decided applications from donors requesting to become a fundraiser.
+Returns fundraiser accounts with their approval state (pending, approved, rejected), account status, and per-fundraiser campaign totals (count and amount raised).
 
 Supports
 
-Status Filter
+Status Filter (application status)
+
+Search (name, email, or organisation)
 
 Pagination
 
 ---
 
-POST /fundraiser-applications/:id/approve
+POST /fundraisers/:id/approve
 
-Approve an application. Promotes the applicant's role to fundraiser and notifies them.
+Approve a pending fundraiser account, unlocking campaign creation, and notify them. `:id` is the application id from the directory row.
 
 ---
 
-POST /fundraiser-applications/:id/reject
+POST /fundraisers/:id/reject
 
 Request
 
 Reason
 
-Reject an application. The applicant stays a donor and is notified with the reason.
+Reject a pending fundraiser account with a reason and notify them. The account keeps the fundraiser role but cannot create campaigns.
 
 ---
 

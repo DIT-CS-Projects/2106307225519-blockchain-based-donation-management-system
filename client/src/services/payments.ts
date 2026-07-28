@@ -11,6 +11,8 @@ export interface CreatePaymentSessionPayload {
   amount: number
   method: PaymentMethod
   provider: string
+  /** Payer mobile number, required for the mobile-money rail (AzamPay push). */
+  accountNumber?: string
   currency?: 'TZS'
 }
 

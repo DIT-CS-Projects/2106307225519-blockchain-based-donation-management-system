@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import * as authService from '@/services/auth'
 import type { AuthUser, LoginPayload, RegisterPayload } from '@/services/auth'
 import { setAuthToken, setUnauthenticatedHandler } from '@/services/api'
@@ -35,13 +35,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [status, setStatus] = useState<AuthStatus>('loading')
 
+  // Every explicit session change bumps this. The mount-time bootstrap captures
+  // the value at start and only applies its result if nothing has changed since;
+  // otherwise a slow refresh that settles after an interactive login would
+  // clobber the fresh session (on success) or wipe it (on failure), landing the
+  // user back on a public page. This is the intermittent "logged in, then bounced
+  // home" race.
+  const sessionEpoch = useRef(0)
+
   const clearSession = useCallback(() => {
+    sessionEpoch.current += 1
     setAuthToken(null)
     setUser(null)
     setStatus('unauthenticated')
   }, [])
 
   const startSession = useCallback((session: authService.AuthSession) => {
+    sessionEpoch.current += 1
     setAuthToken(session.token)
     setUser(session.user)
     setStatus('authenticated')
@@ -50,12 +60,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true
+    const epoch = sessionEpoch.current
+    const isStale = () => !active || sessionEpoch.current !== epoch
     bootstrapRefresh()
       .then((session) => {
-        if (active) startSession(session)
+        if (!isStale()) startSession(session)
       })
       .catch(() => {
-        if (active) clearSession()
+        if (!isStale()) clearSession()
       })
     return () => {
       active = false

@@ -1,10 +1,11 @@
-import { and, count, desc, eq, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, ilike, isNull, or, type SQL } from 'drizzle-orm'
 import { requireDb } from '../config/database'
 import {
   fundraiserApplications,
   users,
   type FundraiserApplicationRow,
   type NewFundraiserApplicationRow,
+  type UserRow,
 } from '../database/schema'
 
 export async function insertApplication(
@@ -29,24 +30,6 @@ export async function findLatestApplicationByUser(
   return row
 }
 
-/** A still-open (pending) application for the user, if any. */
-export async function findPendingApplicationByUser(
-  userId: number,
-): Promise<FundraiserApplicationRow | undefined> {
-  const client = requireDb()
-  const [row] = await client
-    .select()
-    .from(fundraiserApplications)
-    .where(
-      and(
-        eq(fundraiserApplications.userId, userId),
-        eq(fundraiserApplications.status, 'pending'),
-      ),
-    )
-    .limit(1)
-  return row
-}
-
 export async function findApplicationById(
   id: number,
 ): Promise<FundraiserApplicationRow | undefined> {
@@ -59,60 +42,88 @@ export async function findApplicationById(
   return row
 }
 
-export interface ApplicationListFilters {
+// --- Admin fundraisers directory (Decision 024) ---
+
+export interface FundraiserListFilters {
   status?: FundraiserApplicationRow['status']
+  search?: string
   page: number
   limit: number
 }
 
-export interface ApplicationListRow {
-  id: number
+export interface FundraiserListRow {
+  applicationId: number
   userId: number
-  applicantName: string
-  applicantEmail: string
+  fullName: string
+  email: string
+  phone: string
+  accountStatus: UserRow['status']
+  joinedAt: Date
   displayName: string
   causeDescription: string
   identityReference: string
   contactPhone: string
-  status: FundraiserApplicationRow['status']
+  applicationStatus: FundraiserApplicationRow['status']
   decisionReason: string | null
-  createdAt: Date
+  appliedAt: Date
   reviewedAt: Date | null
 }
 
-const listColumns = {
-  id: fundraiserApplications.id,
-  userId: fundraiserApplications.userId,
-  applicantName: users.fullName,
-  applicantEmail: users.email,
+const fundraiserColumns = {
+  applicationId: fundraiserApplications.id,
+  userId: users.id,
+  fullName: users.fullName,
+  email: users.email,
+  phone: users.phone,
+  accountStatus: users.status,
+  joinedAt: users.createdAt,
   displayName: fundraiserApplications.displayName,
   causeDescription: fundraiserApplications.causeDescription,
   identityReference: fundraiserApplications.identityReference,
   contactPhone: fundraiserApplications.contactPhone,
-  status: fundraiserApplications.status,
+  applicationStatus: fundraiserApplications.status,
   decisionReason: fundraiserApplications.decisionReason,
-  createdAt: fundraiserApplications.createdAt,
+  appliedAt: fundraiserApplications.createdAt,
   reviewedAt: fundraiserApplications.reviewedAt,
 } as const
 
-export async function findApplications(
-  filters: ApplicationListFilters,
-): Promise<{ rows: ApplicationListRow[]; total: number }> {
+/**
+ * Fundraiser accounts and their application/approval state, for the admin
+ * fundraisers console. Keyed on the fundraiser role: each self-registered
+ * fundraiser has exactly one application row.
+ */
+export async function findFundraisersAdmin(
+  filters: FundraiserListFilters,
+): Promise<{ rows: FundraiserListRow[]; total: number }> {
   const client = requireDb()
-  const conditions: SQL[] = []
+  const conditions: SQL[] = [eq(users.role, 'fundraiser'), isNull(users.deletedAt)]
   if (filters.status) conditions.push(eq(fundraiserApplications.status, filters.status))
-  const where = conditions.length > 0 ? and(...conditions) : undefined
+  if (filters.search) {
+    const term = `%${filters.search}%`
+    conditions.push(
+      or(
+        ilike(users.fullName, term),
+        ilike(users.email, term),
+        ilike(fundraiserApplications.displayName, term),
+      )!,
+    )
+  }
+  const where = and(...conditions)
 
   const [rows, [{ total }]] = await Promise.all([
     client
-      .select(listColumns)
+      .select(fundraiserColumns)
       .from(fundraiserApplications)
       .innerJoin(users, eq(users.id, fundraiserApplications.userId))
       .where(where)
       .orderBy(desc(fundraiserApplications.createdAt))
       .limit(filters.limit)
       .offset((filters.page - 1) * filters.limit),
-    client.select({ total: count() }).from(fundraiserApplications).where(where),
+    client
+      .select({ total: count() })
+      .from(fundraiserApplications)
+      .innerJoin(users, eq(users.id, fundraiserApplications.userId))
+      .where(where),
   ])
   return { rows, total }
 }

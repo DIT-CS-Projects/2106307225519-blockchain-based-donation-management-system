@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { formatTZS } from '@/utils/format'
-import { CURRENCY, MIN_DONATION_TZS, PAYMENT_METHODS } from '@/constants/config'
+import { CURRENCY, PAYMENT_METHODS } from '@/constants/config'
 import type { PaymentMethodKey } from '@/constants/config'
 import { ROUTES, campaignDetailsPath } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
@@ -14,6 +14,10 @@ import { toApiError } from '@/services/api'
 import { cn } from '@/lib/utils'
 
 const PRESET_AMOUNTS = [5_000, 10_000, 25_000, 50_000]
+
+// TZ mobile number, mirrors the server's validation (validation/payment.ts).
+const TZ_MOBILE = /^(?:\+?255|0)?[67]\d{8}$/
+const looksLikeTzMobile = (value: string) => TZ_MOBILE.test(value.replace(/\s+/g, ''))
 
 interface DonationWidgetProps {
   campaignId: number
@@ -38,11 +42,15 @@ export function DonationWidget({ campaignId, canDonate, initialAmount }: Donatio
   const [custom, setCustom] = useState(initialAmount && !presetMatch ? String(initialAmount) : '')
   const [method, setMethod] = useState<PaymentMethodKey>('mobile_money')
   const [provider, setProvider] = useState<string>(PAYMENT_METHODS[0].providers[0].key)
+  const [phone, setPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const belowMinimum = amount !== null && amount < MIN_DONATION_TZS
+  const invalidAmount = amount !== null && amount <= 0
   const providers = PAYMENT_METHODS.find((m) => m.key === method)?.providers ?? []
+  const needsPhone = method === 'mobile_money'
+  const phoneInvalid = needsPhone && phone.trim().length > 0 && !looksLikeTzMobile(phone)
+  const phoneReady = !needsPhone || looksLikeTzMobile(phone)
 
   const selectPreset = (value: number) => {
     setAmount(value)
@@ -62,7 +70,7 @@ export function DonationWidget({ campaignId, canDonate, initialAmount }: Donatio
   }
 
   const submit = async () => {
-    if (amount === null || belowMinimum) return
+    if (amount === null || invalidAmount) return
 
     if (!isAuthenticated) {
       navigate(ROUTES.login, {
@@ -77,7 +85,13 @@ export function DonationWidget({ campaignId, canDonate, initialAmount }: Donatio
     setSubmitting(true)
     setError(null)
     try {
-      const session = await createPaymentSession({ campaignId, amount, method, provider })
+      const session = await createPaymentSession({
+        campaignId,
+        amount,
+        method,
+        provider,
+        accountNumber: needsPhone ? phone.trim() : undefined,
+      })
       const url = new URL(session.checkoutUrl)
       if (url.origin === window.location.origin) {
         navigate(`${url.pathname}${url.search}`)
@@ -141,12 +155,12 @@ export function DonationWidget({ campaignId, canDonate, initialAmount }: Donatio
             value={custom}
             onChange={(event) => onCustomChange(event.target.value)}
             placeholder="Custom amount"
-            aria-describedby={belowMinimum ? 'amount-error' : undefined}
+            aria-describedby={invalidAmount ? 'amount-error' : undefined}
           />
         </div>
-        {belowMinimum && (
+        {invalidAmount && (
           <p id="amount-error" className="mt-2 text-sm text-destructive">
-            Minimum donation is {formatTZS(MIN_DONATION_TZS)}.
+            Enter an amount greater than zero.
           </p>
         )}
 
@@ -187,6 +201,35 @@ export function DonationWidget({ campaignId, canDonate, initialAmount }: Donatio
             </option>
           ))}
         </Select>
+
+        {needsPhone && (
+          <>
+            <label htmlFor="payer-phone" className="mt-4 block text-sm font-medium">
+              Mobile money number
+            </label>
+            <Input
+              id="payer-phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              className="mt-1.5"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              placeholder="0712 345 678"
+              aria-invalid={phoneInvalid || undefined}
+              aria-describedby={phoneInvalid ? 'phone-error' : 'phone-hint'}
+            />
+            {phoneInvalid ? (
+              <p id="phone-error" className="mt-2 text-sm text-destructive">
+                Enter a valid Tanzanian mobile number.
+              </p>
+            ) : (
+              <p id="phone-hint" className="mt-1.5 text-xs text-muted-foreground">
+                We will request the payment from this mobile money number.
+              </p>
+            )}
+          </>
+        )}
       </fieldset>
 
       {error && (
@@ -199,7 +242,7 @@ export function DonationWidget({ campaignId, canDonate, initialAmount }: Donatio
         className="mt-6 w-full"
         size="lg"
         onClick={submit}
-        disabled={submitting || amount === null || belowMinimum}
+        disabled={submitting || amount === null || invalidAmount || !phoneReady}
       >
         {submitting ? (
           <>
