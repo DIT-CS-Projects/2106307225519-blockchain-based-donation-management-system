@@ -1,5 +1,27 @@
 # Changia — Production Deploy Runbook
 
+## LIVE (deployed 2026-07-29)
+
+| Piece | URL / value |
+| ----- | ----------- |
+| Frontend (Vercel) | https://changia-hazel.vercel.app |
+| Backend (Render) | https://changia-api.onrender.com (health: `/api/health`) |
+| Database | Neon (same instance as local dev) |
+| Contract (Sepolia) | `0x353b6cdaD14774412B5C7612F0C0D153378F213A` |
+| Backend wallet | `0x45338f0ba58b3b114d3545C45055f5b35d4bf716` |
+| Blockchain RPC | `https://ethereum-sepolia-rpc.publicnode.com` (public, no key) |
+
+Render service id `srv-d9kisv5aeets739i0e50`, deploys from `main` via
+[`render.yaml`](../render.yaml). Vercel project `changia`
+(scope `wrapitupps-projects`), env `VITE_API_BASE_URL` =
+`https://changia-api.onrender.com/api`. Redeploy either by pushing to `main`.
+
+Free-tier reality: the backend sleeps after ~15 min idle (first request then
+takes 30-60s), and uploaded images are ephemeral (no disk). See
+[Making uploads durable](#making-uploads-durable).
+
+---
+
 Concrete, step-by-step deploy of the live platform.
 
 **Target architecture**
