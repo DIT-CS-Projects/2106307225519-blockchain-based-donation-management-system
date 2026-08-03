@@ -46,7 +46,10 @@ export function readAzampayConfig(): AzampayConfig | null {
   }
 }
 
-const REQUEST_TIMEOUT_MS = 15_000
+const AUTH_TIMEOUT_MS = 15_000
+// The MNO checkout call is slow: AzamPay reaches the mobile operator and queues
+// the PIN prompt before answering, which regularly exceeds 15s on sandbox.
+const CHECKOUT_TIMEOUT_MS = 45_000
 // Refresh a little before the token actually expires to avoid edge-of-life 401s.
 const TOKEN_SKEW_MS = 60_000
 // Conservative fallback lifetime when AzamPay omits an expiry we can parse.
@@ -83,22 +86,26 @@ export class AzampayClient {
 
   async mnoCheckout(input: MnoCheckoutInput): Promise<MnoCheckoutResult> {
     const token = await this.getToken()
-    const data = await this.request(`${this.config.checkoutBaseUrl}/azampay/mno/checkout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-        'X-API-Key': this.config.apiKey,
+    const data = await this.request(
+      `${this.config.checkoutBaseUrl}/azampay/mno/checkout`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-API-Key': this.config.apiKey,
+        },
+        body: JSON.stringify({
+          accountNumber: input.accountNumber,
+          // AzamPay expects the amount as a string.
+          amount: String(input.amount),
+          currency: input.currency,
+          externalId: input.externalId,
+          provider: input.provider,
+        }),
       },
-      body: JSON.stringify({
-        accountNumber: input.accountNumber,
-        // AzamPay expects the amount as a string.
-        amount: String(input.amount),
-        currency: input.currency,
-        externalId: input.externalId,
-        provider: input.provider,
-      }),
-    })
+      CHECKOUT_TIMEOUT_MS,
+    )
     return {
       success: readBoolean(data, 'success') ?? false,
       transactionId: readString(data, 'transactionId'),
@@ -111,15 +118,19 @@ export class AzampayClient {
     if (this.token && Date.now() < this.tokenExpiryMs - TOKEN_SKEW_MS) {
       return this.token
     }
-    const data = await this.request(`${this.config.authBaseUrl}/AppRegistration/GenerateToken`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        appName: this.config.appName,
-        clientId: this.config.clientId,
-        clientSecret: this.config.clientSecret,
-      }),
-    })
+    const data = await this.request(
+      `${this.config.authBaseUrl}/AppRegistration/GenerateToken`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appName: this.config.appName,
+          clientId: this.config.clientId,
+          clientSecret: this.config.clientSecret,
+        }),
+      },
+      AUTH_TIMEOUT_MS,
+    )
     const token = readNestedString(data, 'data', 'accessToken')
     if (!token) {
       throw ApiError.badGateway('The payment gateway did not return an access token.')
@@ -130,10 +141,10 @@ export class AzampayClient {
     return token
   }
 
-  private async request(url: string, init: RequestInit): Promise<unknown> {
+  private async request(url: string, init: RequestInit, timeoutMs: number): Promise<unknown> {
     let response: Response
     try {
-      response = await fetch(url, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) })
+      response = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
     } catch (error) {
       logger.error(`AzamPay request to ${url} failed: ${(error as Error).message}`)
       throw ApiError.badGateway('The payment gateway is unreachable. Please try again.')

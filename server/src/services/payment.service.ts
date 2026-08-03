@@ -1,5 +1,6 @@
 import { findCampaignByIdAdmin, findDonatableCampaign } from '../repositories/campaign.repository'
 import {
+  attachTransactionSession,
   createTransaction,
   findTransactionByReference,
   findTransactionStatusView,
@@ -19,6 +20,7 @@ import {
   generateReceiptNumber,
   generateReference,
 } from '../utils/reference'
+import { env } from '../config/env'
 import { ApiError } from '../utils/ApiError'
 import { logger } from '../utils/logger'
 import type { CreateSessionInput } from '../validation/payment'
@@ -49,6 +51,30 @@ export async function createSession(
   const callbackToken = generateCheckoutToken()
   const provider = getPaymentProvider()
 
+  // Write ahead: the attempt is recorded before the gateway is called. A real
+  // gateway can start the payment (pushing a PIN prompt to the donor's phone)
+  // and still be slow to answer us. If the row were only written afterwards, a
+  // callback arriving first would find nothing to match and the donation would
+  // be lost, even though the donor paid (flows/payment-flow.md).
+  await createTransaction({
+    reference,
+    donorId,
+    campaignId: campaign.id,
+    amount: input.amount,
+    currency: input.currency,
+    method: input.method,
+    provider: input.provider,
+    status: 'pending',
+    checkoutToken: callbackToken,
+    // Supplied by the provider below; unused until the donor is sent there.
+    checkoutUrl: '',
+    providerResponse: null,
+    expiresAt: new Date(Date.now() + env.PAYMENT_SESSION_TTL_MINUTES * 60_000),
+  })
+
+  // Deliberately not marked failed if this throws: a timeout means the gateway
+  // did not answer in time, not that the payment failed. The attempt stays
+  // pending so a late callback can still complete it, and expires on its own.
   const session = await provider.createSession({
     reference,
     amount: input.amount,
@@ -60,16 +86,7 @@ export async function createSession(
     accountNumber: input.accountNumber,
   })
 
-  await createTransaction({
-    reference,
-    donorId,
-    campaignId: campaign.id,
-    amount: input.amount,
-    currency: input.currency,
-    method: input.method,
-    provider: input.provider,
-    status: 'pending',
-    checkoutToken: callbackToken,
+  await attachTransactionSession(reference, {
     checkoutUrl: session.checkoutUrl,
     providerResponse: session.raw ?? null,
     expiresAt: session.expiresAt,

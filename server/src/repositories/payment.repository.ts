@@ -67,6 +67,22 @@ export async function findTransactionStatusView(
   return row
 }
 
+/**
+ * Attach the gateway's session details once it answers. The row is written
+ * before the gateway is called (see payment.service.ts), so this fills in what
+ * only the provider can supply.
+ */
+export async function attachTransactionSession(
+  reference: string,
+  input: { checkoutUrl: string; providerResponse: unknown; expiresAt: Date },
+): Promise<void> {
+  const client = requireDb()
+  await client
+    .update(paymentTransactions)
+    .set({ ...input, updatedAt: new Date() })
+    .where(eq(paymentTransactions.reference, reference))
+}
+
 /** Mark a transaction terminal without creating a donation (cancel / fail). */
 export async function updateTransactionStatus(
   reference: string,
