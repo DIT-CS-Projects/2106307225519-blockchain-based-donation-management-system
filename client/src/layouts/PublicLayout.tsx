@@ -2,8 +2,16 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { RouteTransition } from '@/components/layout/RouteTransition'
 
-/** Shell for all public pages: Navbar on top, Footer below, page content in between. */
-export function PublicLayout() {
+type PublicLayoutProps = {
+  /**
+   * The marketing footer. Off for focused surfaces (sign-in forms, donor
+   * account pages, checkout) where the site-wide link farm is only clutter.
+   */
+  footer?: boolean
+}
+
+/** Shell for public pages: Navbar on top, page content below, optional Footer. */
+export function PublicLayout({ footer = true }: PublicLayoutProps) {
   return (
     <div className="flex min-h-svh flex-col bg-background text-foreground">
       <a
@@ -16,7 +24,7 @@ export function PublicLayout() {
       <main id="content" className="flex-1">
         <RouteTransition />
       </main>
-      <Footer />
+      {footer && <Footer />}
     </div>
   )
 }

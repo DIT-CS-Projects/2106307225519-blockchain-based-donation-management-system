@@ -44,6 +44,7 @@ import { ROUTES } from '@/constants/routes'
 export function AppRoutes() {
   return (
     <Routes>
+      {/* Public site: the marketing shell, footer included */}
       <Route element={<PublicLayout />}>
         <Route path={ROUTES.home} element={<LandingPage />} />
         <Route path={ROUTES.campaigns} element={<CampaignsPage />} />
@@ -52,7 +53,12 @@ export function AppRoutes() {
         <Route path={ROUTES.contact} element={<ContactPage />} />
         <Route path={ROUTES.verify} element={<VerifyPage />} />
         <Route path={`${ROUTES.verify}/:receiptNumber`} element={<VerifyPage />} />
+        <Route path={ROUTES.privacy} element={<PrivacyPage />} />
+        <Route path={ROUTES.terms} element={<TermsPage />} />
+      </Route>
 
+      {/* Focused surfaces: same shell without the marketing footer */}
+      <Route element={<PublicLayout footer={false} />}>
         {/* Authentication */}
         <Route path={ROUTES.login} element={<LoginPage />} />
         <Route path={ROUTES.register} element={<RegisterPage />} />
@@ -67,9 +73,6 @@ export function AppRoutes() {
           <Route path={ROUTES.rewards} element={<RewardsPage />} />
           <Route path="/pay/:reference" element={<CheckoutPage />} />
         </Route>
-
-        <Route path={ROUTES.privacy} element={<PrivacyPage />} />
-        <Route path={ROUTES.terms} element={<TermsPage />} />
       </Route>
 
       {/* Fundraiser console (owner surface; admins may use it too) */}

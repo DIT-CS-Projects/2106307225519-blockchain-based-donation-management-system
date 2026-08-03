@@ -215,6 +215,11 @@ A round of user-requested polish on top of Stage 7:
 
 Frontend design changes above are verified by typecheck, lint (0 errors), production build, and the Vite dev server transforming/serving every new module; not yet click-tested in a browser.
 
+Post-deployment mobile review fixes (2026-08-03):
+
+- Scroll position no longer carries between pages. A `ScrollToTop` component (mounted once in `App`) resets the window scroll on forward navigation, scrolls to the element when the URL carries a hash, and stays out of the way on back/forward so the browser restores the previous position.
+- The marketing footer is now scoped to the public site (home, campaigns, campaign details, about, contact, verify, privacy, terms). `PublicLayout` takes a `footer` prop, and the auth pages plus the signed-in donor surfaces (account, donations, donation detail, rewards, checkout) render the same shell without it, matching the admin and fundraiser consoles.
+
 Verified: 52/53 automated E2E checks pass against live Neon + local server (the one failure was a transient Neon ETIMEDOUT during a cold start, not a code defect — its query already reflected the new username column). Added checks cover username registration, sign-in by username and by email, and duplicate-username rejection. Client and server typecheck, lint (0 errors), and build clean. Not yet done: a manual browser click-through of the animations and restyled pages.
 
 ---
