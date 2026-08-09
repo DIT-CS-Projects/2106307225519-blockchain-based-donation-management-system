@@ -150,6 +150,22 @@ Selected with PAYMENT_PROVIDER. The azampay adapter activates only when every cr
 - AzamPay cannot reach localhost. To test the live gateway, expose the backend with a public tunnel (for example ngrok or cloudflared to PORT 4000) and register that URL plus the secret as the callback in the AzamPay portal.
 - The mock provider remains the default and needs no tunnel or credentials.
 
+## Sandbox versus production
+
+Sandbox exercises the entire flow (checkout call, PIN prompt, callback, donation, receipt, blockchain proof) but moves no money. Only production credentials move real funds.
+
+| | Auth host | Checkout host |
+|---|---|---|
+| Sandbox | authenticator-sandbox.azampay.co.tz | sandbox.azampay.co.tz |
+| Production | authenticator.azampay.co.tz | checkout.azampay.co.tz |
+
+Going live:
+
+1. Submit the organisation's business KYC from the AzamPay sandbox portal. Live credentials are issued only after AzamPay approves it, which is a business process and not a code change.
+2. Set AZAMPAY_AUTH_BASE_URL and AZAMPAY_CHECKOUT_BASE_URL to the production hosts, together, and replace all four credentials with the live ones. Mixing a sandbox host with a production credential fails confusingly; the service logs a warning if the two hosts disagree.
+3. Register the production callback URL, with its secret, in the production portal. Sandbox registrations do not carry over.
+4. Confirm from the startup log line, which states either "sandbox, no real money" or "PRODUCTION, real money".
+
 ---
 
 # Failed Payments

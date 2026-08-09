@@ -21,7 +21,18 @@ export function getPaymentProvider(): PaymentProvider {
   if (env.PAYMENT_PROVIDER === 'azampay') {
     const config = readAzampayConfig()
     if (config) {
-      logger.info('Payment provider: AzamPay (mobile money live; bank via mock).')
+      // Say plainly which AzamPay environment is in force: the difference is
+      // whether real money moves, and it is otherwise invisible at runtime.
+      const authIsSandbox = config.authBaseUrl.includes('sandbox')
+      const checkoutIsSandbox = config.checkoutBaseUrl.includes('sandbox')
+      if (authIsSandbox !== checkoutIsSandbox) {
+        logger.warn(
+          'AzamPay hosts are mixed: one is sandbox and the other is production. ' +
+            'Set AZAMPAY_AUTH_BASE_URL and AZAMPAY_CHECKOUT_BASE_URL to the same environment.',
+        )
+      }
+      const label = authIsSandbox && checkoutIsSandbox ? 'sandbox, no real money' : 'PRODUCTION, real money'
+      logger.info(`Payment provider: AzamPay [${label}] (mobile money live; bank via mock).`)
       provider = new AzampayProvider(config)
     } else {
       logger.warn(
