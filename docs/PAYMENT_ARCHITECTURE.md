@@ -114,12 +114,48 @@ Payment Provider API
 
 This design allows providers to be changed without affecting business logic.
 
-Two adapters exist today:
+Three adapters exist today:
 
 - mock: a self-contained local checkout, the default. No credentials or public callback URL needed.
-- azampay: the real gateway for mobile money.
+- clickpesa: a real gateway for mobile money. Moves real money immediately, capped until KYC is approved.
+- azampay: a real gateway for mobile money. Requires approved KYC before any live credential is issued.
 
-Selected with PAYMENT_PROVIDER. The azampay adapter activates only when every credential is present (app name, client id, client secret, API key, callback secret); otherwise the service falls back to the mock and logs a warning, so a half-configured environment still boots.
+Selected with PAYMENT_PROVIDER. Each real adapter activates only when its credentials are all present; otherwise the service falls back to the mock and logs a warning, so a half-configured environment still boots.
+
+ClickPesa is the gateway that can demonstrate an actual payment without waiting on onboarding, because it lets an unverified account transact within a ceiling. AzamPay remains implemented and switchable.
+
+---
+
+# ClickPesa Adapter
+
+## Mobile money
+
+- createSession generates a token (cached for its full hour), then calls initiate-ussd-push-request with the amount, currency, order reference and payer number.
+- ClickPesa pushes a USSD/PIN prompt to the payer's handset. There is no hosted checkout page and no redirect.
+- The donor is sent to the same in-app waiting screen used for AzamPay, which polls payment status until the webhook resolves the transaction.
+- A response status of PROCESSING is the normal path: the prompt is on its way and the donor has not entered a PIN yet.
+
+## Operator routing
+
+- ClickPesa routes on the phone number alone, so the donor's chosen operator is not sent. The operator actually used comes back as `channel` and is kept in the stored provider response.
+- Phone numbers are normalized to 255XXXXXXXXX, without a leading plus.
+
+## Order reference
+
+- ClickPesa requires an alphanumeric order reference, so the hyphens in `CHG-2026-ABCD1234` are stripped on the way out and restored on the way back. The layout is fixed (prefix, four-digit year, code), which makes the round trip exact rather than a lookup.
+
+## Webhook authenticity
+
+- ClickPesa sends no signature header. The unguessable secret on the registered webhook URL (?key=...) is the primary proof that a callback is ours.
+- A webhook is accepted only when that secret matches, the order reference maps back to the stored transaction, and, for a success, the collected amount matches. A failure notice carries no amount, so the amount check applies to successes only.
+- When a checksum key is configured and the payload carries a checksum, it is verified as HMAC-SHA256 over the canonicalized payload.
+- Payloads arrive wrapped as `{ event, data }`; a flat payload is tolerated.
+
+## Pre-KYC limits
+
+- An unverified account transacts for real, capped at TZS 100,000 total across collections, payouts, deposits and withdrawals, and 100 API calls per day including token generation.
+- The adapter therefore caches the token for its full life and does not call the optional preview endpoint, so one payment costs one API call.
+- Completing KYC in Settings > KYC lifts both limits. No code or configuration changes when it is approved.
 
 ---
 

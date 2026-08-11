@@ -42,10 +42,24 @@ services:
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
+      # 'clickpesa' moves real money immediately (capped until KYC is approved),
+      # 'azampay' needs approved KYC first, 'mock' is the offline demo checkout.
       - key: PAYMENT_PROVIDER
-        value: azampay
+        value: clickpesa
       - key: PAYMENT_SESSION_TTL_MINUTES
         value: "30"
+      # ClickPesa. Values are set in the dashboard; the adapter falls back to the
+      # mock if any is missing. CLICKPESA_WEBHOOK_SECRET must match the ?key= on
+      # the webhook URL registered under Settings > Developers.
+      - key: CLICKPESA_CLIENT_ID
+        sync: false
+      - key: CLICKPESA_API_KEY
+        sync: false
+      - key: CLICKPESA_WEBHOOK_SECRET
+        sync: false
+      # Optional, only if checksums are enabled on the account.
+      - key: CLICKPESA_CHECKSUM_KEY
+        sync: false
       # AzamPay (Decision 009). Sandbox credentials from the developer portal;
       # set the actual values in the dashboard. Falls back to mock if any is
       # missing. Base URLs default to sandbox (see env.ts) and don't need to be

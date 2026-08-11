@@ -4,6 +4,7 @@ import type { PaymentTransactionRow } from '../../database/schema'
 import { ApiError } from '../../utils/ApiError'
 import { logger } from '../../utils/logger'
 import { AzampayClient, type AzampayConfig } from './azampay.client'
+import { assertBankFallbackAllowed } from './bankFallback'
 import { MockPaymentProvider } from './mock.provider'
 import type {
   CallbackContext,
@@ -42,6 +43,7 @@ export class AzampayProvider implements PaymentProvider {
 
   async createSession(input: CreateSessionInput): Promise<CreateSessionResult> {
     if (input.method !== 'mobile_money') {
+      assertBankFallbackAllowed()
       return this.bankFallback.createSession(input)
     }
 
@@ -95,6 +97,7 @@ export class AzampayProvider implements PaymentProvider {
   ): VerifyCallbackResult {
     // Bank transactions still resolve through the mock's capability-token check.
     if (transaction.method !== 'mobile_money') {
+      assertBankFallbackAllowed()
       return this.bankFallback.verifyCallback(payload, transaction, context)
     }
 
