@@ -137,7 +137,8 @@ ClickPesa is the gateway that can demonstrate an actual payment without waiting 
 - The donor is sent to the same in-app waiting screen used for AzamPay. The
   ClickPesa webhook is the primary confirmation route; an authenticated status
   lookup is a recovery route so a delayed or missed webhook cannot strand a
-  completed payment.
+  completed payment. Recovery checks run every 30 seconds, preserving the
+  limited daily API-call allowance on accounts awaiting KYC approval.
 - A response status of PROCESSING is the normal path: the prompt is on its way and the donor has not entered a PIN yet.
 
 ## Operator routing

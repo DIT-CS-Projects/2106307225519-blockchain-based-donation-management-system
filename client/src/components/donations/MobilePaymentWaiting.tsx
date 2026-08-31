@@ -9,7 +9,7 @@ import { campaignDetailsPath, donationDetailsPath } from '@/constants/routes'
 
 // Webhooks normally complete within seconds. Poll more slowly as a recovery
 // path for delayed webhook delivery without burning ClickPesa API quota.
-const POLL_INTERVAL_MS = 10_000
+const POLL_INTERVAL_MS = 30_000
 const MAX_WAIT_MS = 5 * 60_000
 
 function providerLabel(method: string, provider: string): string {
