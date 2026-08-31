@@ -130,6 +130,12 @@ ClickPesa is the gateway that can demonstrate an actual payment without waiting 
 
 # ClickPesa Adapter
 
+## Collection limits
+
+- ClickPesa's live mobile-money collection API accepts donations from TZS 500
+  through TZS 3,000,000 per transaction. The application enforces the TZS 500
+  minimum before a USSD request is created.
+
 ## Mobile money
 
 - createSession generates a token (cached for its full hour), then calls initiate-ussd-push-request with the amount, currency, order reference and payer number.

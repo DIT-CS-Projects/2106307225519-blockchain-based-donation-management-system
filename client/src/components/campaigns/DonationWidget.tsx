@@ -13,7 +13,7 @@ import { createPaymentSession } from '@/services/payments'
 import { toApiError } from '@/services/api'
 import { cn } from '@/lib/utils'
 
-const PRESET_AMOUNTS = [5_000, 10_000, 25_000, 50_000]
+const PRESET_AMOUNTS = [500, 1_000, 5_000, 10_000]
 
 // TZ mobile number, mirrors the server's validation (validation/payment.ts).
 const TZ_MOBILE = /^(?:\+?255|0)?[67]\d{8}$/

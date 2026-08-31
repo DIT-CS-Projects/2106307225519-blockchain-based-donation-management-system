@@ -15,7 +15,7 @@ export const DUAL_APPROVAL_THRESHOLD_TZS = 1_000_000
 
 /** Upper guardrail on a single donation. Mirrors the server's MAX_DONATION_TZS. */
 export const MAX_DONATION_TZS = 100_000_000
-export const MIN_DONATION_TZS = 100
+export const MIN_DONATION_TZS = 500
 
 export const CAMPAIGN_CATEGORIES = [
   'Education',
