@@ -55,6 +55,13 @@ export interface UssdPushResult {
   raw: unknown
 }
 
+export interface ClickPesaPaymentResult {
+  status: string
+  orderReference?: string
+  collectedAmount?: number
+  raw: unknown
+}
+
 /**
  * Canonical JSON for checksums: object keys sorted alphabetically at every
  * level, serialized compactly. Both sides must agree byte for byte, so the
@@ -130,6 +137,24 @@ export class ClickPesaClient {
     }
   }
 
+  /** Query ClickPesa directly when a webhook did not reach us. */
+  async getPayment(orderReference: string): Promise<ClickPesaPaymentResult | null> {
+    const token = await this.getToken()
+    const data = await this.request(
+      `${this.config.baseUrl}/third-parties/payments/${encodeURIComponent(orderReference)}`,
+      { headers: { Authorization: bearer(token) } },
+    )
+    const record = Array.isArray(data) ? asRecord(data[0]) : asRecord(data)
+    if (!record) return null
+    const amount = readNumber(record, 'collectedAmount')
+    return {
+      status: String(record.status ?? '').toUpperCase(),
+      orderReference: readString(record, 'orderReference'),
+      collectedAmount: amount ?? undefined,
+      raw: data,
+    }
+  }
+
   private async getToken(): Promise<string> {
     if (this.token && Date.now() < this.tokenExpiryMs) return this.token
 
@@ -191,4 +216,10 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 function readString(record: Record<string, unknown>, key: string): string | undefined {
   const value = record[key]
   return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
+function readNumber(record: Record<string, unknown>, key: string): number | null {
+  const value = record[key]
+  const parsed = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN
+  return Number.isFinite(parsed) ? Math.round(parsed) : null
 }

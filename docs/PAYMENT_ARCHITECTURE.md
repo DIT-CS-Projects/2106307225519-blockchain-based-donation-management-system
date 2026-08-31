@@ -120,7 +120,9 @@ Three adapters exist today:
 - clickpesa: a real gateway for mobile money. Moves real money immediately, capped until KYC is approved.
 - azampay: a real gateway for mobile money. Requires approved KYC before any live credential is issued.
 
-Selected with PAYMENT_PROVIDER. Each real adapter activates only when its credentials are all present; otherwise the service falls back to the mock and logs a warning, so a half-configured environment still boots.
+Selected with PAYMENT_PROVIDER. A real adapter requires all of its credentials;
+if a selected provider is incomplete, checkout returns a visible configuration
+error rather than silently sending donors through a mock payment flow.
 
 ClickPesa is the gateway that can demonstrate an actual payment without waiting on onboarding, because it lets an unverified account transact within a ceiling. AzamPay remains implemented and switchable.
 
@@ -132,7 +134,10 @@ ClickPesa is the gateway that can demonstrate an actual payment without waiting 
 
 - createSession generates a token (cached for its full hour), then calls initiate-ussd-push-request with the amount, currency, order reference and payer number.
 - ClickPesa pushes a USSD/PIN prompt to the payer's handset. There is no hosted checkout page and no redirect.
-- The donor is sent to the same in-app waiting screen used for AzamPay, which polls payment status until the webhook resolves the transaction.
+- The donor is sent to the same in-app waiting screen used for AzamPay. The
+  ClickPesa webhook is the primary confirmation route; an authenticated status
+  lookup is a recovery route so a delayed or missed webhook cannot strand a
+  completed payment.
 - A response status of PROCESSING is the normal path: the prompt is on its way and the donor has not entered a PIN yet.
 
 ## Operator routing
@@ -156,6 +161,18 @@ ClickPesa is the gateway that can demonstrate an actual payment without waiting 
 - An unverified account transacts for real, capped at TZS 100,000 total across collections, payouts, deposits and withdrawals, and 100 API calls per day including token generation.
 - The adapter therefore caches the token for its full life and does not call the optional preview endpoint, so one payment costs one API call.
 - Completing KYC in Settings > KYC lifts both limits. No code or configuration changes when it is approved.
+
+## Live completion guarantee
+
+- A successful ClickPesa payment creates the donation, receipt and pending
+  blockchain record atomically. The proof writer is started immediately after
+  that transaction.
+- Webhooks are primary; the authenticated ClickPesa payment-status endpoint is
+  queried from the donor waiting screen as a recovery path.
+- The application refuses to start a live ClickPesa checkout unless the
+  blockchain RPC URL, signing wallet and deployed contract address are all
+  configured. This prevents collecting real money when an on-chain proof could
+  not even be submitted.
 
 ---
 

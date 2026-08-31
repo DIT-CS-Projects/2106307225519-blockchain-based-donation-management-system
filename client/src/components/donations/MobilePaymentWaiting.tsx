@@ -7,8 +7,10 @@ import { formatTZS } from '@/utils/format'
 import { PAYMENT_METHODS } from '@/constants/config'
 import { campaignDetailsPath, donationDetailsPath } from '@/constants/routes'
 
-const POLL_INTERVAL_MS = 3_000
-const MAX_WAIT_MS = 3 * 60_000
+// Webhooks normally complete within seconds. Poll more slowly as a recovery
+// path for delayed webhook delivery without burning ClickPesa API quota.
+const POLL_INTERVAL_MS = 10_000
+const MAX_WAIT_MS = 5 * 60_000
 
 function providerLabel(method: string, provider: string): string {
   const rail = PAYMENT_METHODS.find((m) => m.key === method)

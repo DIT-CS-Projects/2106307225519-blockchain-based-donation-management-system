@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import {
   MAX_DONATION_TZS,
+  MIN_DONATION_TZS,
   PAYMENT_PROVIDERS,
 } from '../constants/donations'
 
@@ -19,7 +20,7 @@ export const createSessionSchema = z
     amount: z
       .number()
       .int('Enter a whole shilling amount')
-      .positive('Enter an amount greater than zero')
+      .min(MIN_DONATION_TZS, `Enter at least TZS ${MIN_DONATION_TZS}`)
       .max(MAX_DONATION_TZS, 'That amount is too large'),
     currency: z.literal('TZS').default('TZS'),
     method: z.enum(METHODS),

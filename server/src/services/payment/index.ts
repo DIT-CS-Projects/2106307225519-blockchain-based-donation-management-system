@@ -1,5 +1,6 @@
 import { env } from '../../config/env'
 import { logger } from '../../utils/logger'
+import { ApiError } from '../../utils/ApiError'
 import { readAzampayConfig } from './azampay.client'
 import { AzampayProvider } from './azampay.provider'
 import { readClickPesaConfig } from './clickpesa.client'
@@ -14,9 +15,9 @@ let provider: PaymentProvider | null = null
 /**
  * Return the configured payment provider (singleton). Selected by
  * PAYMENT_PROVIDER. 'azampay' and 'clickpesa' drive real gateways for mobile
- * money (bank still runs on the mock inside those adapters); each falls back to
- * the mock if a credential is missing, so a half-configured environment keeps
- * working instead of failing at boot.
+ * money (bank still runs on the mock inside those adapters). A selected real
+ * provider with missing credentials must fail visibly rather than silently
+ * showing a mock flow and making it look as if no handset prompt was sent.
  */
 export function getPaymentProvider(): PaymentProvider {
   if (provider) return provider
@@ -32,10 +33,10 @@ export function getPaymentProvider(): PaymentProvider {
       )
       provider = new ClickPesaProvider(config)
     } else {
-      logger.warn(
-        'PAYMENT_PROVIDER=clickpesa but credentials are incomplete; using the mock provider.',
+      logger.error('PAYMENT_PROVIDER=clickpesa but ClickPesa credentials are incomplete.')
+      throw ApiError.serviceUnavailable(
+        'Mobile payments are not configured yet. Please contact support and try again later.',
       )
-      provider = new MockPaymentProvider()
     }
   } else if (env.PAYMENT_PROVIDER === 'azampay') {
     const config = readAzampayConfig()
@@ -54,10 +55,10 @@ export function getPaymentProvider(): PaymentProvider {
       logger.info(`Payment provider: AzamPay [${label}] (mobile money live; bank via mock).`)
       provider = new AzampayProvider(config)
     } else {
-      logger.warn(
-        'PAYMENT_PROVIDER=azampay but credentials are incomplete; using the mock provider.',
+      logger.error('PAYMENT_PROVIDER=azampay but AzamPay credentials are incomplete.')
+      throw ApiError.serviceUnavailable(
+        'Mobile payments are not configured yet. Please contact support and try again later.',
       )
-      provider = new MockPaymentProvider()
     }
   } else {
     provider = new MockPaymentProvider()

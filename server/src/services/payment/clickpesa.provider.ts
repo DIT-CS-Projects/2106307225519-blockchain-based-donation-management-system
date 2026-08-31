@@ -130,6 +130,32 @@ export class ClickPesaProvider implements PaymentProvider {
   }
 
   /**
+   * A token-authenticated ClickPesa status lookup is the recovery mechanism
+   * for a missed webhook. It repeats the same reference and amount checks as a
+   * webhook before the payment service may finalize a donation.
+   */
+  async getTransactionStatus(transaction: PaymentTransactionRow): Promise<VerifyCallbackResult | null> {
+    if (transaction.method !== 'mobile_money') return null
+    const result = await this.client.getPayment(toOrderReference(transaction.reference))
+    if (!result || !result.status || result.status === 'PROCESSING' || result.status === 'PENDING') {
+      return null
+    }
+
+    const referenceOk = fromOrderReference(result.orderReference ?? '') === transaction.reference
+    const successful = result.status === 'SUCCESS' || result.status === 'SETTLED'
+    const amountOk = !successful || result.collectedAmount === transaction.amount
+    if (!referenceOk || !amountOk) {
+      logger.warn(`ClickPesa status lookup rejected for ${transaction.reference}: ref=${referenceOk} amount=${amountOk}`)
+      return null
+    }
+    return {
+      status: successful ? 'success' : 'failed',
+      verified: true,
+      raw: result.raw,
+    }
+  }
+
+  /**
    * Verify the webhook checksum when both a key is configured and the payload
    * carries one. Absent either, there is nothing to check and the URL secret
    * remains the proof of authenticity.

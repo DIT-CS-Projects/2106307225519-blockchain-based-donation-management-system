@@ -28,6 +28,10 @@ export class ApiError extends Error {
     return new ApiError(409, message)
   }
 
+  static serviceUnavailable(message = 'Service unavailable') {
+    return new ApiError(503, message)
+  }
+
   static badGateway(message = 'Upstream service error') {
     return new ApiError(502, message)
   }

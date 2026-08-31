@@ -48,9 +48,10 @@ services:
         value: clickpesa
       - key: PAYMENT_SESSION_TTL_MINUTES
         value: "30"
-      # ClickPesa. Values are set in the dashboard; the adapter falls back to the
-      # mock if any is missing. CLICKPESA_WEBHOOK_SECRET must match the ?key= on
-      # the webhook URL registered under Settings > Developers.
+      # ClickPesa. Values are set in the dashboard. All three are required when
+      # PAYMENT_PROVIDER=clickpesa; a missing value produces a clear checkout
+      # error. CLICKPESA_WEBHOOK_SECRET must match the ?key= on the webhook URL
+      # registered under Settings > Developers.
       - key: CLICKPESA_CLIENT_ID
         sync: false
       - key: CLICKPESA_API_KEY
@@ -76,8 +77,9 @@ services:
       # AzamPay portal (https://changia-api.onrender.com/api/payments/callback?key=...).
       - key: AZAMPAY_CALLBACK_SECRET
         sync: false
-      # Blockchain — Sepolia testnet. RPC/key/address are secrets set in the
-      # dashboard after the contract is deployed (see the runbook).
+      # Blockchain — Sepolia testnet. These three values are required before a
+      # live ClickPesa donation can start, ensuring each confirmed collection is
+      # immediately submitted as a proof. Set them after contract deployment.
       - key: BLOCKCHAIN_NETWORK
         value: sepolia
       - key: BLOCKCHAIN_RPC_URL

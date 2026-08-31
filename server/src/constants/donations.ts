@@ -3,6 +3,9 @@
 /** Upper guardrail on a single donation to catch fat-finger input, in TZS. */
 export const MAX_DONATION_TZS = 100_000_000
 
+/** ClickPesa's live collection flow is only useful for meaningful whole-TZS gifts. */
+export const MIN_DONATION_TZS = 100
+
 export const DONATION_CURRENCY = 'TZS'
 
 /** Payment rails offered at checkout, and the providers under each rail. */

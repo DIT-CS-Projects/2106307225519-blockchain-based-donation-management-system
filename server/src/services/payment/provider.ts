@@ -58,4 +58,9 @@ export interface PaymentProvider {
     transaction: PaymentTransactionRow,
     context?: CallbackContext,
   ): VerifyCallbackResult
+  /**
+   * Optional authoritative gateway lookup. Used as a recovery path when a
+   * gateway webhook is delayed or misconfigured, never as a browser-facing API.
+   */
+  getTransactionStatus?(transaction: PaymentTransactionRow): Promise<VerifyCallbackResult | null>
 }

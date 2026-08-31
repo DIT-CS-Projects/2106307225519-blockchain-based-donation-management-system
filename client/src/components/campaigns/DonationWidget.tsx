@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { formatTZS } from '@/utils/format'
-import { CURRENCY, PAYMENT_METHODS } from '@/constants/config'
+import { CURRENCY, MAX_DONATION_TZS, MIN_DONATION_TZS, PAYMENT_METHODS } from '@/constants/config'
 import type { PaymentMethodKey } from '@/constants/config'
 import { ROUTES, campaignDetailsPath } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
@@ -46,7 +46,9 @@ export function DonationWidget({ campaignId, canDonate, initialAmount }: Donatio
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const invalidAmount = amount !== null && amount <= 0
+  const amountTooLarge = amount !== null && amount > MAX_DONATION_TZS
+  const amountTooSmall = amount !== null && amount < MIN_DONATION_TZS
+  const invalidAmount = amount !== null && (amountTooSmall || amountTooLarge)
   const providers = PAYMENT_METHODS.find((m) => m.key === method)?.providers ?? []
   const needsPhone = method === 'mobile_money'
   const phoneInvalid = needsPhone && phone.trim().length > 0 && !looksLikeTzMobile(phone)
@@ -160,7 +162,9 @@ export function DonationWidget({ campaignId, canDonate, initialAmount }: Donatio
         </div>
         {invalidAmount && (
           <p id="amount-error" className="mt-2 text-sm text-destructive">
-            Enter an amount greater than zero.
+            {amountTooLarge
+              ? `Enter an amount of ${formatTZS(MAX_DONATION_TZS)} or less.`
+              : `Enter at least ${formatTZS(MIN_DONATION_TZS)}.`}
           </p>
         )}
 

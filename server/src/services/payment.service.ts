@@ -8,6 +8,7 @@ import {
 } from '../repositories/payment.repository'
 import { findDistinctDonorIdsByCampaign, recordDonation } from '../repositories/donation.repository'
 import { recordBlockchainProof } from './donation.service'
+import { isBlockchainConfigured } from './blockchain.service'
 import { awardForDonation } from './reward.service'
 import { getPaymentProvider } from './payment'
 import { notify } from './notification.service'
@@ -26,6 +27,8 @@ import { logger } from '../utils/logger'
 import type { CreateSessionInput } from '../validation/payment'
 import type { CallbackContext } from './payment/provider'
 import { formatTZS } from '../utils/format'
+import type { PaymentTransactionRow } from '../database/schema'
+import type { VerifyCallbackResult } from './payment/provider'
 
 export interface CreateSessionResult {
   paymentReference: string
@@ -50,6 +53,15 @@ export async function createSession(
   const reference = generateReference(PAYMENT_REFERENCE_PREFIX)
   const callbackToken = generateCheckoutToken()
   const provider = getPaymentProvider()
+
+  // Never collect real money while the proof writer is absent. This keeps the
+  // live ClickPesa path honest: payment confirmation immediately has a usable
+  // route to the configured blockchain rather than silently stopping at the DB.
+  if (provider.name === 'clickpesa' && !isBlockchainConfigured()) {
+    throw ApiError.serviceUnavailable(
+      'Donations are temporarily unavailable while transaction proof recording is configured.',
+    )
+  }
 
   // Write ahead: the attempt is recorded before the gateway is called. A real
   // gateway can start the payment (pushing a PIN prompt to the donor's phone)
@@ -131,6 +143,19 @@ export async function handleCallback(
     throw ApiError.badRequest('Payment callback could not be verified')
   }
 
+  return settleTransaction(transaction, reference, result)
+}
+
+/**
+ * Apply one verified terminal gateway result. Both webhooks and the ClickPesa
+ * status recovery path use this exact code, so a delayed/missed webhook cannot
+ * leave money collected without creating the donation and blockchain proof.
+ */
+async function settleTransaction(
+  transaction: PaymentTransactionRow,
+  reference: string,
+  result: VerifyCallbackResult,
+): Promise<CallbackResult> {
   // Already finalized: return the existing donation without re-processing.
   if (transaction.status === 'success') {
     return {
@@ -234,17 +259,39 @@ export async function getPaymentStatus(
   if (!view || view.donorId !== donorId) {
     throw ApiError.notFound('Payment not found')
   }
+
+  // Webhooks are the primary completion path. If one is delayed, query the
+  // authenticated ClickPesa status endpoint while the donor is on the waiting
+  // screen, so a confirmed real payment still reaches the receipt and chain.
+  if (view.status === 'pending') {
+    const transaction = await findTransactionByReference(reference)
+    const provider = getPaymentProvider()
+    if (transaction && provider.getTransactionStatus) {
+      try {
+        const result = await provider.getTransactionStatus(transaction)
+        if (result?.verified) await settleTransaction(transaction, reference, result)
+      } catch (error) {
+        logger.warn(`Payment-status recovery check failed for ${reference}: ${(error as Error).message}`)
+      }
+    }
+  }
+
+  // Reload so a successful status recovery is returned to the waiting screen.
+  const current = await findTransactionStatusView(reference)
+  if (!current || current.donorId !== donorId) {
+    throw ApiError.notFound('Payment not found')
+  }
   return {
-    reference: view.reference,
-    status: view.status,
-    amount: view.amount,
-    currency: view.currency,
-    method: view.method,
-    provider: view.provider,
-    campaignId: view.campaignId,
-    campaignTitle: view.campaignTitle,
-    donationId: view.donationId,
-    receiptAvailable: view.donationId !== null,
-    expiresAt: view.expiresAt.toISOString(),
+    reference: current.reference,
+    status: current.status,
+    amount: current.amount,
+    currency: current.currency,
+    method: current.method,
+    provider: current.provider,
+    campaignId: current.campaignId,
+    campaignTitle: current.campaignTitle,
+    donationId: current.donationId,
+    receiptAvailable: current.donationId !== null,
+    expiresAt: current.expiresAt.toISOString(),
   }
 }
