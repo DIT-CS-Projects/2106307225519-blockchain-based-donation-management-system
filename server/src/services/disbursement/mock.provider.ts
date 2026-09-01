@@ -2,8 +2,8 @@ import type { DisbursementProvider, QueuePayoutInput, QueuePayoutResult } from '
 
 /**
  * Local-development disbursement provider: completes every payout instantly,
- * no external credentials or callback round-trip needed. Swap
- * DISBURSEMENT_PROVIDER=azampay for the real adapter once onboarded.
+ * no external credentials or callback round-trip needed. Set
+ * DISBURSEMENT_PROVIDER=clickpesa for real mobile-money payouts.
  */
 export class MockDisbursementProvider implements DisbursementProvider {
   readonly name = 'mock'

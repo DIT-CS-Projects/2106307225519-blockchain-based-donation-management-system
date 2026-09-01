@@ -15,6 +15,7 @@ export interface Beneficiary {
 }
 
 export interface AdminBeneficiary extends Beneficiary {
+  mobileNumber: string | null
   contactInfo: string | null
   verifiedAt: string | null
   verifiedBy: number | null
@@ -82,6 +83,7 @@ export interface BeneficiaryFormInput {
   description: string
   category?: string
   location?: string
+  mobileNumber?: string
   contactInfo?: string
   imageUrl?: string | null
 }

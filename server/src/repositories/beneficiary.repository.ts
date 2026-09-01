@@ -111,7 +111,7 @@ export async function insertBeneficiary(data: NewBeneficiaryRow): Promise<Benefi
 export type BeneficiaryUpdate = Partial<
   Pick<
     NewBeneficiaryRow,
-    'name' | 'description' | 'category' | 'location' | 'contactInfo' | 'imageUrl'
+    'name' | 'description' | 'category' | 'location' | 'mobileNumber' | 'contactInfo' | 'imageUrl'
   >
 >
 

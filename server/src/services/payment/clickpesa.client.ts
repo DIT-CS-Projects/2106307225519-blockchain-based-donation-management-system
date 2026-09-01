@@ -62,6 +62,19 @@ export interface ClickPesaPaymentResult {
   raw: unknown
 }
 
+export interface MobileMoneyPayoutInput {
+  amount: number
+  currency: string
+  orderReference: string
+  phoneNumber: string
+}
+
+export interface ClickPesaPayoutResult {
+  status: string
+  id?: string
+  raw: unknown
+}
+
 /**
  * Canonical JSON for checksums: object keys sorted alphabetically at every
  * level, serialized compactly. Both sides must agree byte for byte, so the
@@ -153,6 +166,37 @@ export class ClickPesaClient {
       collectedAmount: amount ?? undefined,
       raw: data,
     }
+  }
+
+  /** Send funds from the merchant's available ClickPesa payout balance. */
+  async createMobileMoneyPayout(input: MobileMoneyPayoutInput): Promise<ClickPesaPayoutResult> {
+    const token = await this.getToken()
+    const body: Record<string, unknown> = {
+      amount: String(input.amount),
+      currency: input.currency,
+      orderReference: input.orderReference,
+      phoneNumber: input.phoneNumber,
+    }
+    if (this.config.checksumKey) body.checksum = computeChecksum(body, this.config.checksumKey)
+    const data = await this.request(`${this.config.baseUrl}/third-parties/payouts/create-mobile-money-payout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: bearer(token) },
+      body: JSON.stringify(body),
+    })
+    const record = asRecord(data) ?? {}
+    return { status: String(record.status ?? '').toUpperCase(), id: readString(record, 'id'), raw: data }
+  }
+
+  /** Look up an existing payout without creating another one. */
+  async getPayout(orderReference: string): Promise<ClickPesaPayoutResult | null> {
+    const token = await this.getToken()
+    const data = await this.request(
+      `${this.config.baseUrl}/third-parties/payouts/${encodeURIComponent(orderReference)}`,
+      { headers: { Authorization: bearer(token) } },
+    )
+    const record = Array.isArray(data) ? asRecord(data[0]) : asRecord(data)
+    if (!record) return null
+    return { status: String(record.status ?? '').toUpperCase(), id: readString(record, 'id'), raw: data }
   }
 
   private async getToken(): Promise<string> {

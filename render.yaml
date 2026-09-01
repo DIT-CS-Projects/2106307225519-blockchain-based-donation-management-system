@@ -93,4 +93,4 @@ services:
       - key: EMAIL_PROVIDER
         value: console
       - key: DISBURSEMENT_PROVIDER
-        value: mock
+        value: clickpesa

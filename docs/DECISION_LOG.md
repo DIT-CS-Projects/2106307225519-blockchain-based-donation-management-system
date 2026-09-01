@@ -292,7 +292,7 @@ The system disburses raised funds from a campaign to its verified beneficiaries.
 
 Model
 
-* Admin initiates a fiat payout through the AzamPay disbursement API
+* Admin initiates a fiat payout through the ClickPesa Mobile Money Payout API
 * Disbursements at or above 1,000,000 TZS require approval from a second administrator
 * The initiating administrator can never approve their own disbursement
 * A disbursement can never exceed the campaign's available balance (total raised minus total disbursed)

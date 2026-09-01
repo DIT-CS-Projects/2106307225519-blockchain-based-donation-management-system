@@ -14,7 +14,8 @@ Disbursements are fiat payouts from a campaign's raised funds to a verified bene
 
 A payout is initiated by the campaign owner: a fundraiser on their own campaigns, or an administrator on any campaign.
 
-The backend sends payouts through the AzamPay disbursement API.
+The backend sends payouts through the ClickPesa Mobile Money Payout API from
+the NGO merchant account's available payout balance.
 
 Every completed disbursement produces an immutable blockchain proof, exactly like a donation.
 

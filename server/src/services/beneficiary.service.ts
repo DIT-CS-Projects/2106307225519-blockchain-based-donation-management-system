@@ -61,6 +61,7 @@ export async function getPublicBeneficiary(id: number): Promise<BeneficiaryDto> 
 // --- Admin ---
 
 export interface AdminBeneficiaryDto extends BeneficiaryDto {
+  mobileNumber: string | null
   contactInfo: string | null
   verifiedAt: string | null
   verifiedBy: number | null
@@ -69,6 +70,7 @@ export interface AdminBeneficiaryDto extends BeneficiaryDto {
 function toAdminDto(row: BeneficiaryRow): AdminBeneficiaryDto {
   return {
     ...toDto(row),
+    mobileNumber: row.mobileNumber,
     contactInfo: row.contactInfo,
     verifiedAt: row.verifiedAt?.toISOString() ?? null,
     verifiedBy: row.verifiedBy,
@@ -126,6 +128,7 @@ export async function createBeneficiary(
     description: input.description,
     category: input.category ?? null,
     location: input.location ?? null,
+    mobileNumber: input.mobileNumber ?? null,
     contactInfo: input.contactInfo ?? null,
     imageUrl: input.imageUrl ?? null,
   })

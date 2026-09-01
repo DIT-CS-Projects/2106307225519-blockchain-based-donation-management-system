@@ -160,7 +160,7 @@ Database: beneficiaries, disbursements, disbursement_approvals, notifications, a
 
 Campaign management: admin CRUD (create as draft, update, archive, soft delete) with Multer local-disk image upload (validated type/size, random filenames — never the client-supplied name), all audit-logged. Beneficiaries: full CRUD, admin-only verification toggle, donor-facing reads show only verified beneficiaries (now live on the public campaign details page), contact info never exposed publicly.
 
-Disbursements: available balance = raised − completed disbursements; below the dual-approval threshold a payout is auto-approved and paid instantly (mock provider, real AzamPay adapter drops in later); at/above threshold it waits for a second administrator (the initiator can never approve their own) and rejection requires a reason. Every completed disbursement gets a blockchain proof via the same TransparencyRegistry contract used for donations (registerDisbursement, already built in Stage 1/5).
+Disbursements: available balance = raised − completed disbursements; below the dual-approval threshold a payout is auto-approved and paid instantly in mock mode, or sent through ClickPesa Mobile Money Payouts when configured; at/above threshold it waits for a second administrator (the initiator can never approve their own) and rejection requires a reason. Every completed disbursement gets a blockchain proof via the same TransparencyRegistry contract used for donations (registerDisbursement, already built in Stage 1/5).
 
 Users: admin list/detail/status endpoints; suspending or deactivating a user revokes every session and blocks future login; an admin cannot suspend themselves.
 

@@ -54,7 +54,7 @@ export const disbursements = pgTable(
       .notNull()
       .references(() => users.id),
     rejectionReason: text('rejection_reason'),
-    // AzamPay disbursement reference and raw payload once queued.
+    // Provider payout reference and raw payload once queued.
     payoutReference: varchar('payout_reference', { length: 64 }),
     providerResponse: jsonb('provider_response'),
     completedAt: timestamp('completed_at', { withTimezone: true }),

@@ -30,6 +30,7 @@ export const beneficiaryFormSchema = z.object({
   description: z.string().trim().min(1, 'Description is required'),
   category: z.string().trim().max(80).optional(),
   location: z.string().trim().max(150).optional(),
+  mobileNumber: z.string().trim().regex(/^(?:\+?255|0)\d{9}$/, 'Enter a valid Tanzanian mobile number').optional(),
   contactInfo: z.string().trim().max(500).optional(),
 })
 

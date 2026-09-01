@@ -72,9 +72,9 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().default('ChangiaTanzania <no-reply@changia.org>'),
-  // Disbursement payout gateway. 'mock' completes instantly, no credentials
-  // needed; 'azampay' selects the real adapter once onboarded.
-  DISBURSEMENT_PROVIDER: z.enum(['mock', 'azampay']).default('mock'),
+  // Outbound payout gateway. ClickPesa uses the same merchant credentials as
+  // collections and sends money from its available payout balance.
+  DISBURSEMENT_PROVIDER: z.enum(['mock', 'clickpesa']).default('mock'),
 })
 
 /**

@@ -19,6 +19,8 @@ export const beneficiaries = pgTable(
     description: text('description').notNull(),
     category: varchar('category', { length: 80 }),
     location: varchar('location', { length: 150 }),
+    // Private payout destination. Never included in public beneficiary DTOs.
+    mobileNumber: varchar('mobile_number', { length: 15 }),
     contactInfo: text('contact_info'),
     imageUrl: text('image_url'),
     verified: boolean('verified').notNull().default(false),

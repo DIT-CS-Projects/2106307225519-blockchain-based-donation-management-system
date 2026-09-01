@@ -66,7 +66,7 @@ Payout Queued
 
 ↓
 
-AzamPay Disbursement API
+ClickPesa Mobile Money Payout API
 
 ↓
 

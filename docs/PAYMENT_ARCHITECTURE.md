@@ -42,6 +42,19 @@ Card payments (Visa, Mastercard) are a future enhancement.
 
 Additional providers can be added later.
 
+## Beneficiary Disbursements
+
+Completed donations are reflected in each campaign's internal available-balance
+ledger. An approved disbursement is then sent through ClickPesa's Mobile Money
+Payout API from the NGO merchant account's available payout balance to the
+verified beneficiary's private mobile-money number. The database ledger
+authorizes the amount; it does not itself hold or transfer funds.
+
+ClickPesa may initially return an accepted or processing status. The system
+stores the payout reference, queries the provider until `SUCCESS`, and only
+then completes the disbursement and creates its blockchain proof. A returned or
+reversed payout is marked failed, leaving the campaign amount available again.
+
 ---
 
 # Payment Philosophy

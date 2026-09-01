@@ -176,6 +176,9 @@ export async function initiateDisbursement(
   if (!beneficiary) {
     throw ApiError.badRequest('Beneficiary must be verified and belong to this campaign')
   }
+  if (!beneficiary.mobileNumber) {
+    throw ApiError.badRequest('The beneficiary must have a mobile number before receiving a payout')
+  }
 
   const totalDisbursed = await getTotalDisbursed(input.campaignId)
   const availableBalance = campaign.raisedAmount - totalDisbursed
@@ -215,7 +218,7 @@ export async function initiateDisbursement(
   })
 
   if (autoApproved) {
-    void processPayout(row)
+    void processPayout(row, beneficiary.mobileNumber)
   }
 
   const detail = await findDisbursementDetail(row.id)
@@ -233,6 +236,11 @@ export async function approveDisbursement(adminId: number, id: number): Promise<
     throw new ApiError(409, 'You cannot approve a disbursement you initiated')
   }
 
+  const beneficiary = await findVerifiedBeneficiaryInCampaign(row.beneficiaryId, row.campaignId)
+  if (!beneficiary?.mobileNumber) {
+    throw ApiError.badRequest('The beneficiary must have a mobile number before a payout can be approved')
+  }
+
   await insertApproval({ disbursementId: id, adminId, decision: 'approved' })
   const updated = await updateDisbursement(id, { status: 'approved' })
   if (!updated) throw ApiError.notFound('Disbursement not found')
@@ -244,7 +252,7 @@ export async function approveDisbursement(adminId: number, id: number): Promise<
     entityId: id,
   })
 
-  void processPayout(updated)
+  void processPayout(updated, beneficiary.mobileNumber)
 
   const detail = await findDisbursementDetail(id)
   return toDto(detail!)
@@ -283,7 +291,7 @@ export async function rejectDisbursement(
  * immediately; failures mark the disbursement 'failed' and funds remain
  * available for a retry (flows/disbursement-flow.md).
  */
-async function processPayout(disbursement: DisbursementRow): Promise<void> {
+async function processPayout(disbursement: DisbursementRow, beneficiaryMobileNumber: string): Promise<void> {
   try {
     await updateDisbursement(disbursement.id, { status: 'processing' })
 
@@ -294,33 +302,73 @@ async function processPayout(disbursement: DisbursementRow): Promise<void> {
       reference,
       amount: disbursement.amount,
       beneficiaryName,
+      beneficiaryMobileNumber,
       purpose: disbursement.purpose,
     })
 
     if (!result.completedImmediately) {
-      // Real provider path: stays 'processing' until POST /disbursements/callback lands.
+      // ClickPesa accepts some payouts asynchronously. Keep the record in
+      // processing and reconcile by its unique reference; this never creates a
+      // second payout request.
       await updateDisbursement(disbursement.id, {
         payoutReference: reference,
         providerResponse: result.raw ?? null,
       })
+      void pollPayoutCompletion(disbursement, reference)
       return
     }
 
-    const completedAt = new Date()
-    await updateDisbursement(disbursement.id, {
-      status: 'completed',
-      payoutReference: reference,
-      providerResponse: result.raw ?? null,
-      completedAt,
-    })
-
-    void recordDisbursementBlockchainProof({ ...disbursement, completedAt })
-    void notifyAdminsOfCompletion(disbursement, true)
+    await completePayout(disbursement, reference, result.raw)
   } catch (error) {
     logger.error(`Disbursement ${disbursement.id} payout failed:`, error)
     await updateDisbursement(disbursement.id, { status: 'failed' })
     void notifyAdminsOfCompletion(disbursement, false)
   }
+}
+
+const PAYOUT_STATUS_DELAYS_MS = [5_000, 10_000, 20_000, 40_000, 60_000]
+const FAILED_PAYOUT_STATUSES = new Set(['FAILED', 'REVERSED', 'REFUNDED'])
+
+/** Reconcile an accepted ClickPesa payout without ever re-submitting it. */
+async function pollPayoutCompletion(disbursement: DisbursementRow, reference: string): Promise<void> {
+  const provider = getDisbursementProvider()
+  if (!provider.getPayoutStatus) return
+
+  for (const delay of PAYOUT_STATUS_DELAYS_MS) {
+    await new Promise<void>((resolve) => setTimeout(resolve, delay))
+    try {
+      const status = await provider.getPayoutStatus(reference)
+      if (status === 'SUCCESS') {
+        await completePayout(disbursement, reference)
+        return
+      }
+      if (status && FAILED_PAYOUT_STATUSES.has(status)) {
+        await updateDisbursement(disbursement.id, { status: 'failed' })
+        void notifyAdminsOfCompletion(disbursement, false)
+        return
+      }
+    } catch (error) {
+      // Leave the status as processing: a transient status lookup failure is
+      // not evidence that the recipient did not receive funds.
+      logger.warn(`Could not reconcile payout ${reference}: ${(error as Error).message}`)
+    }
+  }
+}
+
+async function completePayout(
+  disbursement: DisbursementRow,
+  reference: string,
+  providerResponse?: unknown,
+): Promise<void> {
+  const completedAt = new Date()
+  await updateDisbursement(disbursement.id, {
+    status: 'completed',
+    payoutReference: reference,
+    ...(providerResponse === undefined ? {} : { providerResponse }),
+    completedAt,
+  })
+  void recordDisbursementBlockchainProof({ ...disbursement, completedAt })
+  void notifyAdminsOfCompletion(disbursement, true)
 }
 
 async function notifyAdminsOfCompletion(disbursement: DisbursementRow, success: boolean): Promise<void> {

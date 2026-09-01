@@ -52,6 +52,7 @@ export function AdminBeneficiaryFormPage() {
         description: existing.description,
         category: existing.category ?? undefined,
         location: existing.location ?? undefined,
+        mobileNumber: existing.mobileNumber ?? undefined,
         contactInfo: existing.contactInfo ?? undefined,
       })
     }
@@ -81,6 +82,7 @@ export function AdminBeneficiaryFormPage() {
           description: values.description,
           category: values.category,
           location: values.location,
+          mobileNumber: values.mobileNumber,
           contactInfo: values.contactInfo,
           imageUrl,
         })
@@ -131,6 +133,11 @@ export function AdminBeneficiaryFormPage() {
             <Input id="location" {...register('location')} />
           </FormField>
         </div>
+
+        <FormField id="mobileNumber" label="Mobile-money number" error={errors.mobileNumber?.message}>
+          <Input id="mobileNumber" inputMode="tel" placeholder="255712345678" {...register('mobileNumber')} />
+          <p className="mt-1 text-xs text-muted-foreground">Required before this beneficiary can receive a ClickPesa payout.</p>
+        </FormField>
 
         <FormField id="contactInfo" label="Contact info (optional, admin-only)" error={errors.contactInfo?.message}>
           <Textarea id="contactInfo" rows={2} {...register('contactInfo')} />
