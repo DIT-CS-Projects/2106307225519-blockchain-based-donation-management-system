@@ -171,10 +171,11 @@ export class ClickPesaClient {
   /** Send funds from the merchant's available ClickPesa payout balance. */
   async createMobileMoneyPayout(input: MobileMoneyPayoutInput): Promise<ClickPesaPayoutResult> {
     const token = await this.getToken()
+    const orderReference = toClickPesaOrderReference(input.orderReference)
     const body: Record<string, unknown> = {
       amount: String(input.amount),
       currency: input.currency,
-      orderReference: input.orderReference,
+      orderReference,
       phoneNumber: input.phoneNumber,
     }
     if (this.config.checksumKey) body.checksum = computeChecksum(body, this.config.checksumKey)
@@ -190,8 +191,9 @@ export class ClickPesaClient {
   /** Look up an existing payout without creating another one. */
   async getPayout(orderReference: string): Promise<ClickPesaPayoutResult | null> {
     const token = await this.getToken()
+    const clickPesaOrderReference = toClickPesaOrderReference(orderReference)
     const data = await this.request(
-      `${this.config.baseUrl}/third-parties/payouts/${encodeURIComponent(orderReference)}`,
+      `${this.config.baseUrl}/third-parties/payouts/${encodeURIComponent(clickPesaOrderReference)}`,
       { headers: { Authorization: bearer(token) } },
     )
     const record = Array.isArray(data) ? asRecord(data[0]) : asRecord(data)
@@ -243,6 +245,10 @@ export class ClickPesaClient {
 /** ClickPesa returns the token already prefixed on some endpoints; never double it. */
 function bearer(token: string): string {
   return token.startsWith('Bearer ') ? token : `Bearer ${token}`
+}
+
+function toClickPesaOrderReference(reference: string): string {
+  return reference.replace(/[^A-Za-z0-9]/g, '')
 }
 
 function safeJson(text: string): unknown {
