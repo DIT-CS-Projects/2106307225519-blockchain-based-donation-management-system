@@ -1,4 +1,4 @@
-import { and, countDistinct, desc, eq, gte, sql } from 'drizzle-orm'
+import { and, countDistinct, desc, eq, gte, isNull, ne, or, sql } from 'drizzle-orm'
 import { requireDb } from '../config/database'
 import {
   blockchainRecords,
@@ -107,6 +107,29 @@ export async function confirmBlockchainRecord(input: ConfirmBlockchainRecordInpu
 }
 
 /** A donation joined with the context needed for detail views and receipts. */
+/**
+ * Donations with no usable proof on the given network: never recorded, still
+ * pending, or confirmed against a different chain (a local-chain proof cannot
+ * be verified publicly, so it counts as missing).
+ */
+export async function findDonationsMissingProof(network: string): Promise<DonationRow[]> {
+  const client = requireDb()
+  const rows = await client
+    .select({ donation: donations })
+    .from(donations)
+    .leftJoin(blockchainRecords, eq(blockchainRecords.donationId, donations.id))
+    .where(
+      or(
+        isNull(blockchainRecords.id),
+        ne(blockchainRecords.status, 'confirmed'),
+        isNull(blockchainRecords.network),
+        ne(blockchainRecords.network, network),
+      ),
+    )
+    .orderBy(donations.id)
+  return rows.map((row) => row.donation)
+}
+
 export interface DonationDetailRow {
   id: number
   amount: number

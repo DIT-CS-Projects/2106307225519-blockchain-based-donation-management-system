@@ -3,6 +3,7 @@ import {
   findDonationById,
   findDonationByReceiptNumber,
   findDonationsByDonor,
+  findDonationsMissingProof,
   getAdminDonationStats,
   getDonorMonthlyTotals,
   getDonorSummary,
@@ -10,6 +11,7 @@ import {
 } from '../repositories/donation.repository'
 import {
   computeProofHash,
+  currentNetworkLabel,
   isBlockchainConfigured,
   reconcileProof,
   recordDonationProof,
@@ -84,6 +86,46 @@ export async function recordBlockchainProof(donation: DonationRow): Promise<void
   } catch (error) {
     logger.error(`Failed to record blockchain proof for donation ${donation.id}:`, error)
   }
+}
+
+export interface ProofRepairResult {
+  network: string
+  missing: number
+  recorded: number
+  stillMissing: number
+}
+
+/**
+ * Re-record every donation proof that is missing on the current chain. Covers
+ * donations that predate the contract, ones whose background write failed, and
+ * ones proved against a chain we no longer use. Recording is idempotent: a
+ * proof already on-chain reconciles rather than failing, so this is safe to run
+ * more than once. Sequential on purpose, so the wallet's nonces stay in order.
+ */
+export async function repairMissingProofs(): Promise<ProofRepairResult> {
+  if (!isBlockchainConfigured()) {
+    throw new ApiError(503, 'Blockchain is not configured on this server.')
+  }
+
+  const network = currentNetworkLabel()
+  const pending = await findDonationsMissingProof(network)
+
+  for (const donation of pending) {
+    // Swallows and logs its own failures, so one bad row cannot abort the run.
+    await recordBlockchainProof(donation)
+  }
+
+  const stillMissing = (await findDonationsMissingProof(network)).length
+  const result = {
+    network,
+    missing: pending.length,
+    recorded: pending.length - stillMissing,
+    stillMissing,
+  }
+  logger.info(
+    `Proof repair on ${network}: ${result.recorded}/${result.missing} recorded, ${stillMissing} still missing.`,
+  )
+  return result
 }
 
 export async function getHistory(donorId: number): Promise<DonationDto[]> {

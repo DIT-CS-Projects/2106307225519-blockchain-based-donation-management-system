@@ -20,6 +20,11 @@ const NETWORK_LABEL: Record<typeof env.BLOCKCHAIN_NETWORK, string> = {
   sepolia: 'Sepolia',
 }
 
+/** Human-readable name of the chain this instance records proofs on. */
+export function currentNetworkLabel(): string {
+  return NETWORK_LABEL[env.BLOCKCHAIN_NETWORK]
+}
+
 interface Client {
   provider: JsonRpcProvider
   wallet: Wallet

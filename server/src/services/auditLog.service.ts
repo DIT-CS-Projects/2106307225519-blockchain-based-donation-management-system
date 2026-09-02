@@ -26,6 +26,7 @@ export const AUDIT_ACTIONS = {
   userStatusChange: 'user.status_change',
   userPromote: 'user.promote',
   notificationBroadcast: 'notification.broadcast',
+  blockchainProofRepair: 'blockchain.proof_repair',
   loginSuccess: 'login.success',
   loginFailed: 'login.failed',
   blockchainVerify: 'blockchain.verify',

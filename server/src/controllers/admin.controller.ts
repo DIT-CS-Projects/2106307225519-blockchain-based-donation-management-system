@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import { z } from 'zod'
 import { getDashboard } from '../services/dashboard.service'
+import { repairMissingProofs } from '../services/donation.service'
 import * as adminUserService from '../services/adminUser.service'
 import * as fundraiserApplicationService from '../services/fundraiserApplication.service'
 import { listAuditLogs } from '../services/auditLog.service'
@@ -18,6 +19,27 @@ function requireAdminId(req: Request): number {
 export async function dashboard(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     res.json(await getDashboard())
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * Re-record donation proofs missing from the current chain (api/admin.md).
+ * Recording needs the contract owner's wallet, which only the server holds, so
+ * this repair has to run here rather than from an operator's machine.
+ */
+export async function repairProofs(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const adminId = requireAdminId(req)
+    const result = await repairMissingProofs()
+    void recordAudit({
+      userId: adminId,
+      action: AUDIT_ACTIONS.blockchainProofRepair,
+      entityType: 'blockchain',
+      details: { ...result },
+    })
+    res.json(result)
   } catch (error) {
     next(error)
   }

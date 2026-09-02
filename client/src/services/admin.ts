@@ -185,3 +185,16 @@ export async function broadcastNotification(input: {
 }): Promise<void> {
   await api.post('/admin/notifications', input)
 }
+
+export interface ProofRepairResult {
+  network: string
+  missing: number
+  recorded: number
+  stillMissing: number
+}
+
+/** Re-record donation proofs missing from the chain the server records on. */
+export async function repairBlockchainProofs(): Promise<ProofRepairResult> {
+  const { data } = await api.post<ProofRepairResult>('/admin/blockchain/repair-proofs')
+  return data
+}

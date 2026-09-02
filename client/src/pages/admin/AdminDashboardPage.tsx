@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProgressBar } from '@/components/ui/progress'
 import { StatCard } from '@/components/shared/StatCard'
+import { ProofRepairCard } from '@/components/admin/ProofRepairCard'
 import { VerificationBadge } from '@/components/donations/VerificationBadge'
 import { useFetch } from '@/hooks/useFetch'
 import { getDashboard } from '@/services/admin'
@@ -114,6 +115,8 @@ export function AdminDashboardPage() {
         <StatCard icon={Users} label="Registered users" value={String(stats.registeredUsers)} />
         <StatCard icon={BadgeCheck} label="Chain transactions" value={String(stats.blockchainTransactions)} />
       </section>
+
+      <ProofRepairCard />
 
       <section className="mt-8 grid gap-6 lg:grid-cols-2">
         <ChartPanel title="Donation trend" isEmpty={charts.donationTrend.length === 0}>

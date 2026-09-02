@@ -158,6 +158,29 @@ Managed at /api/blockchain (see api/blockchain.md).
 
 /api/blockchain/status and /api/blockchain/events are Administrator only.
 
+## Repair Proofs
+
+POST
+
+```http
+/api/admin/blockchain/repair-proofs
+```
+
+Administrator only. Records an on-chain proof for every donation missing one on the chain this server records to: donations that predate the contract, ones whose background write failed, and ones proved against a chain no longer in use.
+
+Recording is `onlyOwner` on the contract, and only the server holds that wallet, so the repair runs server-side rather than from an operator's machine.
+
+Idempotent. A proof already on-chain reconciles instead of failing, and donations are processed in sequence so the wallet's nonces stay ordered.
+
+Returns
+
+* Network
+* Missing
+* Recorded
+* Still Missing
+
+Audited as `blockchain.proof_repair`.
+
 ---
 
 # System Health

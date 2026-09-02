@@ -8,6 +8,7 @@ import {
   listFundraisers,
   listUsers,
   rejectFundraiserApplication,
+  repairProofs,
   updateUserStatus,
 } from '../controllers/admin.controller'
 import { requireAuth, requireRole } from '../middleware/auth'
@@ -29,5 +30,8 @@ router.post('/fundraisers/:id/reject', rejectFundraiserApplication)
 
 router.get('/audit', audit)
 router.post('/notifications', broadcastNotification)
+
+// Re-record donation proofs missing from the current chain.
+router.post('/blockchain/repair-proofs', repairProofs)
 
 export default router
