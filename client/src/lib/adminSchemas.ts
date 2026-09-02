@@ -24,13 +24,29 @@ export const campaignFormSchema = z
 
 export type CampaignFormValues = z.infer<typeof campaignFormSchema>
 
+/** Payout destination. Mirrors the API rule in server/src/validation/beneficiary.ts. */
+export const mobileNumberSchema = z
+  .string()
+  .trim()
+  .regex(/^(?:\+?255|0)\d{9}$/, 'Enter a valid Tanzanian mobile number')
+
+/** An empty field means "no payout number yet", not an invalid one. */
+const optionalMobileNumber = z
+  .string()
+  .trim()
+  .refine(
+    (value) => value === '' || mobileNumberSchema.safeParse(value).success,
+    'Enter a valid Tanzanian mobile number',
+  )
+  .optional()
+
 export const beneficiaryFormSchema = z.object({
   campaignId: positiveIntString,
   name: z.string().trim().min(1, 'Name is required').max(150),
   description: z.string().trim().min(1, 'Description is required'),
   category: z.string().trim().max(80).optional(),
   location: z.string().trim().max(150).optional(),
-  mobileNumber: z.string().trim().regex(/^(?:\+?255|0)\d{9}$/, 'Enter a valid Tanzanian mobile number').optional(),
+  mobileNumber: optionalMobileNumber,
   contactInfo: z.string().trim().max(500).optional(),
 })
 

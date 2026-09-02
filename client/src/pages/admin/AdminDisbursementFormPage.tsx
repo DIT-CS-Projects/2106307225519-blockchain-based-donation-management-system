@@ -12,7 +12,7 @@ import { FormField } from '@/components/shared/FormField'
 import { useFetch } from '@/hooks/useFetch'
 import { toApiError } from '@/services/api'
 import { getCampaignsAdmin } from '@/services/adminCampaigns'
-import { getBeneficiaries } from '@/services/beneficiaries'
+import { getBeneficiariesAdmin } from '@/services/beneficiaries'
 import { getAvailableBalance, initiateDisbursement } from '@/services/disbursements'
 import { DUAL_APPROVAL_THRESHOLD_TZS } from '@/constants/config'
 import { ROUTES } from '@/constants/routes'
@@ -30,8 +30,13 @@ export function AdminDisbursementFormPage() {
     [campaignId],
   )
   const { data: balance } = useFetch(balanceFetcher)
+  // The admin list carries the payout number, so a beneficiary that cannot be
+  // paid is visible here rather than only at submit time.
   const beneficiaryFetcher = useCallback(
-    () => (campaignId ? getBeneficiaries(campaignId) : Promise.resolve([])),
+    () =>
+      campaignId
+        ? getBeneficiariesAdmin({ campaignId, verified: true, limit: 50 }).then((r) => r.items)
+        : Promise.resolve([]),
     [campaignId],
   )
   const { data: beneficiaries } = useFetch(beneficiaryFetcher)
@@ -103,14 +108,23 @@ export function AdminDisbursementFormPage() {
           </div>
         )}
 
-        <FormField id="beneficiaryId" label="Verified beneficiary" error={errors.beneficiaryId?.message}>
+        <FormField
+          id="beneficiaryId"
+          label="Verified beneficiary"
+          hint={
+            beneficiaries?.some((b) => !b.mobileNumber)
+              ? 'A beneficiary without a mobile-money number cannot be paid. Add one on the beneficiary record first.'
+              : undefined
+          }
+          error={errors.beneficiaryId?.message}
+        >
           <Select id="beneficiaryId" disabled={!campaignId} {...register('beneficiaryId')}>
             <option value="">
               {campaignId ? 'Select a beneficiary' : 'Choose a campaign first'}
             </option>
             {beneficiaries?.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
+              <option key={b.id} value={b.id} disabled={!b.mobileNumber}>
+                {b.mobileNumber ? b.name : `${b.name} (no payout number)`}
               </option>
             ))}
           </Select>

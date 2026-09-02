@@ -3,13 +3,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
-import { ArrowLeft, CheckCircle2, Clock } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
 import { FormField } from '@/components/shared/FormField'
+import { CampaignBeneficiaries } from '@/components/fundraiser/CampaignBeneficiaries'
 import { LoadingScreen } from '@/components/shared/LoadingScreen'
 import { StatusBadge, campaignStatusTone } from '@/components/shared/StatusBadge'
 import { GradientHeader } from '@/components/shared/motion'
@@ -20,7 +19,7 @@ import {
   submitCampaign,
   type AdminCampaign,
 } from '@/services/adminCampaigns'
-import { createBeneficiary, getManagedBeneficiaries, type AdminBeneficiary } from '@/services/beneficiaries'
+import { getManagedBeneficiaries, type AdminBeneficiary } from '@/services/beneficiaries'
 import {
   getAvailableBalance,
   getDisbursements,
@@ -29,12 +28,7 @@ import {
 } from '@/services/disbursements'
 import { ROUTES, fundraiserCampaignEditPath } from '@/constants/routes'
 import { formatTZS, formatDate } from '@/utils/format'
-import {
-  beneficiaryFormSchema,
-  disbursementFormSchema,
-  type BeneficiaryFormValues,
-  type DisbursementFormValues,
-} from '@/lib/adminSchemas'
+import { disbursementFormSchema, type DisbursementFormValues } from '@/lib/adminSchemas'
 
 export function FundraiserCampaignManagePage() {
   const { id } = useParams()
@@ -69,7 +63,7 @@ export function FundraiserCampaignManagePage() {
 
       <CampaignHeader campaign={campaign} onChanged={retry} />
 
-      <BeneficiariesSection campaignId={campaignId} />
+      <CampaignBeneficiaries campaignId={campaignId} />
 
       {campaign.status === 'active' && <PayoutsSection campaignId={campaignId} />}
     </section>
@@ -123,137 +117,6 @@ function CampaignHeader({ campaign, onChanged }: { campaign: AdminCampaign; onCh
         )}
       </div>
     </GradientHeader>
-  )
-}
-
-function BeneficiariesSection({ campaignId }: { campaignId: number }) {
-  const [adding, setAdding] = useState(false)
-  const { data, loading, retry } = useFetch(
-    useCallback(() => getManagedBeneficiaries(campaignId), [campaignId]),
-  )
-
-  return (
-    <div className="mt-8">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-semibold">Beneficiaries</h2>
-        <Button variant="secondary" onClick={() => setAdding((v) => !v)}>
-          {adding ? 'Close' : 'Add beneficiary'}
-        </Button>
-      </div>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Add the people or groups your campaign supports. An administrator verifies each one before it
-        can receive a payout.
-      </p>
-
-      {adding && (
-        <AddBeneficiaryForm
-          campaignId={campaignId}
-          onAdded={() => {
-            setAdding(false)
-            retry()
-          }}
-        />
-      )}
-
-      {loading && <Skeleton className="mt-4 h-24 w-full" />}
-      {!loading && data && (
-        <ul className="mt-4 grid gap-3">
-          {data.items.length === 0 && (
-            <li className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-              No beneficiaries yet.
-            </li>
-          )}
-          {data.items.map((b) => (
-            <li
-              key={b.id}
-              className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card p-4"
-            >
-              <div>
-                <p className="font-medium">{b.name}</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">{b.description}</p>
-              </div>
-              {b.verified ? (
-                <span className="inline-flex shrink-0 items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 className="size-4" aria-hidden="true" /> Verified
-                </span>
-              ) : (
-                <span className="inline-flex shrink-0 items-center gap-1 text-sm text-amber-600 dark:text-amber-400">
-                  <Clock className="size-4" aria-hidden="true" /> Awaiting verification
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
-function AddBeneficiaryForm({
-  campaignId,
-  onAdded,
-}: {
-  campaignId: number
-  onAdded: () => void
-}) {
-  const [formError, setFormError] = useState<string | null>(null)
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<BeneficiaryFormValues>({
-    resolver: zodResolver(beneficiaryFormSchema),
-    defaultValues: { campaignId: String(campaignId) },
-  })
-
-  const onSubmit = async (values: BeneficiaryFormValues) => {
-    setFormError(null)
-    try {
-      await createBeneficiary({
-        campaignId,
-        name: values.name,
-        description: values.description,
-        category: values.category || undefined,
-        location: values.location || undefined,
-        contactInfo: values.contactInfo || undefined,
-      })
-      toast.success('Beneficiary added')
-      onAdded()
-    } catch (err) {
-      setFormError(toApiError(err).message)
-    }
-  }
-
-  return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="mt-4 grid gap-4 rounded-lg border border-border bg-muted/30 p-5"
-    >
-      <FormField id="name" label="Name" error={errors.name?.message}>
-        <Input id="name" {...register('name')} />
-      </FormField>
-      <FormField id="description" label="Description" error={errors.description?.message}>
-        <Textarea id="description" rows={3} {...register('description')} />
-      </FormField>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FormField id="location" label="Location (optional)" error={errors.location?.message}>
-          <Input id="location" {...register('location')} />
-        </FormField>
-        <FormField id="contactInfo" label="Contact (optional, private)" error={errors.contactInfo?.message}>
-          <Input id="contactInfo" {...register('contactInfo')} />
-        </FormField>
-      </div>
-      {formError && (
-        <p role="alert" className="text-sm text-destructive">
-          {formError}
-        </p>
-      )}
-      <div>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Adding…' : 'Add beneficiary'}
-        </Button>
-      </div>
-    </form>
   )
 }
 
@@ -398,12 +261,21 @@ function PayoutForm({
       onSubmit={handleSubmit(onSubmit)}
       className="mt-5 grid gap-4 rounded-lg border border-border bg-card p-5"
     >
-      <FormField id="beneficiaryId" label="Verified beneficiary" error={errors.beneficiaryId?.message}>
+      <FormField
+        id="beneficiaryId"
+        label="Verified beneficiary"
+        hint={
+          verified.some((b) => !b.mobileNumber)
+            ? 'A beneficiary without a mobile-money number cannot be paid. Add one above.'
+            : undefined
+        }
+        error={errors.beneficiaryId?.message}
+      >
         <Select id="beneficiaryId" {...register('beneficiaryId')}>
           <option value="">Select a beneficiary</option>
           {verified.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
+            <option key={b.id} value={b.id} disabled={!b.mobileNumber}>
+              {b.mobileNumber ? b.name : `${b.name} (no payout number)`}
             </option>
           ))}
         </Select>

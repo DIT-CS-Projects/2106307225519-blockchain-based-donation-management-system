@@ -134,9 +134,19 @@ export function AdminBeneficiaryFormPage() {
           </FormField>
         </div>
 
-        <FormField id="mobileNumber" label="Mobile-money number" error={errors.mobileNumber?.message}>
-          <Input id="mobileNumber" inputMode="tel" placeholder="255712345678" {...register('mobileNumber')} />
-          <p className="mt-1 text-xs text-muted-foreground">Required before this beneficiary can receive a ClickPesa payout.</p>
+        <FormField
+          id="mobileNumber"
+          label="Mobile-money number"
+          hint="Number that receives the payout, for example 0712345678 or 255712345678. Required before this beneficiary can be paid; leave blank to remove it."
+          error={errors.mobileNumber?.message}
+        >
+          <Input
+            id="mobileNumber"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="0712345678"
+            {...register('mobileNumber')}
+          />
         </FormField>
 
         <FormField id="contactInfo" label="Contact info (optional, admin-only)" error={errors.contactInfo?.message}>

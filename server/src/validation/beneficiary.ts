@@ -1,12 +1,29 @@
 import { z } from 'zod'
 
-// Tanzania mobile number, stored normalized as 255XXXXXXXXX. Accept the
-// common local and international entry forms at the API boundary.
+const MOBILE_NUMBER_PATTERN = /^(?:\+?255|0)\d{9}$/
+
+/**
+ * Tanzanian mobile number, stored normalized as 255XXXXXXXXX. Accepts the
+ * common local and international entry forms at the API boundary.
+ *
+ * A blank string is treated as "no payout number" rather than as an invalid
+ * one, so a form that always posts the field can leave it empty on create and
+ * clear it on update. An omitted field leaves the stored number untouched.
+ */
 const mobileNumberSchema = z
   .string()
   .trim()
-  .regex(/^(?:\+?255|0)\d{9}$/, 'Enter a valid Tanzanian mobile number')
-  .transform((value) => (value.startsWith('0') ? `255${value.slice(1)}` : value.replace(/^\+/, '')))
+  .refine(
+    (value) => value === '' || MOBILE_NUMBER_PATTERN.test(value),
+    'Enter a valid Tanzanian mobile number',
+  )
+  .nullable()
+  .optional()
+  .transform((value) => {
+    if (value === undefined) return undefined
+    if (value === null || value === '') return null
+    return value.startsWith('0') ? `255${value.slice(1)}` : value.replace(/^\+/, '')
+  })
 
 export const createBeneficiarySchema = z.object({
   campaignId: z.coerce.number().int().positive(),
@@ -14,7 +31,7 @@ export const createBeneficiarySchema = z.object({
   description: z.string().trim().min(1, 'Description is required'),
   category: z.string().trim().max(80).optional(),
   location: z.string().trim().max(150).optional(),
-  mobileNumber: mobileNumberSchema.optional(),
+  mobileNumber: mobileNumberSchema,
   contactInfo: z.string().trim().max(500).optional(),
   imageUrl: z.string().trim().url().max(2000).nullable().optional(),
 })
@@ -25,7 +42,7 @@ export const updateBeneficiarySchema = z
     description: z.string().trim().min(1).optional(),
     category: z.string().trim().max(80).optional(),
     location: z.string().trim().max(150).optional(),
-    mobileNumber: mobileNumberSchema.optional(),
+    mobileNumber: mobileNumberSchema,
     contactInfo: z.string().trim().max(500).optional(),
     imageUrl: z.string().trim().url().max(2000).nullable().optional(),
   })

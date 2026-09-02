@@ -87,6 +87,7 @@ export function AdminBeneficiariesPage() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Location</TableHead>
+                  <TableHead>Payout number</TableHead>
                   <TableHead>Verified</TableHead>
                   <TableHead>Added</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -97,6 +98,13 @@ export function AdminBeneficiariesPage() {
                   <TableRow key={b.id}>
                     <TableCell className="font-medium">{b.name}</TableCell>
                     <TableCell className="text-muted-foreground">{b.location ?? '—'}</TableCell>
+                    <TableCell>
+                      {b.mobileNumber ? (
+                        <span className="text-muted-foreground">{b.mobileNumber}</span>
+                      ) : (
+                        <span className="text-amber-600 dark:text-amber-400">Not set</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <span
                         className={

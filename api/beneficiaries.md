@@ -48,6 +48,7 @@ Request
 * Description
 * Category
 * Location
+* Mobile Number
 * Contact Information
 * Image
 * Campaign ID
@@ -63,6 +64,8 @@ PUT
 ```
 
 Campaign owner or administrator. Updates beneficiary information.
+
+Sending a blank mobile number clears the stored payout destination. Omitting the field leaves it unchanged.
 
 ---
 
@@ -96,6 +99,14 @@ Campaign owner or administrator. Soft delete.
 * Valid contact details
 * Duplicate prevention
 * Verification before campaign assignment
+
+## Mobile Number
+
+The payout destination for disbursements. Optional on create, since a beneficiary can be recorded before the number is known, but a disbursement cannot be initiated or approved without one.
+
+Accepted entry forms: `0712345678`, `255712345678`, `+255712345678`. Stored normalized as `255XXXXXXXXX`. A blank value means "no payout number" rather than an invalid one.
+
+The number is private. It appears only in the administrator and campaign-owner responses, never in the public beneficiary shape.
 
 ---
 

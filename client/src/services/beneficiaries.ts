@@ -83,7 +83,8 @@ export interface BeneficiaryFormInput {
   description: string
   category?: string
   location?: string
-  mobileNumber?: string
+  // Blank or null clears the stored payout number (api/beneficiaries.md).
+  mobileNumber?: string | null
   contactInfo?: string
   imageUrl?: string | null
 }
