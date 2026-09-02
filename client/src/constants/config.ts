@@ -6,7 +6,10 @@ export const APP_TAGLINE = 'Transparent giving, verified forever.'
 export const APP_DESCRIPTION =
   'Donate to verified NGO campaigns with familiar Tanzanian payment methods. Every donation is recorded immutably on the blockchain.'
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
+// An unset VITE_API_BASE_URL and a blank one both mean "same origin", which is
+// what local dev wants: '/api' is what the Vite proxy forwards to the API. Note
+// `??` would not do, since a blank .env line yields '' rather than undefined.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 export const CURRENCY = 'TZS'
 
