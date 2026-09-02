@@ -81,6 +81,7 @@ export interface MnoCheckoutResult {
 export class AzampayClient {
   private token: string | null = null
   private tokenExpiryMs = 0
+  private tokenRequest: Promise<string> | null = null
 
   constructor(private readonly config: AzampayConfig) {}
 
@@ -118,7 +119,9 @@ export class AzampayClient {
     if (this.token && Date.now() < this.tokenExpiryMs - TOKEN_SKEW_MS) {
       return this.token
     }
-    const data = await this.request(
+    if (this.tokenRequest) return this.tokenRequest
+
+    this.tokenRequest = this.request(
       `${this.config.authBaseUrl}/AppRegistration/GenerateToken`,
       {
         method: 'POST',
@@ -131,14 +134,20 @@ export class AzampayClient {
       },
       AUTH_TIMEOUT_MS,
     )
-    const token = readNestedString(data, 'data', 'accessToken')
-    if (!token) {
-      throw ApiError.badGateway('The payment gateway did not return an access token.')
-    }
-    const expiry = Date.parse(readNestedString(data, 'data', 'expire') ?? '')
-    this.token = token
-    this.tokenExpiryMs = Number.isNaN(expiry) ? Date.now() + DEFAULT_TOKEN_TTL_MS : expiry
-    return token
+      .then((data) => {
+        const token = readNestedString(data, 'data', 'accessToken')
+        if (!token) {
+          throw ApiError.badGateway('The payment gateway did not return an access token.')
+        }
+        const expiry = Date.parse(readNestedString(data, 'data', 'expire') ?? '')
+        this.token = token
+        this.tokenExpiryMs = Number.isNaN(expiry) ? Date.now() + DEFAULT_TOKEN_TTL_MS : expiry
+        return token
+      })
+      .finally(() => {
+        this.tokenRequest = null
+      })
+    return this.tokenRequest
   }
 
   private async request(url: string, init: RequestInit, timeoutMs: number): Promise<unknown> {

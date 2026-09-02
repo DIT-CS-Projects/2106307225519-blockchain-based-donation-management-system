@@ -36,6 +36,21 @@ export interface CreateSessionResult {
   expiresAt: string
 }
 
+// A status page is refreshed every 30 seconds, but a gateway status lookup is
+// an externally billed/rate-limited operation. Webhooks remain the primary
+// completion path; this merely recovers a missed webhook without allowing many
+// browser tabs (or retries) to stampede the provider for the same payment.
+const STATUS_RECOVERY_INTERVAL_MS = 90_000
+const nextStatusRecoveryAt = new Map<string, number>()
+
+function canRecoverPaymentStatus(reference: string): boolean {
+  const now = Date.now()
+  const nextAttempt = nextStatusRecoveryAt.get(reference) ?? 0
+  if (nextAttempt > now) return false
+  nextStatusRecoveryAt.set(reference, now + STATUS_RECOVERY_INTERVAL_MS)
+  return true
+}
+
 /**
  * Open a checkout session for a donor. Validates the campaign is donatable,
  * generates a unique reference and capability token, asks the provider for a
@@ -263,7 +278,7 @@ export async function getPaymentStatus(
   // Webhooks are the primary completion path. If one is delayed, query the
   // authenticated ClickPesa status endpoint while the donor is on the waiting
   // screen, so a confirmed real payment still reaches the receipt and chain.
-  if (view.status === 'pending') {
+  if (view.status === 'pending' && canRecoverPaymentStatus(reference)) {
     const transaction = await findTransactionByReference(reference)
     const provider = getPaymentProvider()
     if (transaction && provider.getTransactionStatus) {
@@ -280,6 +295,9 @@ export async function getPaymentStatus(
   const current = await findTransactionStatusView(reference)
   if (!current || current.donorId !== donorId) {
     throw ApiError.notFound('Payment not found')
+  }
+  if (current.status !== 'pending') {
+    nextStatusRecoveryAt.delete(reference)
   }
   return {
     reference: current.reference,

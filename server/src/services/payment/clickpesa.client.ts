@@ -114,6 +114,7 @@ export function computeChecksum(payload: Record<string, unknown>, key: string): 
 export class ClickPesaClient {
   private token: string | null = null
   private tokenExpiryMs = 0
+  private tokenRequest: Promise<string> | null = null
 
   constructor(private readonly config: ClickPesaConfig) {}
 
@@ -204,20 +205,30 @@ export class ClickPesaClient {
   private async getToken(): Promise<string> {
     if (this.token && Date.now() < this.tokenExpiryMs) return this.token
 
-    const data = await this.request(`${this.config.baseUrl}/third-parties/generate-token`, {
+    // Several donations can arrive just as a token expires. Share one token
+    // request rather than spending one provider API call per checkout.
+    if (this.tokenRequest) return this.tokenRequest
+
+    this.tokenRequest = this.request(`${this.config.baseUrl}/third-parties/generate-token`, {
       method: 'POST',
       headers: {
         'client-id': this.config.clientId,
         'api-key': this.config.apiKey,
       },
     })
-    const token = readString(asRecord(data) ?? {}, 'token')
-    if (!token) {
-      throw ApiError.badGateway('The payment gateway did not return an access token.')
-    }
-    this.token = token
-    this.tokenExpiryMs = Date.now() + TOKEN_TTL_MS
-    return token
+      .then((data) => {
+        const token = readString(asRecord(data) ?? {}, 'token')
+        if (!token) {
+          throw ApiError.badGateway('The payment gateway did not return an access token.')
+        }
+        this.token = token
+        this.tokenExpiryMs = Date.now() + TOKEN_TTL_MS
+        return token
+      })
+      .finally(() => {
+        this.tokenRequest = null
+      })
+    return this.tokenRequest
   }
 
   private async request(url: string, init: RequestInit): Promise<unknown> {

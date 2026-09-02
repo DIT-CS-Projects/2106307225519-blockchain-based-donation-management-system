@@ -14,6 +14,16 @@ import { errorHandler } from './middleware/errorHandler'
 export function createApp(): Express {
   const app = express()
 
+  // Render terminates TLS at its reverse proxy. Without this, every request
+  // appears to come from that proxy and the IP-based limiters treat the whole
+  // public site as one user. A handful of payment-status polls could then
+  // throttle unrelated campaign browsing and logins with 429 responses.
+  // Keep this production-only so a locally supplied X-Forwarded-For header
+  // cannot affect development rate-limit keys.
+  if (env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1)
+  }
+
   // Helmet's default CORP would block the client (a different origin) from
   // loading uploaded images; cross-origin reads are the whole point here.
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
