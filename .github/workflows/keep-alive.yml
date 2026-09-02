@@ -1,0 +1,22 @@
+name: Keep API warm
+
+# Render's free plan spins the API down after 15 minutes of no traffic, and
+# the next request pays a 30-60s cold start. That looked like "can't fetch
+# campaigns" / "can't log in" from the outside. Pinging the health endpoint
+# more often than the spin-down window keeps it warm at no cost.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 https://changia-api.onrender.com/api/health)
+          echo "status: $status"
+          if [ "$status" != "200" ]; then
+            echo "::warning::Health check returned $status"
+          fi
