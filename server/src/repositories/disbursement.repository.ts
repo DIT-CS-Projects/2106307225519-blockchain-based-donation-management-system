@@ -101,6 +101,7 @@ export interface DisbursementListRow {
   initiatedByName: string
   createdAt: Date
   completedAt: Date | null
+  payoutReference: string | null
 }
 
 const listColumns = {
@@ -115,6 +116,7 @@ const listColumns = {
   initiatedByName: users.fullName,
   createdAt: disbursements.createdAt,
   completedAt: disbursements.completedAt,
+  payoutReference: disbursements.payoutReference,
 } as const
 
 export async function findDisbursements(
@@ -177,7 +179,6 @@ export async function findApprovalsForDisbursement(disbursementId: number): Prom
 export interface DisbursementDetailRow extends DisbursementListRow {
   purpose: string
   rejectionReason: string | null
-  payoutReference: string | null
   proofStatus: (typeof blockchainRecords.status.enumValues)[number] | null
   txHash: string | null
   network: string | null
@@ -190,7 +191,6 @@ export async function findDisbursementDetail(id: number): Promise<DisbursementDe
       ...listColumns,
       purpose: disbursements.purpose,
       rejectionReason: disbursements.rejectionReason,
-      payoutReference: disbursements.payoutReference,
       proofStatus: blockchainRecords.status,
       txHash: blockchainRecords.txHash,
       network: blockchainRecords.network,

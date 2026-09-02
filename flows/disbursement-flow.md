@@ -4,7 +4,7 @@
 
 Defines how funds move from a campaign to a verified beneficiary.
 
-Funds are fiat (TZS) and are paid out through AzamPay.
+Funds are fiat (TZS) and are paid out through ClickPesa's Mobile Money Payout API.
 
 Blockchain records an immutable proof of every completed disbursement.
 
@@ -70,11 +70,13 @@ ClickPesa Mobile Money Payout API
 
 ↓
 
-Payout Callback
+ClickPesa Accepts Immediately Or Processes Asynchronously
 
 ↓
 
-Backend Verifies
+Backend Polls Payout Status (short-lived automatic poll after
+approval, then reconciled again whenever an admin opens the list or
+detail view, since ClickPesa sends no payout webhook)
 
 ↓
 

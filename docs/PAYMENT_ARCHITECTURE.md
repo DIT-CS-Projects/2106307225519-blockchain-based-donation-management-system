@@ -51,9 +51,14 @@ verified beneficiary's private mobile-money number. The database ledger
 authorizes the amount; it does not itself hold or transfer funds.
 
 ClickPesa may initially return an accepted or processing status. The system
-stores the payout reference, queries the provider until `SUCCESS`, and only
-then completes the disbursement and creates its blockchain proof. A returned or
-reversed payout is marked failed, leaving the campaign amount available again.
+stores the payout reference and polls the provider a handful of times over the
+next couple of minutes; ClickPesa sends no payout webhook, so a payout that
+settles after that short window (or a poll lost to a server restart) is
+reconciled the next time an admin opens the disbursement list or detail view,
+which checks the live status of any row still `processing` before rendering
+it. Only once the provider reports `SUCCESS` does the disbursement complete
+and its blockchain proof get created. A returned or reversed payout is marked
+failed, leaving the campaign amount available again.
 
 ---
 

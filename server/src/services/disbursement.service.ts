@@ -2,8 +2,8 @@ import { findVerifiedBeneficiaryInCampaign } from '../repositories/beneficiary.r
 import {
   confirmDisbursementProof,
   findApprovalsForDisbursement,
-  findDisbursementDetail,
   findDisbursementById,
+  findDisbursementDetail,
   findDisbursements,
   getCumulativeSelfReleased,
   getTotalDisbursed,
@@ -110,7 +110,23 @@ export async function listDisbursements(
   // A fundraiser only ever sees payouts on the campaigns they own.
   const scoped: DisbursementListFilters =
     actor.role === 'fundraiser' ? { ...filters, campaignOwnerId: actor.id } : filters
-  const { rows, total } = await findDisbursements(scoped)
+  let { rows, total } = await findDisbursements(scoped)
+
+  // The automatic poll started at approval time only runs for a few minutes
+  // (see pollPayoutCompletion); a payout ClickPesa settles after that window,
+  // or across a server restart, would otherwise sit at 'processing' forever
+  // with the funds never marked spent. Reconcile any such rows whenever an
+  // admin actually looks at the list.
+  const stale = rows.filter((r) => r.status === 'processing' && r.payoutReference)
+  if (stale.length > 0) {
+    const reconciled = await Promise.all(
+      stale.map((r) => reconcileIfProcessing(r.id, r.status, r.payoutReference)),
+    )
+    if (reconciled.some(Boolean)) {
+      ;({ rows, total } = await findDisbursements(scoped))
+    }
+  }
+
   return { items: rows.map(toDto), total, page: filters.page, limit: filters.limit }
 }
 
@@ -147,11 +163,14 @@ export async function getDisbursementDetail(
   actor: Actor,
   id: number,
 ): Promise<DisbursementDetailDto> {
-  const row = await findDisbursementDetail(id)
+  let row = await findDisbursementDetail(id)
   if (!row) throw ApiError.notFound('Disbursement not found')
   // A fundraiser may only view payouts on campaigns they own.
   if (actor.role !== 'admin') {
     await assertCampaignManageable(actor, row.campaignId)
+  }
+  if (await reconcileIfProcessing(row.id, row.status, row.payoutReference)) {
+    row = (await findDisbursementDetail(id))!
   }
   const approvals = await findApprovalsForDisbursement(id)
   return toDetailDto(row, approvals)
@@ -329,7 +348,12 @@ async function processPayout(disbursement: DisbursementRow, beneficiaryMobileNum
 const PAYOUT_STATUS_DELAYS_MS = [5_000, 10_000, 20_000, 40_000, 60_000]
 const FAILED_PAYOUT_STATUSES = new Set(['FAILED', 'REVERSED', 'REFUNDED'])
 
-/** Reconcile an accepted ClickPesa payout without ever re-submitting it. */
+/**
+ * Reconcile an accepted ClickPesa payout without ever re-submitting it. This
+ * in-memory loop only covers the ~2 minutes right after approval; it does not
+ * survive a server restart or deploy. `reconcileIfProcessing` is the durable
+ * backstop that catches anything this loop misses.
+ */
 async function pollPayoutCompletion(disbursement: DisbursementRow, reference: string): Promise<void> {
   const provider = getDisbursementProvider()
   if (!provider.getPayoutStatus) return
@@ -353,6 +377,45 @@ async function pollPayoutCompletion(disbursement: DisbursementRow, reference: st
       logger.warn(`Could not reconcile payout ${reference}: ${(error as Error).message}`)
     }
   }
+}
+
+/**
+ * Durable reconciliation for a disbursement stuck in 'processing': queried
+ * live whenever an admin loads the list or detail view, so a payout that
+ * ClickPesa settles after `pollPayoutCompletion` gives up (or across a
+ * server restart, which drops that in-memory loop entirely) still gets
+ * marked completed and its blockchain proof recorded, instead of leaving
+ * the campaign's available balance never debited for money that was
+ * actually paid out. Returns true when the row's status changed.
+ */
+async function reconcileIfProcessing(
+  id: number,
+  status: DisbursementRow['status'],
+  payoutReference: string | null,
+): Promise<boolean> {
+  if (status !== 'processing' || !payoutReference) return false
+  const provider = getDisbursementProvider()
+  if (!provider.getPayoutStatus) return false
+
+  try {
+    const providerStatus = await provider.getPayoutStatus(payoutReference)
+    if (providerStatus === 'SUCCESS') {
+      const row = await findDisbursementById(id)
+      if (!row) return false
+      await completePayout(row, payoutReference)
+      return true
+    }
+    if (providerStatus && FAILED_PAYOUT_STATUSES.has(providerStatus)) {
+      const row = await findDisbursementById(id)
+      await updateDisbursement(id, { status: 'failed' })
+      if (row) void notifyAdminsOfCompletion(row, false)
+      return true
+    }
+  } catch (error) {
+    // Transient lookup failure: leave it as processing and try again next view.
+    logger.warn(`Could not reconcile payout ${payoutReference}: ${(error as Error).message}`)
+  }
+  return false
 }
 
 async function completePayout(
