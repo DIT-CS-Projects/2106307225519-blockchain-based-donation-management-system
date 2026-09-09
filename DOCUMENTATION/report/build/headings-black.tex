@@ -1,0 +1,72 @@
+% ---------------------------------------------------------------------------
+% Changia final year report, LaTeX header additions.
+%
+% The department requires ALL headings in black. Pandoc's default LaTeX
+% template leaves section headings at the body colour, but hyperref colours
+% the table of contents, list of figures, list of tables and every internal
+% cross-reference link. Those entries are headings on the page, so they must
+% be forced black too.
+% ---------------------------------------------------------------------------
+
+% Every heading level, explicitly black.
+\usepackage{sectsty}
+\allsectionsfont{\color{black}}
+\chapterfont{\color{black}}
+\sectionfont{\color{black}}
+\subsectionfont{\color{black}}
+\subsubsectionfont{\color{black}}
+\paragraphfont{\color{black}}
+
+% NOTE: link colours are NOT set here. Pandoc loads hyperref after this file
+% is injected, so \hypersetup is undefined at this point. The colorlinks,
+% linkcolor, citecolor, urlcolor and toccolor variables in metadata.yaml
+% handle it instead, and Pandoc emits them in the right order.
+
+% Caption text black. Figure/table numbers are written as literal text at
+% the start of each caption in the Markdown source (same reason headings are
+% unnumbered and hand-numbered, D2: appendices are lettered A-J, not chapter-
+% numeric, so LaTeX's own \thechapter-based auto-numbering cannot span both).
+% labelformat=empty suppresses LaTeX's own "Table N:" / "Figure N:" prefix so
+% the literal text is not duplicated as "Table 8.3. Table B.1: ...".
+\usepackage{caption}
+\captionsetup{
+  labelformat=empty,
+  textfont={color=black},
+  skip=8pt
+}
+
+% The department asks for "Table of Contents". LaTeX's report class defaults
+% to "Contents", and Pandoc's toc-title only applies when Pandoc emits the
+% ToC, which it no longer does (see 00-preliminaries.md).
+\renewcommand{\contentsname}{Table of Contents}
+\renewcommand{\listfigurename}{List of Figures}
+\renewcommand{\listtablename}{List of Tables}
+
+% Number figures and tables per chapter: Figure 6.1, not Figure 23.
+\usepackage{chngcntr}
+\counterwithin{figure}{chapter}
+\counterwithin{table}{chapter}
+
+% Every heading is unnumbered (D2 puts section numbers in the heading text),
+% which means LaTeX emits \chapter* and the chapter counter never advances.
+% Left alone, every figure numbers as 0.1, 0.2, 0.3 and so on. That is the
+% exact defect the MINI 1 report shipped with.
+%
+% Each chapter file calls \startchapter{N} to set the counter itself and
+% reset the figure and table counters for that chapter.
+\newcommand{\startchapter}[1]{%
+  \setcounter{chapter}{#1}%
+  \setcounter{figure}{0}%
+  \setcounter{table}{0}%
+}
+
+% Preliminary pages take roman numerals, Chapter One restarts at arabic 1.
+% \frontmatter and \mainmatter are issued from the preliminaries file.
+
+% Keep figures near their reference rather than drifting to the end.
+\usepackage{float}
+\floatplacement{figure}{H}
+
+% Widow and orphan control, a long report looks careless without it.
+\widowpenalty=10000
+\clubpenalty=10000

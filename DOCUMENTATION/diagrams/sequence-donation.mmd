@@ -1,0 +1,46 @@
+%% Report 6.5.1 Sequence Diagram, donation and proof recording
+%% The central flow of the system. Deck slide 25.
+%% Source of truth: server/src/services/payment.service.ts handleCallback(),
+%% donation.service.ts recordBlockchainProof(), blockchain.service.ts
+sequenceDiagram
+    autonumber
+    actor Donor
+    participant Client as React Client
+    participant API as Express API
+    participant DB as PostgreSQL
+    participant Gateway as Payment Gateway
+    participant Chain as Sepolia
+
+    Donor->>Client: choose campaign, enter amount
+    Client->>API: POST /payments/session
+    API->>DB: insert payment_transaction (pending)
+    API->>Gateway: request checkout / STK push
+    Gateway-->>API: checkout token
+    API-->>Client: session reference
+    Client-->>Donor: waiting screen
+
+    Gateway->>Donor: mobile money prompt
+    Donor->>Gateway: authorise on handset
+
+    Gateway->>API: POST /payments/callback
+    API->>DB: find transaction by reference
+
+    alt already marked success
+        API-->>Gateway: 200, return existing donation
+        Note over API: idempotent, a repeated<br/>callback creates nothing
+    else pending, signature valid
+        API->>DB: mark transaction success
+        API->>DB: insert donation (receipt number)
+        API->>DB: award impact points
+        API-->>Gateway: 200 acknowledged
+        Note over API,Chain: proof write is not awaited,<br/>the donor is never blocked on the chain
+        API-)Chain: recordDonationProof(hash)
+        Chain--)API: transaction hash
+        API->>DB: update blockchain_record (confirmed)
+    end
+
+    Donor->>Client: open receipt
+    Client->>API: GET /donations/:id
+    API->>DB: read donation + proof
+    API-->>Client: receipt, transaction hash
+    Client-->>Donor: receipt with verifiable proof

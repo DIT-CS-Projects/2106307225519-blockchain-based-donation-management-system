@@ -1,0 +1,91 @@
+%% Report 6.5.1 Class Diagram, backend layering
+%% Shows the Controller to Service to Repository to Database rule from CLAUDE.md.
+%% Illustrative slice of the donation path, not all 15 controllers.
+%% Source of truth: server/src/controllers/, services/, repositories/
+classDiagram
+    direction TB
+
+    class DonationController {
+        +getHistory(req, res)
+        +getDonation(req, res)
+        +getReceipt(req, res)
+        +verify(req, res)
+    }
+
+    class PaymentController {
+        +createSession(req, res)
+        +handleCallback(req, res)
+        +getStatus(req, res)
+    }
+
+    class DonationService {
+        +getHistory(donorId) DonationDto[]
+        +getDonation(donorId, id) DonationDto
+        +recordBlockchainProof(donation) void
+        +getPublicVerification(receipt) Result
+    }
+
+    class PaymentService {
+        +createSession(input) Session
+        +handleCallback(payload, ctx) Result
+        +getPaymentStatus(ref) Status
+    }
+
+    class BlockchainService {
+        +computeProofHash(input) string
+        +recordDonationProof(input) Result
+        +recordDisbursementProof(input) Result
+        +reconcileProof(id) Result
+    }
+
+    class RewardService {
+        +awardForDonation(donation) void
+        +getOverview(userId) RewardsOverview
+    }
+
+    class PaymentProvider {
+        <<interface>>
+        +createCheckout(input) Checkout
+        +verifyCallback(payload, tx, ctx) Result
+    }
+
+    class AzamPayProvider {
+        +createCheckout(input) Checkout
+        +verifyCallback(payload, tx, ctx) Result
+    }
+
+    class MockProvider {
+        +createCheckout(input) Checkout
+        +verifyCallback(payload, tx, ctx) Result
+    }
+
+    class DonationRepository {
+        +insert(row) DonationRow
+        +findByDonor(donorId) Row[]
+        +findByReceipt(receipt) Row
+    }
+
+    class PaymentRepository {
+        +insertTransaction(row) Row
+        +findByReference(ref) Row
+        +markSuccess(id, donationId) void
+    }
+
+    class BlockchainRepository {
+        +upsertRecord(row) Row
+        +findByDonation(id) Row
+    }
+
+    DonationController --> DonationService
+    PaymentController --> PaymentService
+    PaymentService --> DonationService
+    PaymentService --> RewardService
+    PaymentService --> PaymentProvider
+    DonationService --> BlockchainService
+    PaymentProvider <|.. AzamPayProvider
+    PaymentProvider <|.. MockProvider
+    DonationService --> DonationRepository
+    PaymentService --> PaymentRepository
+    BlockchainService --> BlockchainRepository
+
+    note for PaymentProvider "Provider seam: adding a gateway never touches the service layer."

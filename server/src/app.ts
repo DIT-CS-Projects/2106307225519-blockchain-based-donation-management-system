@@ -13,6 +13,7 @@ import { errorHandler } from './middleware/errorHandler'
 /** Build and configure the Express application. */
 export function createApp(): Express {
   const app = express()
+  app.disable('etag')
 
   // Render terminates TLS at its reverse proxy. Without this, every request
   // appears to come from that proxy and the IP-based limiters treat the whole
@@ -39,7 +40,10 @@ export function createApp(): Express {
   // Uploaded campaign/beneficiary images (server/src/middleware/upload.ts).
   app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')))
 
-  app.use('/api', apiLimiter, routes)
+  app.use('/api', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store')
+    next()
+  }, apiLimiter, routes)
 
   app.use(notFound)
   app.use(errorHandler)

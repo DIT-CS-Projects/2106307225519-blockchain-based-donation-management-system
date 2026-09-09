@@ -1,0 +1,45 @@
+%% Report 6.5.1 Deployment Diagram
+%% Real hosts, real production topology. Deck slide 27.
+%% Live URLs and contract address: PRESENTATION_BLUEPRINT.md section 7
+flowchart TB
+    subgraph client_tier["Client Device"]
+        browser["Web Browser<br/>React 19 + Vite bundle"]
+    end
+
+    subgraph vercel["Vercel, edge CDN"]
+        static["Static frontend<br/>changia-hazel.vercel.app"]
+    end
+
+    subgraph render["Render, container host"]
+        api["Node.js + Express API<br/>changia-api.onrender.com"]
+    end
+
+    subgraph neon["Neon, managed Postgres"]
+        pg[("PostgreSQL<br/>14 tables, 11 migrations")]
+    end
+
+    subgraph ethereum["Ethereum Sepolia Testnet"]
+        contract["TransparencyRegistry.sol"]
+    end
+
+    subgraph external["Third Party Services"]
+        azam["AzamPay<br/>mobile money"]
+        smtp["SMTP<br/>email delivery"]
+    end
+
+    browser -->|HTTPS| static
+    browser -->|HTTPS, JSON, httpOnly cookie| api
+    api -->|TLS, connection pool| pg
+    api -->|JSON-RPC over HTTPS| contract
+    api -->|HTTPS| azam
+    azam -->|callback| api
+    api -->|SMTP| smtp
+
+    classDef tier fill:#f8fafc,stroke:#64748b,stroke-width:1.4px,color:#0f172a;
+    classDef node fill:#ccfbf1,stroke:#0f766e,stroke-width:1.8px,color:#134e4a;
+    classDef store fill:#ffffff,stroke:#14b8a6,stroke-width:1.6px,color:#0f172a;
+
+    class browser,static,api,contract,azam,smtp node;
+    class pg store;
+
+    linkStyle default stroke:#334155,stroke-width:1.4px;

@@ -3,6 +3,12 @@ node_modules/
 .pnp
 .pnp.js
 
+# Local tooling and generated audit artifacts
+.cache/
+.claude/
+tmp/
+client/.vercel/
+
 # Environment variables
 .env
 .env.local
@@ -12,6 +18,16 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+
+# ...except the report's build TOOLING (scripts, LaTeX header, reference.docx),
+# which the generic build/ rule above accidentally swallows too since it's a
+# source directory named "build", not build output.
+!DOCUMENTATION/report/build/
+!DOCUMENTATION/report/build/**
+
+# Office/editor scratch files and local staging copies
+DOCUMENTATION/report/out/~*
+DOCUMENTATION/report/out/*.STAGED.docx
 
 # Hardhat / blockchain
 artifacts/

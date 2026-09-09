@@ -1,0 +1,41 @@
+---
+config:
+  flowchart:
+    wrappingWidth: 520
+---
+%% Report 6.2 System Architecture, layered view.
+%% Distinct from deployment.mmd, which shows hosts rather than layers.
+%% Enforces the CLAUDE.md rule: Controllers to Services to Repositories to
+%% Database, never skipping a layer.
+%% -
+%% Drawn as stacked layer bars rather than subgraphs: Mermaid ignores
+%% `direction LR` inside a subgraph once cross-subgraph edges exist, which
+%% turned every layer into a tall single column.
+%% -
+%% Source of truth: docs/SYSTEM_ARCHITECTURE.md, BACKEND_ARCHITECTURE.md
+flowchart TB
+    presentation["PRESENTATION LAYER<br/>React 19 + Vite / donor, fundraiser and admin consoles<br/>shared component library / Axios service layer, no direct fetch"]
+
+    application["APPLICATION LAYER, Express API<br/>routes, 15 groups / middleware: auth, validation, rate limiting<br/>controllers, request and response only / services, all business logic"]
+
+    integration["INTEGRATION LAYER<br/>payment provider seam: AzamPay, mock / blockchain service, Ethers.js / email service"]
+
+    dataL["DATA LAYER<br/>repositories, the only layer touching the ORM<br/>Drizzle ORM, parameterised queries / PostgreSQL, 14 tables"]
+
+    externals["EXTERNAL SYSTEMS<br/>mobile money gateway / Ethereum Sepolia, TransparencyRegistry.sol"]
+
+    presentation -->|"HTTPS, JSON, httpOnly cookie"| application
+    application --> integration
+    application --> dataL
+    integration --> dataL
+    integration --> externals
+
+    classDef layer fill:#ccfbf1,stroke:#0f766e,stroke-width:2px,color:#0f172a;
+    classDef ext fill:#f1f5f9,stroke:#64748b,stroke-width:1.6px,color:#0f172a;
+    classDef store fill:#ffffff,stroke:#14b8a6,stroke-width:1.8px,color:#0f172a;
+
+    class presentation,application,integration layer;
+    class dataL store;
+    class externals ext;
+
+    linkStyle default stroke:#334155,stroke-width:1.6px;

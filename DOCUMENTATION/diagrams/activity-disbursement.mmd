@@ -1,0 +1,39 @@
+%% Report 6.5.1 Activity Diagram, disbursement dual approval
+%% Deck slide 26. Demonstrates separation of duties.
+%% Source of truth: docs/BUSINESS_RULES.md, server/src/services/disbursement/
+%% Left to right so the aspect ratio suits a 16:9 slide and a report page.
+%% Top-down layout produced a 1:2.3 column that fits neither.
+flowchart LR
+    start(["Administrator drafts disbursement"]) --> validate{"Campaign funds sufficient?"}
+
+    validate -->|No| shortfall["Block, show shortfall"]
+    shortfall --> done(["End"])
+
+    validate -->|Yes| threshold{"Amount above approval threshold?"}
+
+    threshold -->|"No, below threshold"| selfRelease["Self release<br/>self_released = true"]
+    threshold -->|"Yes"| approver1{"First administrator decision"}
+
+    approver1 -->|Reject| rejected["Status: rejected, record reason"]
+    approver1 -->|Approve| approver2{"Second administrator decision<br/>must be a different admin"}
+
+    approver2 -->|Reject| rejected
+    approver2 -->|Approve| payout["Execute fiat payout to beneficiary"]
+
+    selfRelease --> payout
+    rejected --> done
+
+    payout --> settle["Status: completed, store payout reference<br/>write proof hash to Sepolia<br/>append audit log, notify stakeholders"]
+    settle --> done
+
+    classDef terminal fill:#0f766e,stroke:#134e4a,stroke-width:2px,color:#ffffff;
+    classDef decision fill:#ccfbf1,stroke:#0f766e,stroke-width:1.8px,color:#0f172a;
+    classDef action fill:#f8fafc,stroke:#64748b,stroke-width:1.4px,color:#0f172a;
+    classDef bad fill:#fee2e2,stroke:#dc2626,stroke-width:1.4px,color:#7f1d1d;
+
+    class start,done terminal;
+    class validate,threshold,approver1,approver2 decision;
+    class selfRelease,payout,settle action;
+    class shortfall,rejected bad;
+
+    linkStyle default stroke:#334155,stroke-width:1.4px;

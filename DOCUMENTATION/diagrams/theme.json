@@ -1,0 +1,76 @@
+{
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Segoe UI, Inter, Helvetica, sans-serif",
+    "fontSize": "15px",
+
+    "background": "#ffffff",
+    "primaryColor": "#ccfbf1",
+    "primaryTextColor": "#0f172a",
+    "primaryBorderColor": "#0f766e",
+
+    "secondaryColor": "#e2e8f0",
+    "secondaryTextColor": "#0f172a",
+    "secondaryBorderColor": "#64748b",
+
+    "tertiaryColor": "#f8fafc",
+    "tertiaryTextColor": "#0f172a",
+    "tertiaryBorderColor": "#e2e8f0",
+
+    "lineColor": "#334155",
+    "textColor": "#0f172a",
+
+    "mainBkg": "#ccfbf1",
+    "nodeBorder": "#0f766e",
+    "nodeTextColor": "#0f172a",
+    "clusterBkg": "#f8fafc",
+    "clusterBorder": "#cbd5e1",
+    "titleColor": "#134e4a",
+    "edgeLabelBackground": "#ffffff",
+
+    "actorBkg": "#ccfbf1",
+    "actorBorder": "#0f766e",
+    "actorTextColor": "#0f172a",
+    "actorLineColor": "#64748b",
+    "signalColor": "#334155",
+    "signalTextColor": "#0f172a",
+    "labelBoxBkgColor": "#ccfbf1",
+    "labelBoxBorderColor": "#0f766e",
+    "labelTextColor": "#0f172a",
+    "loopTextColor": "#0f172a",
+    "noteBkgColor": "#fef3c7",
+    "noteBorderColor": "#d97706",
+    "noteTextColor": "#0f172a",
+    "activationBkgColor": "#14b8a6",
+    "activationBorderColor": "#0f766e",
+    "sequenceNumberColor": "#ffffff",
+
+    "attributeBackgroundColorOdd": "#ffffff",
+    "attributeBackgroundColorEven": "#f8fafc",
+
+    "classText": "#0f172a",
+
+    "labelColor": "#0f172a",
+    "altBackground": "#f8fafc"
+  },
+  "flowchart": {
+    "curve": "basis",
+    "htmlLabels": true,
+    "nodeSpacing": 55,
+    "rankSpacing": 60,
+    "padding": 12
+  },
+  "sequence": {
+    "diagramMarginX": 40,
+    "diagramMarginY": 16,
+    "actorMargin": 60,
+    "boxMargin": 12,
+    "mirrorActors": false,
+    "showSequenceNumbers": true
+  },
+  "er": {
+    "layoutDirection": "TB",
+    "entityPadding": 14,
+    "minEntityWidth": 120
+  }
+}

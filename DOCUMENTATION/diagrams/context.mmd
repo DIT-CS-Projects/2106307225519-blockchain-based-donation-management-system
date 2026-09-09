@@ -1,0 +1,38 @@
+%% Report 6.3.1 Context Diagram (DFD Level 0)
+%% Changia as a single process with its external entities.
+%% Human actors on the left, external systems on the right.
+%% Source of truth: docs/SYSTEM_ARCHITECTURE.md, flows/*.md
+flowchart LR
+    donor["Donor"]
+    fundraiser["Fundraiser"]
+    admin["Administrator"]
+
+    changia(("Changia<br/>Donation<br/>Management<br/>System"))
+
+    gateway["Payment Gateway<br/>AzamPay Mobile Money"]
+    chain["Ethereum Sepolia<br/>TransparencyRegistry"]
+    mail["Email Service"]
+
+    donor -->|"donation request"| changia
+    changia -->|"receipt, proof reference"| donor
+
+    fundraiser -->|"campaign application"| changia
+    changia -->|"review outcome"| fundraiser
+
+    admin -->|"approvals, payout records"| changia
+    changia -->|"dashboards, audit log"| admin
+
+    changia -->|"payment session"| gateway
+    gateway -->|"confirmation callback"| changia
+
+    changia -->|"proof hash"| chain
+    chain -->|"transaction hash"| changia
+
+    changia -->|"notification"| mail
+
+    classDef entity fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a;
+    classDef system fill:#ccfbf1,stroke:#0f766e,stroke-width:2.5px,color:#134e4a;
+    class donor,fundraiser,admin,gateway,chain,mail entity;
+    class changia system;
+
+    linkStyle default stroke:#334155,stroke-width:1.4px;

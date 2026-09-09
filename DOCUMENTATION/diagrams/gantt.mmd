@@ -1,0 +1,46 @@
+%% Appendix G: Project Gantt Chart, derived from repository commit history
+%% (git log), not re-estimated after the fact. Dates are the day each stage's
+%% "docs: mark Stage N complete" commit (or equivalent milestone commit) landed.
+gantt
+    title Changia (Blockchain-Based NGO Donation Management System) — Development Timeline
+    dateFormat YYYY-MM-DD
+    axisFormat %d %b
+    excludes weekends
+
+    section Foundation
+    Repository, docs, architecture decisions   :done, f1, 2026-07-12, 2026-07-14
+    Client/server/contracts scaffolding        :done, f2, 2026-07-14, 2026-07-17
+
+    section Stage 2 — Public Website
+    Landing, campaigns, About/Contact          :done, s2, 2026-07-17, 1d
+
+    section Stage 3 — Authentication
+    Register, login, JWT, RBAC, password reset :done, s3, 2026-07-18, 1d
+
+    section Stage 4 — Donations
+    Payment sessions, receipts, history        :done, s4, 2026-07-18, 1d
+
+    section Stage 5 — Blockchain
+    Proof recording, public verification       :done, s5, 2026-07-19, 1d
+
+    section Stage 6 — Administrator
+    Console, beneficiaries, disbursements      :done, s6, 2026-07-21, 1d
+
+    section Stage 7 — Community Fundraisers
+    Fundraiser role, campaign review workflow  :done, s7, 2026-07-24, 2026-07-25
+
+    section Stage 8 — Rewards & Go-Live
+    Impact Points, gradient UI polish          :done, s8a, 2026-07-25, 2026-07-28
+    Production deploy (Vercel/Render/Sepolia)  :done, s8b, 2026-07-28, 2026-07-29
+
+    section Real Payments
+    AzamPay, then ClickPesa mobile money       :done, pay, 2026-08-09, 2026-08-12
+
+    section Risk Review Module
+    Rule engine + Isolation Forest hybrid      :done, risk, 2026-08-11, 2026-08-31
+
+    section Reliability & Payouts
+    ClickPesa payout reliability fixes         :done, rel, 2026-08-31, 2026-09-01
+
+    section Final Documentation
+    MINI 2 deck and FYP report                 :active, doc, 2026-08-31, 2026-09-05

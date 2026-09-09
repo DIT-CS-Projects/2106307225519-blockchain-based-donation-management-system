@@ -1,0 +1,69 @@
+%% Report 6.3 Data Flow Diagram, Level 1
+%% Decomposes the single process from context.mmd into major sub-processes.
+%% Source of truth: server/src/routes/, server/src/services/
+%% LR keeps entities, processes and stores in readable bands. TB produced
+%% long sweeping edges across the whole figure.
+flowchart LR
+    donor(["Donor"])
+    fundraiser(["Fundraiser"])
+    admin(["Administrator"])
+    gateway(["Payment Gateway"])
+    chain(["Ethereum Sepolia"])
+
+    p1["1.0<br/>Authenticate<br/>and Authorise"]
+    p2["2.0<br/>Manage<br/>Campaigns"]
+    p3["3.0<br/>Process<br/>Donation"]
+    p4["4.0<br/>Record<br/>Blockchain Proof"]
+    p5["5.0<br/>Disburse<br/>Funds"]
+    p6["6.0<br/>Report and<br/>Notify"]
+
+    d1[("D1 users, sessions")]
+    d2[("D2 campaigns")]
+    d3[("D3 donations,<br/>payment_transactions")]
+    d4[("D4 blockchain_records")]
+    d5[("D5 beneficiaries,<br/>disbursements")]
+    d6[("D6 notifications,<br/>audit_logs, reward_events")]
+
+    donor -->|credentials| p1
+    fundraiser -->|credentials| p1
+    admin -->|credentials| p1
+    p1 <-->|user record, session| d1
+    p1 -->|session token| donor
+
+    fundraiser -->|campaign application| p2
+    admin -->|review decision| p2
+    p2 <-->|campaign record| d2
+    p2 -->|published campaign| donor
+
+    donor -->|donation request| p3
+    p3 -->|payment session| gateway
+    gateway -->|confirmation callback| p3
+    p3 <-->|transaction, donation| d3
+    p3 -->|receipt| donor
+    p3 -->|donation reference| p4
+
+    p4 -->|proof hash| chain
+    chain -->|transaction hash| p4
+    p4 <-->|proof record| d4
+
+    admin -->|payout instruction| p5
+    p5 <-->|beneficiary, disbursement| d5
+    p5 -->|disbursement reference| p4
+    p5 -->|payout confirmation| admin
+
+    p3 -->|donation event| p6
+    p5 -->|disbursement event| p6
+    p6 <-->|notification, audit, points| d6
+    p6 -->|notification, impact points| donor
+    p6 -->|campaign performance| fundraiser
+    p6 -->|dashboards, audit trail| admin
+
+    classDef entity fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a;
+    classDef process fill:#ccfbf1,stroke:#0f766e,stroke-width:2px,color:#134e4a;
+    classDef store fill:#ffffff,stroke:#14b8a6,stroke-width:1.6px,color:#0f172a;
+
+    class donor,fundraiser,admin,gateway,chain entity;
+    class p1,p2,p3,p4,p5,p6 process;
+    class d1,d2,d3,d4,d5,d6 store;
+
+    linkStyle default stroke:#334155,stroke-width:1.2px;

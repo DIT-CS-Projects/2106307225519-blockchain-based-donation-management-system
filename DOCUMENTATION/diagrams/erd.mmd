@@ -1,0 +1,126 @@
+%% Report 6.4.1 Entity Relationship Diagram (core entities)
+%% Full 14-table version is erd-full.mmd, which belongs in the appendix.
+%% Source of truth: server/src/database/schema/*.ts
+erDiagram
+    USERS ||--o{ CAMPAIGNS : "owns"
+    USERS ||--o{ DONATIONS : "makes"
+    USERS ||--o{ FUNDRAISER_APPLICATIONS : "submits"
+    USERS ||--o{ REWARD_EVENTS : "earns"
+    USERS ||--o{ DISBURSEMENT_APPROVALS : "decides"
+
+    CAMPAIGNS ||--o{ DONATIONS : "receives"
+    CAMPAIGNS ||--o{ BENEFICIARIES : "supports"
+    CAMPAIGNS ||--o{ DISBURSEMENTS : "funds"
+
+    PAYMENT_TRANSACTIONS ||--o| DONATIONS : "produces on success"
+    DONATIONS ||--o| BLOCKCHAIN_RECORDS : "proven by"
+    DONATIONS ||--o{ REWARD_EVENTS : "triggers"
+
+    BENEFICIARIES ||--o{ DISBURSEMENTS : "receives"
+    DISBURSEMENTS ||--o{ DISBURSEMENT_APPROVALS : "requires"
+    DISBURSEMENTS ||--o| BLOCKCHAIN_RECORDS : "proven by"
+
+    USERS {
+        bigint id PK
+        varchar full_name
+        varchar email UK
+        varchar phone
+        text password_hash
+        enum role "donor, fundraiser, admin"
+        enum status "active, suspended, deactivated"
+        timestamp deleted_at "soft delete"
+    }
+
+    CAMPAIGNS {
+        bigint id PK
+        varchar title
+        text description
+        bigint owner_id FK "null for NGO-run"
+        enum status
+        enum category
+        timestamp start_date
+        timestamp end_date
+        boolean featured
+    }
+
+    DONATIONS {
+        bigint id PK
+        bigint donor_id FK
+        bigint campaign_id FK
+        numeric amount
+        varchar currency "TZS"
+        varchar payment_reference UK
+        varchar receipt_number UK
+        timestamp created_at "immutable, no updated_at"
+    }
+
+    PAYMENT_TRANSACTIONS {
+        bigint id PK
+        varchar reference UK
+        bigint donor_id FK
+        bigint campaign_id FK
+        bigint donation_id FK "set on success"
+        varchar provider
+        enum status
+        enum method "mobile_money, bank"
+        jsonb provider_response
+        timestamp expires_at
+    }
+
+    BLOCKCHAIN_RECORDS {
+        bigint id PK
+        bigint donation_id FK "polymorphic, one of"
+        bigint disbursement_id FK "polymorphic, one of"
+        varchar tx_hash
+        varchar network "sepolia"
+        enum status "pending, confirmed, failed"
+        timestamp recorded_at
+    }
+
+    BENEFICIARIES {
+        bigint id PK
+        bigint campaign_id FK
+        varchar name
+        varchar category
+        varchar location
+        boolean verified
+        bigint verified_by FK
+    }
+
+    DISBURSEMENTS {
+        bigint id PK
+        bigint campaign_id FK
+        bigint beneficiary_id FK
+        numeric amount
+        text purpose
+        enum status
+        boolean self_released "below threshold"
+        varchar payout_reference
+        timestamp completed_at
+    }
+
+    DISBURSEMENT_APPROVALS {
+        bigint id PK
+        bigint disbursement_id FK
+        bigint admin_id FK
+        enum decision "approved, rejected"
+        text reason
+    }
+
+    FUNDRAISER_APPLICATIONS {
+        bigint id PK
+        bigint user_id FK
+        varchar display_name
+        text cause_description
+        enum status
+        bigint reviewed_by FK
+    }
+
+    REWARD_EVENTS {
+        bigint id PK
+        bigint user_id FK
+        bigint donation_id FK
+        integer points
+        enum type
+        text description
+    }
