@@ -29,6 +29,8 @@ build/
 DOCUMENTATION/report/out/~*
 DOCUMENTATION/report/out/*.STAGED.docx
 DOCUMENTATION/assets/screens/README.md
+README.md
+client/README.md
 
 # Hardhat / blockchain
 artifacts/
