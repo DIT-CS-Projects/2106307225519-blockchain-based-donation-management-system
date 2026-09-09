@@ -28,6 +28,7 @@ build/
 # Office/editor scratch files and local staging copies
 DOCUMENTATION/report/out/~*
 DOCUMENTATION/report/out/*.STAGED.docx
+DOCUMENTATION/assets/screens/README.md
 
 # Hardhat / blockchain
 artifacts/
