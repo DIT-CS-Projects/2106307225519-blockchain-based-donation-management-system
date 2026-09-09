@@ -6,8 +6,23 @@ node_modules/
 # Local tooling and generated audit artifacts
 .cache/
 .claude/
+.impeccable/
 tmp/
 client/.vercel/
+DOCUMENTATION/
+*.md
+!README.md
+client/README.md
+*.env.example
+*.mmd
+*.pdf
+*.pptx
+*.docx
+*.png
+*.bib
+*.tex
+*.csl
+*.gitkeep
 
 # Environment variables
 .env
@@ -18,19 +33,6 @@ client/.vercel/
 dist/
 build/
 *.tsbuildinfo
-
-# ...except the report's build TOOLING (scripts, LaTeX header, reference.docx),
-# which the generic build/ rule above accidentally swallows too since it's a
-# source directory named "build", not build output.
-!DOCUMENTATION/report/build/
-!DOCUMENTATION/report/build/**
-
-# Office/editor scratch files and local staging copies
-DOCUMENTATION/report/out/~*
-DOCUMENTATION/report/out/*.STAGED.docx
-DOCUMENTATION/assets/screens/README.md
-README.md
-client/README.md
 
 # Hardhat / blockchain
 artifacts/
